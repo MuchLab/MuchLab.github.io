@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MongoDB基础知识及使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MongoDB基础知识及使用">
+<meta property="og:url" content="https://muchlab.github.io/2020/07/10/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="MongoDB基础知识及使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-07-10T13:11:20.000Z">
+<meta property="article:modified_time" content="2020-09-26T01:16:22.113Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-MongoDb">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/07/10/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E4%BD%BF%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MongoDB基础知识及使用 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/07/10/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MongoDB基础知识及使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-10 21:11:20" itemprop="dateCreated datePublished" datetime="2020-07-10T21:11:20+08:00">2020-07-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-26 09:16:22" itemprop="dateModified" datetime="2020-09-26T09:16:22+08:00">2020-09-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDb/" itemprop="url" rel="index"><span itemprop="name">-MongoDb</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/07/10/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E4%BD%BF%E7%94%A8/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/07/10/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E4%BD%BF%E7%94%A8/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>3 分钟</span>
+            </span>
+            <div class="post-description">MongoDB基础知识及使用</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="MongoDB是什么"><a href="#MongoDB是什么" class="headerlink" title="MongoDB是什么"></a>MongoDB是什么</h3><ul>
+<li><p>MongoDB 是一个基于分布式文件存储的数据库。由<a href="https://www.w3cschool.cn/cpp/" target="_blank" rel="noopener">C++</a>语言编写。旨在为WEB应用提供可扩展的高性能数据存储解决方案。</p>
+<p>MongoDB是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。他支持的数据结构非常松散，是类似json的bson格式，因此可以存储比较复杂的数据类型。Mongo最大的特点是他支持的查询语言非常强大，其语法有点类似于面向对象的查询语言，几乎可以实现类似关系数据库单表查询的绝大部分功能，而且还支持对数据建立索引。</p>
+</li>
+</ul>
+<h3 id="MongoDB的特点——高性能、易部署、易使用"><a href="#MongoDB的特点——高性能、易部署、易使用" class="headerlink" title="MongoDB的特点——高性能、易部署、易使用"></a>MongoDB的特点——高性能、易部署、易使用</h3><ul>
+<li><p>面向集合存储，易存储对象类型的数据。</p>
+</li>
+<li><p>模式自由。</p>
+</li>
+<li><p>支持动态查询。</p>
+</li>
+<li><p>支持完全索引，包含内部对象。</p>
+</li>
+<li><p>支持查询。</p>
+</li>
+<li><p>支持复制和故障恢复。</p>
+</li>
+<li><p>使用高效的二进制数据存储，包括大型对象（如视频等）。</p>
+</li>
+<li><p>自动处理碎片，以支持云计算层次的扩展性</p>
+</li>
+<li><p>支持RUBY，PYTHON，JAVA，C++，PHP，C#等多种语言。</p>
+</li>
+<li><p>文件存储格式为BSON（一种JSON的扩展）。</p>
+</li>
+<li><p>可通过网络访问。</p>
+</li>
+</ul>
+<h3 id="MongoDB适用场景"><a href="#MongoDB适用场景" class="headerlink" title="MongoDB适用场景"></a>MongoDB适用场景</h3><p>MongoDB 的主要目标是在键/值存储方式（提供了高性能和高度伸缩性）和传统的RDBMS 系统（具有丰富的功能）之间架起</p>
+<p><strong>Mongo 适用于以下场景:</strong></p>
+<ul>
+<li><p>网站数据：Mongo 非常适合实时的插入，更新与查询，并具备网站实时数据存储所需的复制及高度伸缩性。</p>
+</li>
+<li><p>缓存：由于性能很高，Mongo 也适合作为信息基础设施的缓存层。在系统重启之后，由Mongo 搭建的持久化缓存层可以避免下层的数据源过载。</p>
+</li>
+<li><p>大尺寸、低价值的数据：使用传统的关系型数据库存储一些数据时可能会比较昂贵，在此之前，很多时候程序员往往会选择传统的文件进行存储。</p>
+</li>
+<li><p>高伸缩性的场景：Mongo 非常适合由数十或数百台服务器组成的数据库，Mongo 的路线图中已经包含对MapReduce 引擎的内置支持。</p>
+</li>
+<li><p>用于对象及JSON 数据的存储：Mongo 的BSON 数据格式非常适合文档化格式的存储及查询。</p>
+</li>
+</ul>
+<p><strong>MongoDB 的使用也会有一些限制，例如，它不适合于以下几个地方。</strong></p>
+<ul>
+<li><p>高度事务性的系统：例如，银行或会计系统。传统的关系型数据库目前还是更适用于需要大量原子性复杂事务的应用程序。</p>
+</li>
+<li><p>传统的商业智能应用：针对特定问题的BI 数据库会产生高度优化的查询方式。对于此类应用，数据仓库可能是更合适的选择。</p>
+</li>
+<li><p>需要SQL 的问题。</p>
+</li>
+</ul>
+<h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><ol>
+<li>MongoDB中的 <code>database</code> 有着和你熟知的”数据库”一样的概念 (对 Oracle 来说就是 schema)。一个 MongoDB 实例中，可以有零个或多个数据库，每个都作为一个高等容器，用于存储数据。</li>
+<li>数据库中可以有零个或多个 <code>collections</code> (集合)。集合和传统意义上的 <code>table</code> 基本一致，你可以简单的把两者看成是一样的东西。</li>
+<li>集合是由零个或多个 <code>documents</code> (文档)组成。同样，一个文档可以看成是一 <code>row</code>。</li>
+<li>文档是由零个或多个 <code>fields</code> (字段)组成。, 没错，它就是 <code>columns</code>。</li>
+<li><code>Indexes</code> (索引)在 MongoDB 中扮演着和它们在 RDBMS 中一样的角色。</li>
+<li><code>Cursors</code> (游标)和上面的五个概念都不一样，但是它非常重要，并且经常被忽视，因此我觉得它们值得单独讨论一下。其中最重要的你要理解的一点是，游标是，当你问 MongoDB 拿数据的时候，它会给你返回一个结果集的指针而不是真正的数据，这个指针我们叫它游标，我们可以拿游标做我们想做的任何事情，比如说计数或者跨行之类的，而无需把真正的数据拖下来，在真正的数据上操作。</li>
+</ol>
+<p>这些术语并不是与传统的关系型数据库完全一致，它最大的区别在于关系型数据库是在 <code>table</code> 上定义的<code>columns</code>，而面向文档数据库是在 <code>document</code> 上定义的 <code>fields</code>。也就是说，在 <code>collection</code> 中的每个 <code>document</code> 都可以有它自己独立的 <code>fields</code>。因此，对于 <code>collection</code> 来说是个简化了的 <code>table</code> ，但是一个 <code>document</code> 却比一 <code>row</code> 有更多的信息。</p>
+<h3 id="创建database和user"><a href="#创建database和user" class="headerlink" title="创建database和user"></a>创建database和user</h3><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//当使用<span class="keyword">use</span>后，如果数据库不存在，mongodb会默认地创建数据库，并把当前数据库转换成指定的数据库</span><br><span class="line"><span class="keyword">use</span> springbucks</span><br><span class="line">//为数据库springbucks创建一个<span class="keyword">user</span>，<span class="keyword">roles</span>表示该<span class="keyword">user</span>属于哪些角色，这里的readWrite表示该<span class="keyword">user</span>有读写权限</span><br><span class="line">db.createUser(</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">user</span>:<span class="string">"springbucks"</span>,</span><br><span class="line">		pwd:<span class="string">"springbucks"</span>,</span><br><span class="line">		<span class="keyword">roles</span>:[</span><br><span class="line">			&#123;<span class="keyword">role</span>:<span class="string">"readWrite"</span>, db:<span class="string">"springbucks"</span>&#125;</span><br><span class="line">		]</span><br><span class="line">	&#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure></div>
+
+<p>其中user的文档格式如下：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="DTS"><figure class="iseeu highlight /dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"><span class="symbol">  user:</span> <span class="string">"&lt;name&gt;"</span>,	<span class="comment">//用户名</span></span><br><span class="line"><span class="symbol">  pwd:</span> <span class="string">"&lt;cleartext password&gt;"</span>,	<span class="comment">//用户密码</span></span><br><span class="line"><span class="symbol">  customData:</span> &#123; <span class="params">&lt;any information&gt;</span> &#125;,	<span class="comment">//备注信息，可选</span></span><br><span class="line"><span class="symbol">  roles:</span> [</span><br><span class="line">    &#123; role: <span class="string">"&lt;role&gt;"</span>, db: <span class="string">"&lt;database&gt;"</span> &#125; | <span class="string">"&lt;role&gt;"</span>,</span><br><span class="line">    ...</span><br><span class="line">  ],	<span class="comment">//角色数组，授权给此用户的角色，[]表示无角色</span></span><br><span class="line"><span class="symbol">  authenticationRestrictions:</span> [</span><br><span class="line">     &#123;</span><br><span class="line"><span class="symbol">       clientSource:</span> [<span class="string">"&lt;IP&gt;"</span> | <span class="string">"&lt;CIDR range&gt;"</span>, ...]</span><br><span class="line"><span class="symbol">       serverAddress:</span> [<span class="string">"&lt;IP&gt;"</span> | <span class="string">"&lt;CIDR range&gt;"</span>, ...]</span><br><span class="line">     &#125;,</span><br><span class="line">     ...</span><br><span class="line">  ],	<span class="comment">//限制数组，可选</span></span><br><span class="line"><span class="symbol">  mechanisms:</span> [ <span class="string">"&lt;SCRAM-SHA-1|SCRAM-SHA-256&gt;"</span>, ... ],		<span class="comment">//指定用于创建SCRAM用户凭据的特定SCRAM机制，可选。3.6默认SCRAM-SHA-1</span></span><br><span class="line"><span class="symbol">  passwordDigestor:</span> <span class="string">"&lt;server|client&gt;"</span></span><br><span class="line">&#125;	<span class="comment">//密码摘要，可选，指定用户端/服务器是否生成密码摘要</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>权限说明具体角色：<ul>
+<li>Read：允许用户读取指定数据库</li>
+<li>readWrite：允许用户读写指定数据库</li>
+<li>dbAdmin：允许用户在指定数据库中执行管理函数，如索引创建、删除，查看统计或访问system.profile</li>
+<li>userAdmin：允许用户向system.users集合写入，可以找指定数据库里创建、删除和管理用户</li>
+<li>clusterAdmin：只在admin数据库中可用，赋予用户所有分片和复制集相关函数的管理权限。</li>
+<li>readAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的读权限</li>
+<li>readWriteAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的读写权限</li>
+<li>userAdminAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的userAdmin权限</li>
+<li>dbAdminAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的dbAdmin权限。</li>
+<li>root：只在admin数据库中可用。超级账号，超级权限。</li>
+</ul>
+</li>
+</ul>
+<h3 id="自定义角色"><a href="#自定义角色" class="headerlink" title="自定义角色"></a>自定义角色</h3><p>创建角色<code>createRole(&lt;document&gt;);</code></p>
+<p>其中role的文档格式如下：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CLOJURE"><figure class="iseeu highlight /clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  role: <span class="string">"&lt;name&gt;"</span>,	//角色名</span><br><span class="line">  privileges: [</span><br><span class="line">     &#123; resource: &#123; &lt;resource&gt; &#125;, actions: [ <span class="string">"&lt;action&gt;"</span>, ... ] &#125;,</span><br><span class="line">     ...</span><br><span class="line">  ],	//权限数组，包括资源和权限操作 (详见附件)</span><br><span class="line">  roles: [</span><br><span class="line">     &#123; role: <span class="string">"&lt;role&gt;"</span>, db: <span class="string">"&lt;database&gt;"</span> &#125; | <span class="string">"&lt;role&gt;"</span>,</span><br><span class="line">      ...</span><br><span class="line">  ],	//父类角色数组，对于该数据库角色可直接用role字符串表示</span><br><span class="line">  authenticationRestrictions: [</span><br><span class="line">    &#123;</span><br><span class="line">      clientSource: [<span class="string">"&lt;IP&gt;"</span> | <span class="string">"&lt;CIDR range&gt;"</span>, ...],</span><br><span class="line">      serverAddress: [<span class="string">"&lt;IP&gt;"</span> | <span class="string">"&lt;CIDR range&gt;"</span>, ...]</span><br><span class="line">    &#125;,</span><br><span class="line">    ...</span><br><span class="line">  ]		//认证限制数组，可选，确定一组可连接IP地址、CIDR范围</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>注：</p>
+<ul>
+<li>若一个角色继承多个限制不同的角色，如IP不同，则用户不可认证</li>
+<li>如果角色不是在admin数据库中创建的，则该用户只能设置此数据库下的权限且只能继承此数据库下角色</li>
+<li>创建角色必须有该数据库的createRole action和grantRole action，要设置新角色的authenticationRestrictions，还必须拥有此数据库的 setAuthenticationRestriction action权限</li>
+<li>resource格式分三类，Database and/or Collection Resource, Cluster Resource 以及 anyResource</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/07/10/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E4%BD%BF%E7%94%A8/" title="MongoDB基础知识及使用">https://muchlab.github.io/2020/07/10/MongoDB基础知识及使用/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/MongoDb/" rel="tag"><i class="fa fa-tag"></i> -MongoDb</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/10/AspNetCore%E4%BD%9C%E7%94%A8%E5%9F%9F%E5%92%8C%E5%AF%B9%E8%B1%A1%E9%87%8A%E6%94%BE/" rel="prev" title="AspNetCore作用域和对象释放">
+      <i class="fa fa-chevron-left"></i> AspNetCore作用域和对象释放
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/10/%C2%96NetCore%E6%A1%86%E6%9E%B6%E7%9A%84%E9%85%8D%E7%BD%AE/" rel="next" title="NetCore框架的配置">
+      NetCore框架的配置 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#MongoDB是什么"><span class="nav-text">MongoDB是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MongoDB的特点——高性能、易部署、易使用"><span class="nav-text">MongoDB的特点——高性能、易部署、易使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MongoDB适用场景"><span class="nav-text">MongoDB适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基础知识"><span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建database和user"><span class="nav-text">创建database和user</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义角色"><span class="nav-text">自定义角色</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">337k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

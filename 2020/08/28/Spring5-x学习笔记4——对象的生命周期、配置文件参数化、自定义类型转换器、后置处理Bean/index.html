@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Spring5.x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring5.x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean">
+<meta property="og:url" content="https://muchlab.github.io/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B04%E2%80%94%E2%80%94%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E3%80%81%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0%E5%8C%96%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%99%A8%E3%80%81%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86Bean/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="Spring5.x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200524010228627.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200524232431470.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020052517103049.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-08-28T05:46:04.000Z">
+<meta property="article:modified_time" content="2020-09-26T01:05:54.771Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200524010228627.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B04%E2%80%94%E2%80%94%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E3%80%81%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0%E5%8C%96%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%99%A8%E3%80%81%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86Bean/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spring5.x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B04%E2%80%94%E2%80%94%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E3%80%81%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0%E5%8C%96%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%99%A8%E3%80%81%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86Bean/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring5.x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-28 13:46:04" itemprop="dateCreated datePublished" datetime="2020-08-28T13:46:04+08:00">2020-08-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-26 09:05:54" itemprop="dateModified" datetime="2020-09-26T09:05:54+08:00">2020-09-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B04%E2%80%94%E2%80%94%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E3%80%81%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0%E5%8C%96%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%99%A8%E3%80%81%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86Bean/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B04%E2%80%94%E2%80%94%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E3%80%81%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0%E5%8C%96%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%99%A8%E3%80%81%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86Bean/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>7.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>7 分钟</span>
+            </span>
+            <div class="post-description">Spring5.x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="对象的生命周期"><a href="#对象的生命周期" class="headerlink" title="对象的生命周期"></a>对象的生命周期</h3><p>什么是对象的生命周期？</p>
+<ul>
+<li>⼀个对象 <strong>创建、存活、消亡</strong> 的三个完整过程。</li>
+</ul>
+<p>为什么要学习对象的生命周期？</p>
+<ul>
+<li>由 Spring 负责对象的 <strong>创建、存活、销毁</strong>，了解⽣命周期，有利于我们使用好 Spring 为我们创建的对象。</li>
+</ul>
+<p>生命周期的 3 个阶段：</p>
+<ul>
+<li>创建阶段 —&gt; 初始化阶段 —&gt; 销毁阶段</li>
+</ul>
+<h4 id="创建阶段"><a href="#创建阶段" class="headerlink" title="创建阶段"></a>创建阶段</h4><p>Spring 工厂何时创建对象？</p>
+<ul>
+<li><code>scope=&quot;prototype&quot;</code>：Spring 工厂在获取对象 <code>ctx.getBean(&quot;xxx&quot;)</code> 的同时，创建对象。</li>
+<li><code>scope=&quot;singleton&quot;</code>：Spring 工厂创建的同时，创建对象。<br>通过配置 <code>&lt;bean lazy-init=&quot;true&quot;/&gt;</code> 也可以实现工厂获取对象的同时，创建对象。</li>
+</ul>
+<h4 id="初始化阶段"><a href="#初始化阶段" class="headerlink" title="初始化阶段"></a>初始化阶段</h4><p>什么时候？Spring 工厂在创建完对象后，调用对象的初始化方法，完成对应的初始化操作。<br>初始化方法提供：程序员根据需求，提供初始化方法，最终完成初始化操作。<br>初始化方法调用：Spring 工厂进行调用。</p>
+<p>提供初始化方法的两种方式：</p>
+<ul>
+<li><code>InitializingBean</code> 接口：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Product</span> <span class="keyword">implements</span> <span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line">	<span class="comment">//程序员根据需求实现的方法, 完成初始化操作</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.afterPropertiesSet"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">1234567</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>对象中提供一个普通的初始化方法，配置文件种配置 <code>init-method</code>：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Product</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">myInit</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.myInit"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">12345</span></span><br><span class="line">&lt;bean id=<span class="string">"product"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"com.yusael.life.Product"</span> init-method=<span class="string">"myInit"</span>/&gt;</span><br><span class="line"><span class="number">1</span></span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<p>初始化操作的细节分析：</p>
+<ol>
+<li>如果⼀个对象既实现 <code>InitializingBean</code> 同时⼜提供的 普通的初始化方法，执行顺序?<br>先执行 <code>InitializingBean</code>，再执行 普通初始化方法。</li>
+<li>注入⼀定发⽣在初始化操作的前面。</li>
+<li>初始化操作到底是什么？<br>资源的初始化：数据库、IO、网络、…</li>
+</ol>
+<h4 id="销毁阶段"><a href="#销毁阶段" class="headerlink" title="销毁阶段"></a>销毁阶段</h4><p>Spring 销毁对象前，会调用对象的销毁方法，完成销毁操作。<br>Spring 什么时候销毁所创建的对象？<code>ctx.close();</code><br>销毁方法提供：程序员根据业务需求，定义销毁方法，完成销毁操作<br>销毁方法调用：Spring 工厂进行调用。</p>
+<p>开发流程与初始化操作一样，提供销毁方法的两种方式：</p>
+<ul>
+<li><code>DisposableBean</code> 接口：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Product</span> <span class="keyword">implements</span> <span class="title">DisposableBean</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 程序员根据⾃⼰的需求, 定义销毁方法, 完成销毁操作</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.destroy"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">1234567</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>对象中提供一个普通的销毁方法，配置文件种配置 <code>destroy-method</code>：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Product</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 程序员根据⾃⼰的需求, 定义销毁方法, 完成销毁操作</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">myDestory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.myDestory"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">123456</span></span><br><span class="line">&lt;bean id=<span class="string">"product"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"com.yusael.life.Product"</span> destroy-method=<span class="string">"myDestory"</span>/&gt;</span><br><span class="line"><span class="number">1</span></span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<p><strong>销毁阶段细节分析</strong>：</p>
+<ol>
+<li>销毁方法的操作只适用于 <code>scope=&quot;singleton&quot;</code>，初始化操作都适用。</li>
+<li>销毁操作到底是什么？<br>资源的释放：<code>io.close()</code>、<code>connection.close()</code>、…</li>
+</ol>
+<h4 id="对象的生命周期总结"><a href="#对象的生命周期总结" class="headerlink" title="对象的生命周期总结"></a>对象的生命周期总结</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Product</span> <span class="keyword">implements</span> <span class="title">InitializingBean</span>, <span class="title">DisposableBean</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.setName"</span>);</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Product() &#123; <span class="comment">// 创建</span></span><br><span class="line">        System.out.println(<span class="string">"Product.Product"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 程序员根据需求实现的方法, 完成初始化操作</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">myInit</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.myInit"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 程序员根据需求实现的方法, 完成初始化操作</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.afterPropertiesSet"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">myDestory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.myDestory"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 程序员根据⾃⼰的需求, 定义销毁方法, 完成销毁操作</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Product.destroy"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">12345678910111213141516171819202122232425262728293031323334353637</span></span><br><span class="line">&lt;bean id=<span class="string">"product"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"com.yusael.life.Product"</span> init-method=<span class="string">"myInit"</span> destroy-method=<span class="string">"myDestory"</span>&gt;</span><br><span class="line">	&lt;property name=<span class="string">"name"</span> value=<span class="string">"yusael"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure></div>
+
+<p><img src="https://img-blog.csdnimg.cn/20200524010228627.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h3 id="配置文件参数化"><a href="#配置文件参数化" class="headerlink" title="配置文件参数化"></a>配置文件参数化</h3><p><strong>配置文件参数化</strong>：把 Spring 配置文件中需要经常修改的字符串信息，转移到⼀个更小的配置文件中。</p>
+<ol>
+<li>Spring 的配置文件中是否存在需要经常修改的字符串？<br>存在：以数据库连接相关的参数…</li>
+<li>经常变化字符串，在 Spring 的配置文件中，直接修改不利于项目维护（修改）</li>
+<li>转移到⼀个小的配置文件（.properties）利于维护（修改）</li>
+</ol>
+<p>优点：利于 Spring 配置文件的维护（修改）</p>
+<h4 id="配置文件参数的开发步骤"><a href="#配置文件参数的开发步骤" class="headerlink" title="配置文件参数的开发步骤"></a>配置文件参数的开发步骤</h4><ul>
+<li>提供⼀个小的配置文件（.properities）<br>名字：没有要求<br>放置位置：没有要求</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">jdbc.driverClassName = com.mysql.jdbc.Driver</span><br><span class="line">jdbc.url = jdbc:mysql://localhost:3306/spring?useSSL=<span class="literal">false</span></span><br><span class="line">jdbc.username = root</span><br><span class="line">jdbc.password = 1234</span><br><span class="line">1234</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>Spring 的配置文件与小配置文件进行整合：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--Spring的配置文件与⼩配置文件进行整合--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--resources 下的文件在整个程序编译完后会被放到 classpath 目录下，src.main.java中的文件也是--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">context:property-placeholder</span> <span class="attr">location</span>=<span class="string">"classpath:/db.properties"</span>/&gt;</span></span><br><span class="line">123</span><br></pre></td></tr></table></figure></div>
+
+<p>在 Spring 配置文件中通过 <code>${key}</code> 获取小配置文件中对应的值：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"conn"</span> <span class="attr">class</span>=<span class="string">"com.yusael.factorybean.ConnectionFactoryBean"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driverClassName"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.driverClassName&#125;"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.url&#125;"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.username&#125;"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.password&#125;"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">123456</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="自定义类型转换器"><a href="#自定义类型转换器" class="headerlink" title="自定义类型转换器"></a>自定义类型转换器</h3><h4 id="类型转换器"><a href="#类型转换器" class="headerlink" title="类型转换器"></a>类型转换器</h4><p>作用：Spring 通过 类型转换器 把 配置文件 中 字符串 类型的数据，转换成了对象中成员变量对应类型的数据，进而完成了注入。<br><img src="https://img-blog.csdnimg.cn/20200524232431470.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h4 id="自定义类型转换器-1"><a href="#自定义类型转换器-1" class="headerlink" title="自定义类型转换器"></a>自定义类型转换器</h4><p>产生原因：当 Spring 内部没有提供特定类型转换器时，而程序员在应用的过程中还需要使用，那么<br>就需要程序员⾃⼰定义类型转换器。</p>
+<p><strong>[开发步骤]</strong>：</p>
+<ul>
+<li>类 implements Converter 接口</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyDateConverter</span> <span class="keyword">implements</span> <span class="title">Converter</span>&lt;<span class="title">String</span>, <span class="title">Date</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     convert方法作用: String ---&gt; Date</span></span><br><span class="line"><span class="comment">     SimpleDateFormat sdf = new SimpleDateFormat();</span></span><br><span class="line"><span class="comment">     sdf.parset(String) ---&gt; Date</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">     参数:</span></span><br><span class="line"><span class="comment">     source : 代表的是配置文件中, 日期字符串 &lt;value&gt;2020-10-11&lt;/value&gt;</span></span><br><span class="line"><span class="comment">     return : 当把转换好的 Date 作为 convert 方法的返回值后,</span></span><br><span class="line"><span class="comment">             Spring ⾃动的为birthday属性进行注入（赋值）</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Date <span class="title">convert</span><span class="params">(String source)</span> </span>&#123;</span><br><span class="line">        Date date = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            SimpleDateFormat sdf = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyy-MM-dd"</span>);</span><br><span class="line">            date = sdf.parse(source);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ParseException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> date;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">1234567891011121314151617181920212223</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在 Spring 的配置文件中进行配置；<br>先创建 <code>MyDateConverter</code> 对象，再注册类型转换器；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--创建 MyDateConverter 对象--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"myDateConverter"</span> <span class="attr">class</span>=<span class="string">"com.yusael.converter.MyDateConverter"</span>/&gt;</span></span><br><span class="line"><span class="comment">&lt;!--用于注册类型转换器--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"conversionService"</span> <span class="attr">class</span>=<span class="string">"org.springframework.context.support.ConversionServiceFactoryBean"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"converters"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">set</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">"myDateConverter"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">set</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"good"</span> <span class="attr">class</span>=<span class="string">"com.yusael.converter.Good"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"name"</span> <span class="attr">value</span>=<span class="string">"zhenyu"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"birthday"</span> <span class="attr">value</span>=<span class="string">"2012-12-12"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">123456789101112131415</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="自定义类型转换器细节"><a href="#自定义类型转换器细节" class="headerlink" title="自定义类型转换器细节"></a>自定义类型转换器细节</h4><ul>
+<li><code>MyDateConverter</code> 中的<strong>日期的格式</strong>，通过 <strong>依赖注入</strong> 的方式，由配置文件完成赋值。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyDateConverter</span> <span class="keyword">implements</span> <span class="title">Converter</span>&lt;<span class="title">String</span>, <span class="title">Date</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String pattern;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Date <span class="title">convert</span><span class="params">(String source)</span> </span>&#123;</span><br><span class="line">        Date date = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            SimpleDateFormat sdf = <span class="keyword">new</span> SimpleDateFormat(pattern);</span><br><span class="line">            date = sdf.parse(source);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ParseException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> date;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPattern</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pattern;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPattern</span><span class="params">(String pattern)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pattern = pattern;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="number">123456789101112131415161718192021222324</span></span><br><span class="line">&lt;!-- 配置文件完成对日期格式的赋值 --&gt;</span><br><span class="line">&lt;bean id=<span class="string">"myDateConverter"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"com.yusael.converter.MyDateConverter"</span>&gt;</span><br><span class="line">    &lt;property name=<span class="string">"pattern"</span> value=<span class="string">"yyyy-MM-dd"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br><span class="line"><span class="number">1234</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li><code>ConversionSeviceFactoryBean</code> 定义 id属性，值必须是 <code>conversionService</code>；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"conversionService"</span> <span class="attr">class</span>=<span class="string">"org.springframework.context.support.ConversionServiceFactoryBean"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"converters"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">set</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">"myDateConverter"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">set</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">1234567</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>Spring 框架其实内置了日期类型的转换器：日期格式必须是 <code>2020/05/01</code>。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"good"</span> <span class="attr">class</span>=<span class="string">"com.yusael.converter.Good"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"name"</span> <span class="attr">value</span>=<span class="string">"zhenyu"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"birthday"</span> <span class="attr">value</span>=<span class="string">"2012/12/12"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">1234</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="后置处理-Bean"><a href="#后置处理-Bean" class="headerlink" title="后置处理 Bean"></a>后置处理 Bean</h3><p>BeanPostProcessor 作用：对 Spring 工厂所创建的对象，进行再加工。（AOP 的底层实现）</p>
+<h4 id="后置处理-Bean-原理分析"><a href="#后置处理-Bean-原理分析" class="headerlink" title="后置处理 Bean 原理分析"></a>后置处理 Bean 原理分析</h4><p><img src="https://img-blog.csdnimg.cn/2020052517103049.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>程序员实现 <code>BeanPostProcessor</code> 接口中规定的两个方法：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">postProcessBeforeInitialization</span><span class="params">(Object bean, String beanName)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure></div>
+
+<p>作用：Spring <strong>创建完对象，并进行注入后</strong>，可以运行 <code>Before</code> ⽅法进行加工；</p>
+<ul>
+<li>通过方法的参数获得 Spring 创建好的对象，最终通过返回值交给 Spring 框架。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">postProcessAfterInitialization</span><span class="params">(Object bean, String beanName)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure></div>
+
+<p>作⽤：Spring <strong>执行完对象的初始化操作后</strong>，可以运行 <code>After</code> ⽅法进行加工；</p>
+<ul>
+<li>通过方法的参数获得 Spring 创建好的对象，最终通过返回值交给 Spring 框架。</li>
+</ul>
+<p>实战中：很少处理 Spring 的初始化操作，没有必要区分 <code>Before</code>，<code>After</code>。只需要实现其中一个，建议是 <code>After</code> 方法即可。</p>
+<h4 id="BeanPostProcessor-开发步骤"><a href="#BeanPostProcessor-开发步骤" class="headerlink" title="BeanPostProcessor 开发步骤"></a>BeanPostProcessor 开发步骤</h4><ol>
+<li>类 实现 <code>BeanPostProcessor</code> 接口</li>
+</ol>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyBeanPostProcessor</span> <span class="keyword">implements</span> <span class="title">BeanPostProcessor</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">postProcessBeforeInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">postProcessAfterInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">        Category category = (Category) bean;</span><br><span class="line">        category.setName(<span class="string">"yusael"</span>);</span><br><span class="line">        <span class="keyword">return</span> category;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">12345678910111213</span></span><br></pre></td></tr></table></figure></div>
+
+<ol>
+<li>Spring 配置文件中进行配置</li>
+</ol>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"myBeanPostProcessor"</span> <span class="attr">class</span>=<span class="string">"com.yusael.beanpost.MyBeanPostProcessor"</span>/&gt;</span></span><br><span class="line">1</span><br></pre></td></tr></table></figure></div>
+
+<p><strong>细节</strong>：BeanPostProcessor 会对 Spring 工厂创建的<strong>所有对象</strong>进行加工。如果工厂创建了多个不同的对象，要注意区别传入的对象：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">postProcessAfterInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (bean <span class="keyword">instanceof</span>  Category) &#123;</span><br><span class="line">        Category category = (Category) bean;</span><br><span class="line">        category.setName(<span class="string">"yusael"</span>);</span><br><span class="line">        <span class="keyword">return</span> category;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<p>学习资料：<a href="https://www.bilibili.com/video/BV185411477k?p=63" target="_blank" rel="noopener">B站孙帅</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B04%E2%80%94%E2%80%94%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E3%80%81%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0%E5%8C%96%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%99%A8%E3%80%81%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86Bean/" title="Spring5.x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean">https://muchlab.github.io/2020/08/28/Spring5-x学习笔记4——对象的生命周期、配置文件参数化、自定义类型转换器、后置处理Bean/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Spring/" rel="tag"><i class="fa fa-tag"></i> Spring</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B03%E2%80%94%E2%80%94%E5%8F%8D%E8%BD%AC%E6%8E%A7%E5%88%B6%E4%B8%8E%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E3%80%81Spring%E5%B7%A5%E5%8E%82%E5%88%9B%E5%BB%BA%E5%A4%8D%E6%9D%82%E5%AF%B9%E8%B1%A13%E7%A7%8D%E6%96%B9%E5%BC%8F/" rel="prev" title="Spring5.x学习笔记3——反转控制与依赖注入、Spring工厂创建复杂对象3种方式">
+      <i class="fa fa-chevron-left"></i> Spring5.x学习笔记3——反转控制与依赖注入、Spring工厂创建复杂对象3种方式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05%E2%80%94%E2%80%94AOP-%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" rel="next" title="Spring5.x学习笔记5——AOP 底层实现原理">
+      Spring5.x学习笔记5——AOP 底层实现原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#对象的生命周期"><span class="nav-text">对象的生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建阶段"><span class="nav-text">创建阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化阶段"><span class="nav-text">初始化阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#销毁阶段"><span class="nav-text">销毁阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对象的生命周期总结"><span class="nav-text">对象的生命周期总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件参数化"><span class="nav-text">配置文件参数化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#配置文件参数的开发步骤"><span class="nav-text">配置文件参数的开发步骤</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义类型转换器"><span class="nav-text">自定义类型转换器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#类型转换器"><span class="nav-text">类型转换器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#自定义类型转换器-1"><span class="nav-text">自定义类型转换器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#自定义类型转换器细节"><span class="nav-text">自定义类型转换器细节</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后置处理-Bean"><span class="nav-text">后置处理 Bean</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#后置处理-Bean-原理分析"><span class="nav-text">后置处理 Bean 原理分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BeanPostProcessor-开发步骤"><span class="nav-text">BeanPostProcessor 开发步骤</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">337k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="真会C#?异步编程3——Continuation、TaskCompletionSource、await、async">
+<meta property="og:type" content="article">
+<meta property="og:title" content="真会C#?——异步编程3">
+<meta property="og:url" content="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="真会C#?异步编程3——Continuation、TaskCompletionSource、await、async">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/Snipaste_2020-10-02_21-40-56.png">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/v2-7e4074a08d2a71f1e34fc06345b39c3a_hd.png">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/v2-a86781d839b0ae665753d370e363d6c8_hd.png">
+<meta property="article:published_time" content="2020-10-03T08:16:51.000Z">
+<meta property="article:modified_time" content="2020-10-03T08:21:58.823Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-C#">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/Snipaste_2020-10-02_21-40-56.png">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>真会C#?——异步编程3 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          真会C#?——异步编程3
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-03 16:16:51 / 修改时间：16:21:58" itemprop="dateCreated datePublished" datetime="2020-10-03T16:16:51+08:00">2020-10-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">-C#</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>5.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>5 分钟</span>
+            </span>
+            <div class="post-description">真会C#?异步编程3——Continuation、TaskCompletionSource、await、async</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="Continuation"><a href="#Continuation" class="headerlink" title="Continuation"></a>Continuation</h3><ul>
+<li>Continuation表示当Task结束操作时，继续执行其他的一些操作，它通常是通过回调的方式来实现的。当Task一结束，就会开始执行。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        Task&lt;<span class="keyword">int</span>&gt; task = Task.Run(() =&gt;</span><br><span class="line">                                  Enumerable.Range(<span class="number">2</span>, <span class="number">3000000</span>).Count(n =&gt;</span><br><span class="line">                                                                     Enumerable.Range(<span class="number">2</span>, (<span class="keyword">int</span>)Math.Sqrt(n) - <span class="number">1</span>).All(i =&gt; n % i &gt; <span class="number">0</span>)));</span><br><span class="line">        TaskAwaiter&lt;<span class="keyword">int</span>&gt; awaiter = task.GetAwaiter();</span><br><span class="line">        <span class="comment">//OnCompleted()代表当task结束时运行</span></span><br><span class="line">        awaiter.OnCompleted(() =&gt;</span><br><span class="line">                            &#123;</span><br><span class="line">                                <span class="comment">//获取Task的返回结果</span></span><br><span class="line">                                <span class="keyword">var</span> result = awaiter.GetResult();</span><br><span class="line">                                Console.WriteLine(result);</span><br><span class="line">                            &#125;);</span><br><span class="line">        Console.ReadLine();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在task上调用<code>GetAwaiter</code>会返回一个awaiter对象，它的<code>OnCompleted</code>方法中的委托会在task结束或发生故障时执行。可以将Continuation附加到已经结束的task上面。</li>
+<li>其实使用<code>task.Result</code>也可以获取task的返回值，但使用<code>GetResult</code>的好处是，如果task发生故障，那么异常会被直接抛出，而不是包装在<code>AggregateException</code>里面，这样catch就不用判断异常的类型。</li>
+</ul>
+<h3 id="ContinueWith"><a href="#ContinueWith" class="headerlink" title="ContinueWith"></a>ContinueWith</h3><ul>
+<li>使用它的效果和使用<code>awaiter.OnCompleted</code>的效果一样。不同的是<code>OnCompleted</code>没有返回值，而<code>ContinueWith</code>返回原来Task实例，可以用它来附加更多的Continuation，但这样就必须直接处理<code>AggregateException</code>。它要求传入一个原来Task实例类型的参数的委托。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function"></span>        &#123;</span><br><span class="line">            Task&lt;<span class="keyword">int</span>&gt; task = Task.Run(() =&gt;</span><br><span class="line">                Enumerable.Range(<span class="number">2</span>, <span class="number">3000000</span>).Count(n =&gt;</span><br><span class="line">                    Enumerable.Range(<span class="number">2</span>, (<span class="keyword">int</span>)Math.Sqrt(n) - <span class="number">1</span>).All(i =&gt; n % i &gt; <span class="number">0</span>)));</span><br><span class="line">            <span class="keyword">var</span> continueWith = task.ContinueWith(task =&gt;</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">int</span> result = task.Result;</span><br><span class="line">                Console.WriteLine(result);</span><br><span class="line">            &#125;);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="TaskCompletionSource"><a href="#TaskCompletionSource" class="headerlink" title="TaskCompletionSource"></a>TaskCompletionSource</h3><ul>
+<li>TaskCompletionSource是创建Task的另外一种方式，它可以让你在稍后开始和结束的任意操作中创建Task，提供了一个可手动执行的“从属”Task，即可指示操作何时结束或发生故障</li>
+<li>一般推荐用它来创建IO-Bound类的工作，一是可以获得所有Task的优点，二是不需要在操作时阻塞线程。</li>
+<li>下面是TaskCompletionSource的简易源码和它的使用方法。<img src="/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/Snipaste_2020-10-02_21-40-56.png" alt="Snipaste_2020-10-02_21-40-56"></li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CS"><figure class="iseeu highlight /cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        <span class="comment">// var tcs = new TaskCompletionSource&lt;int&gt;();</span></span><br><span class="line">        <span class="comment">// new Thread(() =&gt;</span></span><br><span class="line">        <span class="comment">// &#123;</span></span><br><span class="line">        <span class="comment">//     Thread.Sleep(5000);</span></span><br><span class="line">        <span class="comment">//     tcs.SetResult(42);</span></span><br><span class="line">        <span class="comment">// &#125;)</span></span><br><span class="line">        <span class="comment">// &#123;</span></span><br><span class="line">        <span class="comment">//     IsBackground = true</span></span><br><span class="line">        <span class="comment">// &#125;.Start();</span></span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        <span class="comment">// var task = tcs.Task;</span></span><br><span class="line">        <span class="comment">// Console.WriteLine(task.Result);</span></span><br><span class="line">        <span class="keyword">var</span> task = Run(() =&gt;</span><br><span class="line">                       &#123;</span><br><span class="line">                           Thread.Sleep(<span class="number">5000</span>);</span><br><span class="line">                           <span class="keyword">return</span> <span class="number">42</span>;</span><br><span class="line">                       &#125;);</span><br><span class="line">        Console.WriteLine(task.Result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//调用此方法相当于调用Task.Factory.StartNew</span></span><br><span class="line">    <span class="comment">//并使用TaskCreationOptions.LongRunning选项来创建非线程池的线程</span></span><br><span class="line">    <span class="keyword">static</span> Task&lt;TResult&gt; Run&lt;TResult&gt;(Func&lt;TResult&gt; func)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">var</span> tcs = <span class="keyword">new</span> TaskCompletionSource&lt;TResult&gt;();</span><br><span class="line">        <span class="keyword">new</span> Thread(() =&gt;</span><br><span class="line">                   &#123;</span><br><span class="line">                       <span class="keyword">try</span></span><br><span class="line">                       &#123;</span><br><span class="line">                           tcs.SetResult(func());</span><br><span class="line">                       &#125;</span><br><span class="line">                       <span class="keyword">catch</span> (Exception e)</span><br><span class="line">                       &#123;</span><br><span class="line">                           tcs.SetException(e);</span><br><span class="line">                       &#125;</span><br><span class="line">                   &#125;).Start();</span><br><span class="line">        <span class="keyword">return</span> tcs.Task;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li><p>TaskCompletionSource的真正用处是用它创建Task并不占用线程。</p>
+</li>
+<li><p>使用TaskCompletionSource自定义一个延迟函数，使用dotnet core新添加的Task.Delay可以达到相同的效果，但两者的区别是：一个是不会占用线程，它会等待Continuation开始后，才占用线程；而使用Task.Delay相当于异步版本的Thread.Sleep，它会并发地去执行任务。</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        <span class="comment">//使用TaskCompletionSource来进行延迟并不会占用新线程</span></span><br><span class="line">        <span class="comment">//5秒之后，Continuation开始的时候，才占用新线程</span></span><br><span class="line">        Delay(<span class="number">5000</span>)</span><br><span class="line">            .GetAwaiter()</span><br><span class="line">            .OnCompleted(() =&gt; Console.WriteLine(<span class="string">"Print After Delay."</span>));</span><br><span class="line">        <span class="comment">//Task.Delay相当于异步版本的Thread.Sleep，所以下面两个任务是并发进行的</span></span><br><span class="line">        Task.Delay(<span class="number">5000</span>).GetAwaiter().OnCompleted(() =&gt; Console.WriteLine(<span class="string">"Print After Task.Delay.GetAwaiter"</span>));</span><br><span class="line">        Task.Delay(<span class="number">10000</span>).ContinueWith(ant =&gt; Console.WriteLine(<span class="string">"Print After Task.Delay.ContinueWith"</span>));</span><br><span class="line">        Console.ReadKey();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> Task <span class="title">Delay</span>(<span class="params"><span class="keyword">int</span> milliseconds</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        <span class="keyword">var</span> tcs = <span class="keyword">new</span> TaskCompletionSource&lt;<span class="keyword">object</span>&gt;();</span><br><span class="line">        <span class="keyword">var</span> timer = <span class="keyword">new</span> Timer();</span><br><span class="line">        timer.Elapsed += <span class="keyword">delegate</span></span><br><span class="line">        &#123;</span><br><span class="line">            timer.Dispose();</span><br><span class="line">            tcs.SetResult(<span class="literal">null</span>);</span><br><span class="line">        &#125;;</span><br><span class="line">        timer.Start();</span><br><span class="line">        <span class="keyword">return</span> tcs.Task;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="同步和异步。。。"><a href="#同步和异步。。。" class="headerlink" title="同步和异步。。。"></a>同步和异步。。。</h3><h4 id="并发-并行-同步-异步-多线程"><a href="#并发-并行-同步-异步-多线程" class="headerlink" title="并发 并行 同步 异步 多线程"></a>并发 并行 同步 异步 多线程</h4><ul>
+<li>它们之间的区别：<ol>
+<li>并发：在<a href="http://baike.baidu.com/view/880.htm" target="_blank" rel="noopener">操作系统</a>中，是指一个时间段中有几个程序都处于已启动运行到运行完毕之间，且这几个程序都是在同一个<a href="http://baike.baidu.com/view/2107226.htm" target="_blank" rel="noopener">处理机</a>上运行。其中两种并发关系分别是同步和互斥</li>
+<li>互斥：进程间相互排斥的使用临界资源的现象，就叫互斥。</li>
+<li>同步：进程之间的关系不是相互排斥临界资源的关系，而是相互依赖的关系。进一步的说明：就是前一个进程的输出作为后一个进程的输入，当第一个进程没有输出时第二个进程必须等待。具有同步关系的一组并发进程相互发送的信息称为消息或事件。其中并发又有伪并发和真并发，伪并发是指单核处理器的并发，真并发是指多核处理器的并发。</li>
+<li>并行：在单处理器中多道程序设计系统中，进程被交替执行，表现出一种并发的外部特种；在多处理器系统中，进程不仅可以交替执行，而且可以重叠执行。在多处理器上的程序才可实现并行处理。从而可知，并行是针对多处理器而言的。并行是同时发生的多个并发事件，具有并发的含义，但并发不一定并行，也亦是说并发事件之间不一定要同一时刻发生。</li>
+<li>多线程：多线程是程序设计的逻辑层概念，它是进程中并发运行的一段代码。多线程可以实现线程间的切换执行。</li>
+<li>异步：异步和同步是相对的，同步就是顺序执行，执行完一个再执行下一个，需要等待、协调运行。异步就是彼此独立,在等待某事件的过程中继续做自己的事，不需要等待这一事件完成后再工作。线程就是实现异步的一个方式。异步是让调用方法的主线程不需要同步等待另一线程的完成，从而可以让主线程干其它的事情。</li>
+</ol>
+</li>
+<li>异步和多线程并不是一个同等关系,异步是最终目的,多线程只是我们实现异步的一种手段。异步是当一个调用请求发送给被调用者,而调用者不用等待其结果的返回而可以做其它的事情。实现异步可以采用多线程技术或则交给另外的进程来处理。</li>
+</ul>
+<h4 id="同步和异步"><a href="#同步和异步" class="headerlink" title="同步和异步"></a>同步和异步</h4><ul>
+<li><p>同步操作会在返回调用者之前完成它的工作，即在没有得到响应之前会一直等待，直到完成工作，把响应返回给调用者。</p>
+</li>
+<li><p>异步操作会在返回调用者之后完成它的（大部分）工作，即调用者调用之后，这个调用就直接返回了，没有返回结果（这时这个调用由task的Continuation负责），后面可以继续调用其他方法，而调用的结果会通过状态或通知来通知调用者。</p>
+<p><img src="/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/v2-7e4074a08d2a71f1e34fc06345b39c3a_hd.png" alt="同步模型"></p>
+<p><img src="/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/v2-a86781d839b0ae665753d370e363d6c8_hd.png" alt="异步模型"></p>
+</li>
+<li><p>使用异步会启用并发，因为它的工作会与调用者并发执行，异步方法通常会很快就返回到调用者，所以也叫非阻塞方法。</p>
+</li>
+<li><p>目前有以下几种异步方法：</p>
+<ol>
+<li>Thread.Start</li>
+<li>Task.Run</li>
+<li>Continuation</li>
+<li>…</li>
+</ol>
+</li>
+</ul>
+<h4 id="异步编程"><a href="#异步编程" class="headerlink" title="异步编程"></a>异步编程</h4><ul>
+<li>异步编程：就是将长时间运行的函数写成异步的；传统的方法是将长时间运行的函数写成同步的，然后按需引入并发</li>
+<li>异步编程相对于传统同步编程有两个好处，一是大大减少了代码量；二是IO-bound并发可不适用线程来实现，可提高可扩展性和执行效率。</li>
+<li>异步编程的用途是可编写高效处理大量并发IO的应用程序（服务器应用），它并不负责线程安全，而是关注执行效率，比如：每一个网络请求并不会消耗一个线程。</li>
+<li>以下两种操作建议使用异步编写：<ol>
+<li>IO-bound和Computed-bound操作</li>
+<li>执行时间超过50毫秒的操作</li>
+</ol>
+</li>
+<li>另一方面过细粒度的并发可能会损害性能，因为异步操作也是开销。</li>
+</ul>
+<h3 id="异步函数"><a href="#异步函数" class="headerlink" title="异步函数"></a>异步函数</h3><ul>
+<li>async和await关键字可以让我们写出简洁的异步代码；</li>
+</ul>
+<h4 id="await"><a href="#await" class="headerlink" title="await"></a>await</h4><ul>
+<li>await关键字简化了附加Continuation的过程，它的效果如下：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//简写形式</span></span><br><span class="line"><span class="keyword">var</span> result = <span class="keyword">await</span> xxx;</span><br><span class="line">yyy(x);</span><br><span class="line"><span class="comment">//相当于下面：</span></span><br><span class="line"><span class="keyword">var</span> awaiter = xxx.GetAwaiter();</span><br><span class="line">awaiter.OnCompleted(()=&gt;&#123;</span><br><span class="line">    <span class="keyword">var</span> result = awaiter.GetResult();</span><br><span class="line">    yyy(x);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li><p>可以await什么？一般await的表达式返回的是一个task，但满足下列条件的任意对象都可以被await：</p>
+<ol>
+<li>拥有GetAwaiter方法，他返回一个awaiter（实现了INotifyCompletion.OnCompleted接口）。</li>
+<li>拥有GetResult方法。</li>
+<li>一个bool类型的IsCompleted属性。</li>
+</ol>
+</li>
+<li><p>注意：</p>
+<ol>
+<li><code>await</code>都是和<code>async</code>一起使用的，await是在函数的调用前面加上的，表示它是一个Continuation，若在方法体中使用了<code>await</code>，就需要在方法返回值的前面加上<code>async</code>。</li>
+<li>被await标记的语句的返回值的类型必须是Task，可以使用<code>Task&lt;TResult&gt;</code>来指定Continuation的结果。</li>
+</ol>
+</li>
+</ul>
+<h4 id="async"><a href="#async" class="headerlink" title="async"></a>async</h4><ul>
+<li>使用了<code>async</code>修饰符的方法就是<code>异步函数</code>，<code>async</code>修饰符会让编译器把<code>await</code>当作关键字而不是标识符，它只能应用于方法的返回值前（包括lambda表达式），用async修饰的方法可以返回<code>void</code>、<code>Task</code>、<code>Task&lt;TResult&gt;</code>。</li>
+<li><code>async</code>修饰符对方法的签名或访问修饰符（public…）没有影响，它只会影响方法内部。所以在接口中使用<code>async</code>是没有意义的</li>
+<li>使用<code>async</code>来重载非<code>async</code>方法是合法的</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">async</span> Task <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        <span class="keyword">await</span> DisplayPrimesCountAsync();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">async</span> Task <span class="title">DisplayPrimesCountAsync</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        <span class="keyword">var</span> result = <span class="keyword">await</span> GetPrimesCountAsync(<span class="number">2</span>, <span class="number">1000000</span>);</span><br><span class="line">        Console.WriteLine(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> Task&lt;<span class="keyword">int</span>&gt; <span class="title">GetPrimesCountAsync</span>(<span class="params"><span class="keyword">int</span> start, <span class="keyword">int</span> count</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        <span class="keyword">return</span> Task.Run(() =&gt;</span><br><span class="line">                        ParallelEnumerable.Range(start, count).Count(n =&gt;</span><br><span class="line">                                                                     Enumerable.Range(<span class="number">2</span>, (<span class="keyword">int</span>) Math.Sqrt(n) - <span class="number">1</span>)</span><br><span class="line">                                                                     .All(i =&gt; n % i &gt; <span class="number">0</span>)));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="异步函数如何执行"><a href="#异步函数如何执行" class="headerlink" title="异步函数如何执行"></a>异步函数如何执行</h4><ul>
+<li>当遇到<code>await</code>表达式时，执行会迅速地返回给调用者，就像<code>yield return</code>一样，在返回前运行时会附加一个<code>Continuation</code>到await地task上，为保证task结束时，执行会跳回原方法，从停止地地方继续执行。</li>
+<li>如果发生故障，则异常会被重新抛出，如果正常运行，则task的返回值就会赋给await表达式。</li>
+<li>Lambda表达式中也可以写成异步的形式，写法和异步函数类似。</li>
+</ul>
+<hr>
+<p>学习资料：<a href="https://www.bilibili.com/video/BV1Zf4y117fs?p=21" target="_blank" rel="noopener">B站杨旭</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/" title="真会C#?——异步编程3">https://muchlab.github.io/2020/10/03/真会C-——异步编程3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"><i class="fa fa-tag"></i> -C#</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/09/27/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%8D%8F%E5%8F%98%E3%80%81%E9%80%86%E5%8F%98%E3%80%81%E4%B8%8D%E5%8F%98/" rel="prev" title="真会C#?——协变、逆变、不变">
+      <i class="fa fa-chevron-left"></i> 真会C#?——协变、逆变、不变
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/" rel="next" title="Entity Framework Core1——基础使用">
+      Entity Framework Core1——基础使用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Continuation"><span class="nav-text">Continuation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ContinueWith"><span class="nav-text">ContinueWith</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TaskCompletionSource"><span class="nav-text">TaskCompletionSource</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步和异步。。。"><span class="nav-text">同步和异步。。。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#并发-并行-同步-异步-多线程"><span class="nav-text">并发 并行 同步 异步 多线程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步和异步"><span class="nav-text">同步和异步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异步编程"><span class="nav-text">异步编程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步函数"><span class="nav-text">异步函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#await"><span class="nav-text">await</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#async"><span class="nav-text">async</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异步函数如何执行"><span class="nav-text">异步函数如何执行</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">337k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

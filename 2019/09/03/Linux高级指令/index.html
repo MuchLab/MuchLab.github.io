@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Linux高级指令">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux高级指令">
+<meta property="og:url" content="https://muchlab.github.io/2019/09/03/Linux%E9%AB%98%E7%BA%A7%E6%8C%87%E4%BB%A4/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="Linux高级指令">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-09-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-09-26T01:16:04.589Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-Linux">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://muchlab.github.io/2019/09/03/Linux%E9%AB%98%E7%BA%A7%E6%8C%87%E4%BB%A4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Linux高级指令 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2019/09/03/Linux%E9%AB%98%E7%BA%A7%E6%8C%87%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux高级指令
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-03 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-03T00:00:00+08:00">2019-09-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-26 09:16:04" itemprop="dateModified" datetime="2020-09-26T09:16:04+08:00">2020-09-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">-Linux</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/09/03/Linux%E9%AB%98%E7%BA%A7%E6%8C%87%E4%BB%A4/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/09/03/Linux%E9%AB%98%E7%BA%A7%E6%8C%87%E4%BB%A4/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">Linux高级指令</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li><p>常用的通配符有：</p>
+<p>  “*”:匹配任意字符串</p>
+<p>  “?”:匹配任意一个字符</p>
+<p>  “[]”:匹配[]列表中的任一字符</p>
+<p>  “^”:不匹配^后面的字符</p>
+</li>
+<li><p>例：cp <em>.c[a-z]</em>.h ~/xxx</p>
+</li>
+</ul>
+<hr>
+<h3 id="hostname指令"><a href="#hostname指令" class="headerlink" title="hostname指令"></a><strong>hostname指令</strong></h3><ul>
+<li>操作服务器的主机名（读取、设置）</li>
+</ul>
+<ol>
+<li><p>用法1：#hostname</p>
+<p> 含义：表示输出完整的主机名</p>
+</li>
+<li><p>用法2：#hostname -f</p>
+<p> 含义：-f表示输出当前主机名中的FQDN（全限定域名）</p>
+</li>
+</ol>
+<hr>
+<h3 id="id指令"><a href="#id指令" class="headerlink" title="id指令"></a><strong>id指令</strong></h3><ul>
+<li>用来查看一个用户的一些基本信息（包含用户id，用户组id，附加组id…）,该指令如果不指定用户则默认当前用户</li>
+</ul>
+<ol>
+<li><p>用法1：#id</p>
+<p> 含义：展示当前执行该命令的用户基本信息</p>
+</li>
+<li><p>用法2：#id 用户名</p>
+<p> 含义：展示指定用户的基本信息</p>
+</li>
+</ol>
+<ul>
+<li><p>验证用户信息是否正确：可以通过查看文件/etc/passwd来验证</p>
+<p>  验证用户组信息是否正确：可以通过查看文件/etc/group来验证</p>
+</li>
+</ul>
+<hr>
+<h3 id="whoami指令"><a href="#whoami指令" class="headerlink" title="whoami指令"></a><strong>whoami指令</strong></h3><ul>
+<li><p>用法：#whoami</p>
+</li>
+<li><p>含义：查看当前登录的用户名</p>
+</li>
+</ul>
+<hr>
+<h3 id="ps指令"><a href="#ps指令" class="headerlink" title="ps指令"></a><strong>ps指令</strong></h3><ol>
+<li><p>用法1：#ps</p>
+<p> 含义：用来查看服务器的进程信息</p>
+</li>
+<li><p>用法2：#ps -e</p>
+<p> 含义：-e表示列出全部的进程</p>
+</li>
+<li><p>用法3：#ps -f</p>
+<p> 含义：-f表示显示全部的列（显示全字段）</p>
+</li>
+<li><p>用法4（很常用）：#ps -ef |grep 进程名称</p>
+<p> 含义：找出指定进程名称的进程</p>
+</li>
+</ol>
+<ul>
+<li><p>补充：在使用时一般用#ps -ef</p>
+<p>  列的含义：</p>
+<p>  UID：该进程执行的用户id</p>
+<p>  PID：进程id</p>
+<p>  PPID：该进程的父级id</p>
+<p>  C：Cpu的占用率，其形式是百分数</p>
+<p>  STIME：进行的启动时间</p>
+<p>  TTY：终端设备，发起该进程的设备识别符号（？表示不是从终端执行的）</p>
+<p>  TIME：进程的执行时间</p>
+<p>  CMD：该进程的名称或者对应的路径</p>
+</li>
+</ul>
+<hr>
+<h3 id="top指令"><a href="#top指令" class="headerlink" title="top指令"></a><strong>top指令</strong></h3><ul>
+<li><p>用法：进入命令：#top</p>
+<p>  退出命令：q键</p>
+</li>
+<li><p>含义：查看服务器的进程资源</p>
+</li>
+<li><p>补充：</p>
+<p>  表头含义：</p>
+<p>  PID：进程id</p>
+<p>  USER：该进程对应的用户</p>
+<p>  PR：进程的优先级</p>
+<p>  VIRT：虚拟内存</p>
+<p>  RES：常驻内存</p>
+<p>  SHR：共享内存</p>
+<p>  计算一个进程实际使用的内存 = 常驻内存（RES） - 共享内存（SHR）</p>
+<p>  <font color="#FF0000">S：表示进行的状态（S:Sleeping，R：Running）</font></p>
+<p>  %CPU：CPU的占用百分比</p>
+<p>  %MEM：内存的占用百分比</p>
+<p>  TIME+：执行时间</p>
+<p>  <font color="#FF0000">COMMAND：进程的名称或者路径</font></p>
+<p>  在运行top的时候，可以按下方便的快捷键：</p>
+<p>  M：表示将结果按照内存（MEM）从高到低进行降序排列</p>
+<p>  P:表示将结果按照CPU使用率从高到低进行降序排序</p>
+<p>  1：当服务器有多个cpu时可以使用”1”快捷键来切换是否展示各个cpu的详细信息</p>
+</li>
+</ul>
+<hr>
+<h3 id="du指令"><a href="#du指令" class="headerlink" title="du指令"></a><strong>du指令</strong></h3><ul>
+<li><p>查看目录的真实大小</p>
+</li>
+<li><p>用法：#du -sh 目录路径</p>
+</li>
+<li><p>选项含义：</p>
+<p>  -s:表示只显示汇总的大小</p>
+<p>  -h:表示以高可读性的形式显示</p>
+</li>
+</ul>
+<hr>
+<h3 id="find指令"><a href="#find指令" class="headerlink" title="find指令"></a><strong>find指令</strong></h3><ul>
+<li><p>用法：#find 路径范围 选项 选项的值</p>
+</li>
+<li><p>含义：用于查找文件（参数较多）</p>
+</li>
+<li><p>选项：</p>
+<p>  -name：按照文档名称进行搜索，选项的值就是文档名称的关键字</p>
+<p>  -type：按照文档的类型进行搜索（选项的值：”f”表示文件，”d”表示文件夹）</p>
+</li>
+<li><p><font color="#FF0000">查找某目录下符合某标准的文件的个数：#find 路径 -name/-type 选项的值 |wc -l</font></p>
+</li>
+</ul>
+<hr>
+<h3 id="service指令"><a href="#service指令" class="headerlink" title="service指令"></a><strong>service指令</strong></h3><ul>
+<li>用于控制一些软件的服务启动/停止/重启</li>
+</ul>
+<ol>
+<li><p>用法1：#service 服务名 start</p>
+<p> 含义：服务器启动</p>
+</li>
+<li><p>用法2：#service 服务名 stop</p>
+<p> 含义：服务器停止</p>
+</li>
+<li><p>用法3：#service 服务名 restart</p>
+<p> 含义：服务器重启</p>
+</li>
+</ol>
+<ul>
+<li>例：启动本机安装的Apache（网站服务器软件），其服务器名为httpd,启动服务器：sevice httpd start</li>
+</ul>
+<hr>
+<h3 id="kill指令"><a href="#kill指令" class="headerlink" title="kill指令"></a><strong>kill指令</strong></h3><ol>
+<li><p>用法1：#kill PID</p>
+</li>
+<li><p>用法2：#killall 进程名称</p>
+</li>
+</ol>
+<hr>
+<h3 id="ifconfig指令"><a href="#ifconfig指令" class="headerlink" title="ifconfig指令"></a><strong>ifconfig指令</strong></h3><ul>
+<li>用于操作网卡相关的指令</li>
+</ul>
+<ol>
+<li><p>用法1：#ifconfig</p>
+<p> 含义：获取网卡信息</p>
+</li>
+</ol>
+<hr>
+<h3 id="reboot指令"><a href="#reboot指令" class="headerlink" title="reboot指令"></a><strong>reboot指令</strong></h3><ol>
+<li><p>用法1：#reboot</p>
+<p> 含义：重启计算机</p>
+</li>
+<li><p>用法2：#reboot -w</p>
+<p> 含义：模拟重启，但不真的重启（只写关机与开机的日志信息）</p>
+</li>
+</ol>
+<hr>
+<h3 id="shutdown指令"><a href="#shutdown指令" class="headerlink" title="shutdown指令"></a><strong>shutdown指令</strong></h3><ul>
+<li><p>用法：#shutdown -h 时间（now：现在关机） “提醒信息”</p>
+</li>
+<li><p>含义：关机（服务器的慎用）</p>
+</li>
+<li><p>取消关机计划指令：#shutdown -c</p>
+</li>
+</ul>
+<hr>
+<h3 id="uptime指令"><a href="#uptime指令" class="headerlink" title="uptime指令"></a><strong>uptime指令</strong></h3><ul>
+<li><p>用法：#uptime</p>
+</li>
+<li><p>含义：输出计算机的持续在线时间（计算机从开机到现在运行的时间）</p>
+</li>
+</ul>
+<hr>
+<h3 id="uname指令"><a href="#uname指令" class="headerlink" title="uname指令"></a><strong>uname指令</strong></h3><ul>
+<li><p>作用：获取计算机操作系统的相关信息</p>
+</li>
+<li><p>用法：#uname -a</p>
+</li>
+<li><p>含义：表示获取全部的系统信息</p>
+</li>
+</ul>
+<hr>
+<h3 id="netstat-tnlp指令"><a href="#netstat-tnlp指令" class="headerlink" title="netstat -tnlp指令"></a><strong>netstat -tnlp指令</strong></h3><ul>
+<li><p>作用：查看网络连接状态</p>
+</li>
+<li><p>用法：#netstat -tnlp</p>
+</li>
+<li><p>含义：</p>
+<p>  -t:表示列出tcp协议的连接</p>
+<p>  -n：表示地址从字母组合转化成ip地址，将协议转化成端口号来显示</p>
+<p>  -l:表示过滤出”state(状态)”列中其值为LISTEN（监听）的连接</p>
+<p>  -p：表示显示发起连接的进程pid和进程名称</p>
+</li>
+</ul>
+<hr>
+<h3 id="man指令"><a href="#man指令" class="headerlink" title="man指令"></a><strong>man指令</strong></h3><ul>
+<li><p>作用：manual：手册（包含了Linux中全部指令手册，英文）</p>
+</li>
+<li><p>用法：#man 某个指令</p>
+</li>
+<li><p>含义：查看某个指令的用法和含义</p>
+</li>
+</ul>
+<hr>
+<h3 id="useradd"><a href="#useradd" class="headerlink" title="useradd"></a><strong>useradd</strong></h3><ul>
+<li><p>用法：#useradd 用户名</p>
+</li>
+<li><p>含义：添加新用户</p>
+</li>
+</ul>
+<hr>
+<h3 id="passwd指令"><a href="#passwd指令" class="headerlink" title="passwd指令"></a><strong>passwd指令</strong></h3><ul>
+<li><p>用法：#passwd 用户名</p>
+</li>
+<li><p>含义：给用户设置密码</p>
+</li>
+<li><p>注意：root用户可以随意更改所有用户的密码，而其他用户只能更改自己的密码且要符合一定的复杂度</p>
+</li>
+</ul>
+<hr>
+<h3 id="who指令"><a href="#who指令" class="headerlink" title="who指令"></a><strong>who指令</strong></h3><ul>
+<li><p>用法：#who</p>
+</li>
+<li><p>含义：查看登录用户的信息</p>
+</li>
+<li><p>显示信息：登录用户名 登录终端（tty本地终端、pts远程终端） 登录时间 IP地址</p>
+</li>
+</ul>
+<hr>
+<h3 id="w指令"><a href="#w指令" class="headerlink" title="w指令"></a><strong>w指令</strong></h3><ul>
+<li><p>用法：#who</p>
+</li>
+<li><p>含义：详细地查看登录用户的信息</p>
+</li>
+</ul>
+<hr>
+<h3 id="压缩指令gzip"><a href="#压缩指令gzip" class="headerlink" title="压缩指令gzip"></a><strong>压缩指令gzip</strong></h3><ul>
+<li><p>用法：#gzip 文件</p>
+</li>
+<li><p>含义：压缩指定文件，压缩后文件格式为.gz</p>
+</li>
+</ul>
+<hr>
+<h3 id="解压缩指令gunzip"><a href="#解压缩指令gunzip" class="headerlink" title="解压缩指令gunzip"></a><strong>解压缩指令gunzip</strong></h3><ul>
+<li><p>用法：#gunzip 文件</p>
+</li>
+<li><p>含义：解压缩指定文件，在Linux中gzip不能压缩目录</p>
+</li>
+<li><p>补充：也可以用gzip -d来解压缩</p>
+</li>
+</ul>
+<hr>
+<h3 id="tar指令"><a href="#tar指令" class="headerlink" title="tar指令"></a><strong>tar指令</strong></h3><ul>
+<li><p>用法：</p>
+<ol>
+<li><p>打包：#tar -zcvf 打包文件名 目录路径</p>
+</li>
+<li><p>解包：#tar -zxvf</p>
+</li>
+</ol>
+</li>
+<li><p>选项含义：</p>
+<p>  -c表示打包</p>
+<p>  -x表示解包</p>
+<p>  -v表示显示详细信息</p>
+<p>  -f表示指定解压文件</p>
+<p>  -z表示压缩（-c）或解压缩（-x）,压缩格式为.gz</p>
+<p>  -j表示压缩（-c）或解压缩（-x）,压缩格式为.bz2</p>
+</li>
+</ul>
+<hr>
+<h3 id="unzip指令和zip指令"><a href="#unzip指令和zip指令" class="headerlink" title="unzip指令和zip指令"></a><strong>unzip指令和zip指令</strong></h3><ul>
+<li><p>用法：</p>
+<ol>
+<li><p>压缩：#zip (-r) 压缩后文件名 文件或目录</p>
+</li>
+<li><p>解压缩：#unzip 压缩文件</p>
+</li>
+</ol>
+</li>
+<li><p>选项含义：</p>
+<p>  -r表示可以压缩目录</p>
+</li>
+</ul>
+<hr>
+<h3 id="bunzip2指令和bzip2指令"><a href="#bunzip2指令和bzip2指令" class="headerlink" title="bunzip2指令和bzip2指令"></a><strong>bunzip2指令和bzip2指令</strong></h3><ul>
+<li><p>bz2比较适合用来压缩大文件，压缩比比较大</p>
+</li>
+<li><p>用法：</p>
+<ol>
+<li><p>bzip2 -k 文件</p>
+</li>
+<li><p>bzip2 (-k) 压缩文件</p>
+</li>
+</ol>
+</li>
+<li><p>选项含义：</p>
+<p>  -k表示压缩或解压缩后保留原文件</p>
+</li>
+<li><p>补充：和.gz文件一样，要压缩目录可以使用tar指令</p>
+</li>
+</ul>
+<hr>
+<ul>
+<li>参考资料：<a href="https://www.bilibili.com/video/av23360560/?p=24" target="_blank" rel="noopener">B站Linux从入门到精通</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2019/09/03/Linux%E9%AB%98%E7%BA%A7%E6%8C%87%E4%BB%A4/" title="Linux高级指令">https://muchlab.github.io/2019/09/03/Linux高级指令/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"><i class="fa fa-tag"></i> -Linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/02/Linux%E8%BF%9B%E9%98%B6%E6%8C%87%E4%BB%A4/" rel="prev" title="Linux进阶指令">
+      <i class="fa fa-chevron-left"></i> Linux进阶指令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/09/Qt%E8%BF%9E%E6%8E%A5SQLServer%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="next" title="Qt连接SQL Server数据库">
+      Qt连接SQL Server数据库 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#hostname指令"><span class="nav-text">hostname指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#id指令"><span class="nav-text">id指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#whoami指令"><span class="nav-text">whoami指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ps指令"><span class="nav-text">ps指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#top指令"><span class="nav-text">top指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#du指令"><span class="nav-text">du指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#find指令"><span class="nav-text">find指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#service指令"><span class="nav-text">service指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kill指令"><span class="nav-text">kill指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ifconfig指令"><span class="nav-text">ifconfig指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reboot指令"><span class="nav-text">reboot指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#shutdown指令"><span class="nav-text">shutdown指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#uptime指令"><span class="nav-text">uptime指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#uname指令"><span class="nav-text">uname指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#netstat-tnlp指令"><span class="nav-text">netstat -tnlp指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#man指令"><span class="nav-text">man指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useradd"><span class="nav-text">useradd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#passwd指令"><span class="nav-text">passwd指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#who指令"><span class="nav-text">who指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#w指令"><span class="nav-text">w指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#压缩指令gzip"><span class="nav-text">压缩指令gzip</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解压缩指令gunzip"><span class="nav-text">解压缩指令gunzip</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tar指令"><span class="nav-text">tar指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unzip指令和zip指令"><span class="nav-text">unzip指令和zip指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bunzip2指令和bzip2指令"><span class="nav-text">bunzip2指令和bzip2指令</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">337k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

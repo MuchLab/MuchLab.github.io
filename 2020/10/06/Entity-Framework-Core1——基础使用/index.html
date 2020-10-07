@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Entity Framework Core1——基础使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Entity Framework Core1——基础使用">
+<meta property="og:url" content="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="Entity Framework Core1——基础使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_17-17-29.png">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_19-29-44.png">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_19-37-03.png">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_19-40-05.png">
+<meta property="og:image" content="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_20-08-11.png">
+<meta property="article:published_time" content="2020-10-06T15:55:44.000Z">
+<meta property="article:modified_time" content="2020-10-06T16:00:40.066Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-EFCore -C#">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_17-17-29.png">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Entity Framework Core1——基础使用 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Entity Framework Core1——基础使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-06 23:55:44" itemprop="dateCreated datePublished" datetime="2020-10-06T23:55:44+08:00">2020-10-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-07 00:00:40" itemprop="dateModified" datetime="2020-10-07T00:00:40+08:00">2020-10-07</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/EFCore/" itemprop="url" rel="index"><span itemprop="name">-EFCore</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>4.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>4 分钟</span>
+            </span>
+            <div class="post-description">Entity Framework Core1——基础使用</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="EntityFrameworkCore"><a href="#EntityFrameworkCore" class="headerlink" title="EntityFrameworkCore"></a>EntityFrameworkCore</h3><ul>
+<li><p>Entity Framework (EF) Core 是轻量化、可扩展、<a href="https://github.com/aspnet/EntityFrameworkCore" target="_blank" rel="noopener">开源</a>和跨平台版的常用 Entity Framework 数据访问技术。</p>
+</li>
+<li><p>EF Core 可用作对象关系映射程序 (O/RM)，这可以实现以下两点：</p>
+</li>
+</ul>
+<ul>
+<li>使 .NET 开发人员能够使用 .NET 对象处理数据库。</li>
+<li>无需再像通常那样编写大部分数据访问代码。</li>
+</ul>
+<ul>
+<li>EF Core 支持多个数据库引擎，请参阅<a href="https://docs.microsoft.com/zh-cn/ef/core/providers/" target="_blank" rel="noopener">数据库提供程序</a>了解详细信息。</li>
+</ul>
+<h3 id="使用EFCore的准备工作"><a href="#使用EFCore的准备工作" class="headerlink" title="使用EFCore的准备工作"></a>使用EFCore的准备工作</h3><h4 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h4><ul>
+<li>创建两个类库Linq.Domain、Linq.Data和一个控制台项目Linq.App</li>
+</ul>
+<h4 id="创建实体类"><a href="#创建实体类" class="headerlink" title="创建实体类"></a>创建实体类</h4><ul>
+<li>然后再Linq.Domain中添加Entity实体，在这里我们创建Club、League和Player，分别是俱乐部、联队和足球运动员，其中联赛和俱乐部是一对多关系，俱乐部和运动员是一对多关系、</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Club</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Club</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Club</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        Players = <span class="keyword">new</span> List&lt;Player&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> Id &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> Name &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> City &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> DateTime DateOfEstablishment &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> History &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="comment">//导航属性</span></span><br><span class="line">    <span class="keyword">public</span> League League &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="comment">//导航属性</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;Player&gt; Players &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//League</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">League</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> Id &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> Name &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> Country &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//Player</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Player</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> Id &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> Name &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> DateTime DateOfBirth &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h4><ul>
+<li>在Linq.Data的nuget中添加EFCore对SqlServer的支持和添加Linq.Domain的引用</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ItemGroup</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">PackageReference</span> <span class="attr">Include</span>=<span class="string">"Microsoft.EntityFrameworkCore.SqlServer"</span> <span class="attr">Version</span>=<span class="string">"3.1.8"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ItemGroup</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">ItemGroup</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">ProjectReference</span> <span class="attr">Include</span>=<span class="string">"..\Linq.Domain\Linq.Domain.csproj"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ItemGroup</span>&gt;</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在Linq.App中添加Linq.Data的引用</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ItemGroup</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">ProjectReference</span> <span class="attr">Include</span>=<span class="string">"..\Linq.Data\Linq.Data.csproj"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">ProjectReference</span> <span class="attr">Include</span>=<span class="string">"..\Linq.Domain\Linq.Domain.csproj"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ItemGroup</span>&gt;</span></span><br></pre></td></tr></table></figure></div>
+
+<h4 id="DbContext"><a href="#DbContext" class="headerlink" title="DbContext"></a>DbContext</h4><ul>
+<li>DbContext是EFCore操作数据库的上下文类，使用它可以对数据库的连接进行一些配置、或对表中属性添加约束、或添加种子数据等等。</li>
+<li>DbContext中对Context进行配置的方法是OnConfiguring该方法定义在DbContext这个类中</li>
+<li>现在，创建一个LinqContext类：这个类必须继承于DbContext，且要将创建的数据库表以DbSet类型定义在Context中，后面可以使用这些DbSet对数据库进行访问。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">LinqDbContext</span>: <span class="title">DbContext</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//该方法可以对DbContext进行一些配置，在这里使用了本地的SqlServer，并指定了连接字符串</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnConfiguring</span>(<span class="params">DbContextOptionsBuilder optionsBuilder</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">        optionsBuilder.UseSqlServer(</span><br><span class="line">            <span class="string">"Data Source=(localdb)\\MSSQLLocalDB; Initial Catalog=LinqDb"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> DbSet&lt;League&gt; Leagues &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> DbSet&lt;Club&gt; Clubs &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> DbSet&lt;Player&gt; Players &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h3><ul>
+<li><p>做好准备工作后，创建数据库只需要以下三步</p>
+<ol>
+<li>定义Model，这些Model在准备工作已经定义好了，他们就是对应于数据库中的数据库表。</li>
+<li>创建迁移文件（Migration）。</li>
+<li>使用迁移文件生成脚本或将其应用到数据库。</li>
+</ol>
+<p><img src="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_17-17-29.png" alt="Snipaste_2020-10-06_17-17-29"></p>
+</li>
+</ul>
+<h4 id="添加依赖-1"><a href="#添加依赖-1" class="headerlink" title="添加依赖"></a>添加依赖</h4><ul>
+<li>迁移需要用到Migration命令，Migration命令需要用到两个库（如果使用vscode，只需要安装Design库，vs的话只需要安装Tools库，因为Tools库已经依赖了Design库）：</li>
+</ul>
+<blockquote>
+<p>Microsoft.EntityFrameworkCore.Tools：该库添加了对包管理控制台的迁移命令的支持</p>
+<p>Microsoft.EntityFrameworkCore.Design：该库添加了对迁移操作的核心支持</p>
+</blockquote>
+<ul>
+<li><p>要想生成DbContext对应的迁移文件，必须要有一个可执行的文件，所以你可以使用控制台项目或者Web项目等可执行的项目来生成迁移文件，这里使用的是控制台（Linq.App）。</p>
+</li>
+<li><p>安装完Tools库后就可以在程序包管理器控制台上输入EntityFrameworkCore的命令，在这里输入<code>get-help entityframework</code>就可以查看有哪些命令</p>
+<p><img src="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_19-29-44.png" alt="Snipaste_2020-10-06_19-29-44"></p>
+</li>
+<li><p>在这里需要注意的是，在输入命令之前需要把默认项目改成安装了Tools库的项目，而且要在执行项目中安装Design库才能迁移成功。</p>
+</li>
+</ul>
+<h4 id="添加迁移"><a href="#添加迁移" class="headerlink" title="添加迁移"></a>添加迁移</h4><ul>
+<li><p>执行<code>Add-Migration [迁移名称]</code>就可以进行迁移</p>
+<p><img src="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_19-37-03.png" alt="Snipaste_2020-10-06_19-37-03"></p>
+</li>
+<li><p>执行完命令后就会自动生成两个文件：一个是迁移文件，另一个是快照文件</p>
+<p><img src="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_19-40-05.png" alt="Snipaste_2020-10-06_19-40-05"></p>
+</li>
+<li><p>迁移文件：每次迁移都会生成一个迁移文件，它会记录每一次迁移的所有改动。它的名字就是时间戳+迁移名称。</p>
+</li>
+<li><p>迁移类：迁移类会继承于<code>Migration</code>这个基类，它里面有两个方法：</p>
+<ol>
+<li>Up：该方法定义了本次迁移对数据库的修改</li>
+<li>Down：该方法定义了当修改有一些问题时进行的回滚。</li>
+</ol>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">partial</span> <span class="keyword">class</span> <span class="title">Initial</span> : <span class="title">Migration</span></span><br><span class="line">&#123;</span><br><span class="line">       <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">Up</span>(<span class="params">MigrationBuilder migrationBuilder</span>)</span>&#123;...&#125;</span><br><span class="line">       <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">Down</span>(<span class="params">MigrationBuilder migrationBuilder</span>)</span>&#123;...&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>快照文件：EFCore会使用这个文件来追踪当前所有Model的状态，比如我们修改了一个Model，EFCore就会在添加迁移时根据当前Model的状态和快照中Model的状态进行对比，就可以知道下一步该如何操作。该文件不应该去修改它。</li>
+</ul>
+<h4 id="生成脚本"><a href="#生成脚本" class="headerlink" title="生成脚本"></a>生成脚本</h4><ul>
+<li>执行<code>script-migration</code>可以生成本次迁移的Sql脚本。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line">    <span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [__EFMigrationsHistory] (</span><br><span class="line">        [MigrationId] <span class="keyword">nvarchar</span>(<span class="number">150</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">        [ProductVersion] <span class="keyword">nvarchar</span>(<span class="number">32</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">        <span class="keyword">CONSTRAINT</span> [PK___EFMigrationsHistory] PRIMARY <span class="keyword">KEY</span> ([MigrationId])</span><br><span class="line">    );</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line"></span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [Leagues] (</span><br><span class="line">    [<span class="keyword">Id</span>] <span class="built_in">int</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">IDENTITY</span>,</span><br><span class="line">    [<span class="keyword">Name</span>] <span class="keyword">nvarchar</span>(<span class="keyword">max</span>) <span class="literal">NULL</span>,</span><br><span class="line">    [Country] <span class="keyword">nvarchar</span>(<span class="keyword">max</span>) <span class="literal">NULL</span>,</span><br><span class="line">    <span class="keyword">CONSTRAINT</span> [PK_Leagues] PRIMARY <span class="keyword">KEY</span> ([<span class="keyword">Id</span>])</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [Clubs] (</span><br><span class="line">    [<span class="keyword">Id</span>] <span class="built_in">int</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">IDENTITY</span>,</span><br><span class="line">    [<span class="keyword">Name</span>] <span class="keyword">nvarchar</span>(<span class="keyword">max</span>) <span class="literal">NULL</span>,</span><br><span class="line">    [City] <span class="keyword">nvarchar</span>(<span class="keyword">max</span>) <span class="literal">NULL</span>,</span><br><span class="line">    [DateOfEstablishment] datetime2 <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">    [History] <span class="keyword">nvarchar</span>(<span class="keyword">max</span>) <span class="literal">NULL</span>,</span><br><span class="line">    [LeagueId] <span class="built_in">int</span> <span class="literal">NULL</span>,</span><br><span class="line">    <span class="keyword">CONSTRAINT</span> [PK_Clubs] PRIMARY <span class="keyword">KEY</span> ([<span class="keyword">Id</span>]),</span><br><span class="line">    <span class="keyword">CONSTRAINT</span> [FK_Clubs_Leagues_LeagueId] <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span> ([LeagueId]) <span class="keyword">REFERENCES</span> [Leagues] ([<span class="keyword">Id</span>]) <span class="keyword">ON</span> <span class="keyword">DELETE</span> <span class="keyword">NO</span> <span class="keyword">ACTION</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [Players] (</span><br><span class="line">    [<span class="keyword">Id</span>] <span class="built_in">int</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">IDENTITY</span>,</span><br><span class="line">    [<span class="keyword">Name</span>] <span class="keyword">nvarchar</span>(<span class="keyword">max</span>) <span class="literal">NULL</span>,</span><br><span class="line">    [DateOfBirth] datetime2 <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">    [ClubId] <span class="built_in">int</span> <span class="literal">NULL</span>,</span><br><span class="line">    <span class="keyword">CONSTRAINT</span> [PK_Players] PRIMARY <span class="keyword">KEY</span> ([<span class="keyword">Id</span>]),</span><br><span class="line">    <span class="keyword">CONSTRAINT</span> [FK_Players_Clubs_ClubId] <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span> ([ClubId]) <span class="keyword">REFERENCES</span> [Clubs] ([<span class="keyword">Id</span>]) <span class="keyword">ON</span> <span class="keyword">DELETE</span> <span class="keyword">NO</span> <span class="keyword">ACTION</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> [IX_Clubs_LeagueId] <span class="keyword">ON</span> [Clubs] ([LeagueId]);</span><br><span class="line"></span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> [IX_Players_ClubId] <span class="keyword">ON</span> [Players] ([ClubId]);</span><br><span class="line"></span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> [__EFMigrationsHistory] ([MigrationId], [ProductVersion])</span><br><span class="line"><span class="keyword">VALUES</span> (N<span class="string">'20201006113413_Initial'</span>, N<span class="string">'3.1.8'</span>);</span><br><span class="line"></span><br><span class="line">GO</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="更新数据库"><a href="#更新数据库" class="headerlink" title="更新数据库"></a>更新数据库</h4><ul>
+<li><p>生成脚本一般是在生产环境中使用的，而在开发环境中可以执行<code>update-database -verbose</code>来将迁移应用到数据库，这将会生成如下数据库</p>
+<p><img src="/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/Snipaste_2020-10-06_20-08-11.png" alt="Snipaste_2020-10-06_20-08-11"></p>
+</li>
+<li><p>其中的History是迁移记录表</p>
+</li>
+</ul>
+<hr>
+<p>学习资料：<a href="https://www.bilibili.com/video/BV1xa4y1v7rR?p=3" target="_blank" rel="noopener">B站杨旭</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/10/06/Entity-Framework-Core1%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/" title="Entity Framework Core1——基础使用">https://muchlab.github.io/2020/10/06/Entity-Framework-Core1——基础使用/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/EFCore-C/" rel="tag"><i class="fa fa-tag"></i> -EFCore -C#</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/03/%E7%9C%9F%E4%BC%9AC-%E2%80%94%E2%80%94%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B3/" rel="prev" title="真会C#?——异步编程3">
+      <i class="fa fa-chevron-left"></i> 真会C#?——异步编程3
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/10/06/EntityFramework-Core2%E2%80%94%E2%80%94Model%E5%B1%9E%E6%80%A7%E8%AE%BE%E7%BD%AE%E3%80%81Model%E7%9A%84%E5%85%B3%E7%B3%BB%E8%AE%BE%E7%BD%AE%E3%80%81%E6%97%A5%E5%BF%97%E3%80%81%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/" rel="next" title="EntityFramework Core2——Model属性设置、Model的关系设置、日志、增删改查">
+      EntityFramework Core2——Model属性设置、Model的关系设置、日志、增删改查 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#EntityFrameworkCore"><span class="nav-text">EntityFrameworkCore</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用EFCore的准备工作"><span class="nav-text">使用EFCore的准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建项目"><span class="nav-text">创建项目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建实体类"><span class="nav-text">创建实体类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加依赖"><span class="nav-text">添加依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DbContext"><span class="nav-text">DbContext</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建数据库"><span class="nav-text">创建数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#添加依赖-1"><span class="nav-text">添加依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加迁移"><span class="nav-text">添加迁移</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#生成脚本"><span class="nav-text">生成脚本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更新数据库"><span class="nav-text">更新数据库</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">337k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

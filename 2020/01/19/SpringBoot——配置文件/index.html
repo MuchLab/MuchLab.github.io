@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="SpringBoot——配置文件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringBoot——配置文件">
+<meta property="og:url" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="SpringBoot——配置文件">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.PNG">
+<meta property="og:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8A%A0%E8%BD%BD%E4%BD%8D%E7%BD%AE.PNG">
+<meta property="og:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E5%A4%96%E9%83%A8%E9%85%8D%E7%BD%AE%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F3.PNG">
+<meta property="og:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E5%A4%96%E9%83%A8%E9%85%8D%E7%BD%AE%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F1.PNG">
+<meta property="og:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E5%A4%96%E9%83%A8%E9%85%8D%E7%BD%AE%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F2.PNG">
+<meta property="og:image" content="https://muchlab.github.io/images/SpringBoot/%E9%85%8D%E7%BD%AE%E5%9B%BE%E7%89%87/HttpE%E4%BD%A0%E4%BB%8E%E5%AE%9AAutoConfiguration%EF%BC%88Http%E7%BC%96%E7%A0%81%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%EF%BC%89%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E5%8E%9F%E7%90%86.PNG">
+<meta property="og:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/Conditional%E6%B4%BE%E7%94%9F%E6%B3%A8%E8%A7%A3.PNG">
+<meta property="og:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E7%9A%84%E7%B2%BE%E9%AB%93.PNG">
+<meta property="article:published_time" content="2020-01-19T07:54:22.000Z">
+<meta property="article:modified_time" content="2020-09-26T01:08:31.933Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="SpringBoot">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.PNG">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SpringBoot——配置文件 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SpringBoot——配置文件
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-19 15:54:22" itemprop="dateCreated datePublished" datetime="2020-01-19T15:54:22+08:00">2020-01-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-26 09:08:31" itemprop="dateModified" datetime="2020-09-26T09:08:31+08:00">2020-09-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SpringBoot/" itemprop="url" rel="index"><span itemprop="name">-SpringBoot</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>5 分钟</span>
+            </span>
+            <div class="post-description">SpringBoot——配置文件</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li>配置文件的作用：修改SpringBoot自动配置的默认值，SpringBoot在底层都给我们自动配置好了</li>
+</ul>
+<h3 id="application-properties全局配置文件-amp-yml配置文件"><a href="#application-properties全局配置文件-amp-yml配置文件" class="headerlink" title="application.properties全局配置文件&amp;yml配置文件"></a>application.properties全局配置文件&amp;yml配置文件</h3><p><img src="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.PNG" alt="SpringBoot的配置文件"></p>
+<h4 id="1、yml以数据为中心，比json和xml更适合做数据型配置文件-如yml文件的基本语法如下"><a href="#1、yml以数据为中心，比json和xml更适合做数据型配置文件-如yml文件的基本语法如下" class="headerlink" title="1、yml以数据为中心，比json和xml更适合做数据型配置文件,如yml文件的基本语法如下"></a>1、yml以数据为中心，比json和xml更适合做数据型配置文件,如yml文件的基本语法如下</h4><ol>
+<li><p>以k:v来表示一对键值对（在:后面必须加空格)。</p>
+</li>
+<li><p>以空格的缩进来控制层级关系，只要左对齐的一列数据，都是属于同一层级的。</p>
+</li>
+<li><p>属性和值是严格区分大小写。</p>
+</li>
+</ol>
+<h4 id="2、值的写法：都是可以用k-v的形式来写"><a href="#2、值的写法：都是可以用k-v的形式来写" class="headerlink" title="2、值的写法：都是可以用k:v的形式来写"></a>2、值的写法：都是可以用k:v的形式来写</h4><ol>
+<li><p>数字、字符串、布尔值: 直接写</p>
+</li>
+<li><p>数组: 数组可以使用行内写法：list: [a,b,c]</p>
+</li>
+<li><p>对象、Map（）：对象可以使用行内写法：</p>
+</li>
+</ol>
+<p><code>person: {name:xxx, age:xxx, sex:xxx, ...}</code></p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="YML"><figure class="iseeu highlight /yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8888</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span></span><br><span class="line">    <span class="attr">active:</span> <span class="string">dev</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8081</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span> <span class="string">dev</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8082</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="string">profiles:prod</span></span><br><span class="line"><span class="comment">#person:</span></span><br><span class="line"><span class="comment">#  name: 陈哲凯</span></span><br><span class="line"><span class="comment">#  age: 23</span></span><br><span class="line"><span class="comment">#  sex: true</span></span><br><span class="line"><span class="comment">#  birth: 1998/08/29</span></span><br><span class="line"><span class="comment">#  list:</span></span><br><span class="line"><span class="comment">#    - "first"</span></span><br><span class="line"><span class="comment">#    - "second"</span></span><br><span class="line"><span class="comment">#    - "third"</span></span><br></pre></td></tr></table></figure></div>
+
+<h4 id="yml配置文件值的获取"><a href="#yml配置文件值的获取" class="headerlink" title="yml配置文件值的获取"></a>yml配置文件值的获取</h4><ul>
+<li>@ConfigurationProperties(prefix = “配置文件中的配置数据值”)，即可将配置文件中配置的每一个属性的值都映射到带有这个注解的组件类中</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在类定义前必须加上@Component来标注这个类是一个组件，只有这个组件是容器中的组件，才能使用容器提供的@ConfigurationProperties功能</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@ConfigurationProperties</span>(prefix = <span class="string">"person"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> sex;</span><br><span class="line">    <span class="keyword">private</span> Date birth;</span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在组件类定义的前面加@ConfigurationProperties注解可以将组件类的所有属性和配置文件中相关的配置进行绑定</li>
+</ul>
+<h3 id="ConfigurationProperties和-Value的区别"><a href="#ConfigurationProperties和-Value的区别" class="headerlink" title="@ConfigurationProperties和@Value的区别"></a>@ConfigurationProperties和@Value的区别</h3><ul>
+<li>@Value是加在类的属性之前，和@ConfigurationProperties一样，能将配置文件的数据和属性绑定起来，也能在组件类中指定值，但@Value只能绑定一个属性，使用的形式：@Value(“…”)</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="comment">//@ConfigurationProperties(prefix = "person")</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;person.name&#125;"</span>)</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"#&#123;11*2&#125;"</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"false"</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> sex;</span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;person.birth&#125;"</span>)</span><br><span class="line">    <span class="keyword">private</span> Date birth;</span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; list;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>区别：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>-</th>
+<th>@ConfigurationProperties</th>
+<th>@Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能</td>
+<td>批量注入配置文件中的属性</td>
+<td>一个个指定</td>
+</tr>
+<tr>
+<td>松散绑定</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>表达式</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>JSR303数据校验</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>复杂类型封装</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+</tbody></table>
+<ul>
+<li>如果只是在某个业务逻辑中需要获取一个配置文件中的某项值，使用@Value；如果专门编写了一个JavaBean来和配置文件进行映射，就直接使用@ConfigurationProperties</li>
+</ul>
+<h3 id="PropertySource"><a href="#PropertySource" class="headerlink" title="@PropertySource"></a>@PropertySource</h3><ul>
+<li>加载指定的配置文件</li>
+<li>@ConfigurationProperties默认是加载application.properties全局配置文件，而@PropertySource可以加载指定的配置文件</li>
+<li>例如，在Person类定义的前面加上@PropertiesSource(value = {“classpath:person.properties”}),Person类就会加载resources目录下的person.properties，将配置文件的数据绑定到类的属性中</li>
+</ul>
+<h3 id="ImportResource"><a href="#ImportResource" class="headerlink" title="@ImportResource"></a>@ImportResource</h3><ul>
+<li><p>导入Spring的配置文件，让配置文件里面的内容生效；Spring Boot里面没有Spring的配置文件，我们自己编写的配置文件，也不能自动识别；想让Spring的配置文件生效、加载起来，就需要把@ImportResource标注在一个配置类上。</p>
+</li>
+<li><p>SpringBoot推荐给容器中添加组件的方式：使用全注解的方式</p>
+</li>
+</ul>
+<h4 id="1、配置类-Spring配置文件-在SpringBootApplication类中使用-ImportResource注解指定配置文件的路径"><a href="#1、配置类-Spring配置文件-在SpringBootApplication类中使用-ImportResource注解指定配置文件的路径" class="headerlink" title="1、配置类=====Spring配置文件,在SpringBootApplication类中使用@ImportResource注解指定配置文件的路径"></a>1、配置类=====Spring配置文件,在SpringBootApplication类中使用@ImportResource注解指定配置文件的路径</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ImportResource</span>(locations = &#123;<span class="string">"classpath:bean.xml"</span>&#125;)</span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringBoot01HelloworldQuickApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(SpringBoot01HelloworldQuickApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="2、使用-Bean给容器中添加组件（推荐方式）"><a href="#2、使用-Bean给容器中添加组件（推荐方式）" class="headerlink" title="2、使用@Bean给容器中添加组件（推荐方式）"></a>2、使用@Bean给容器中添加组件（推荐方式）</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* @Configuration指明当前类是一个配置类，就是来代替之前的Spring配置文件</span></span><br><span class="line"><span class="comment">* 之前在配置文件中用&lt;bean&gt;&lt;bean/&gt;标签添加组件</span></span><br><span class="line"><span class="comment">* 现在可以在配置类中使用@Bean注解来添加组件</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyAppConfig</span> </span>&#123;</span><br><span class="line">    <span class="comment">//将方法的返回值添加到容器中，容器中这个组件默认的id就是方法名</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HelloService <span class="title">helloService</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"配置类@Bean给容器中添加组件了...."</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HelloService();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<h3 id="配置文件占位符"><a href="#配置文件占位符" class="headerlink" title="配置文件占位符"></a>配置文件占位符</h3><h4 id="1、随机数"><a href="#1、随机数" class="headerlink" title="1、随机数"></a>1、随机数</h4><ul>
+<li>形式：${random.value},value可以是int、int(n)、long和int[n, m]（n到m的随机数）等等。</li>
+</ul>
+<h4 id="2、占位符获取之前配置的值，若没有可以用指定的默认值"><a href="#2、占位符获取之前配置的值，若没有可以用指定的默认值" class="headerlink" title="2、占位符获取之前配置的值，若没有可以用指定的默认值"></a>2、占位符获取之前配置的值，若没有可以用指定的默认值</h4><ul>
+<li>形式：${之前配置的值对应的key}</li>
+</ul>
+<hr>
+<h3 id="Profile"><a href="#Profile" class="headerlink" title="Profile"></a>Profile</h3><h4 id="1、多Profile文件"><a href="#1、多Profile文件" class="headerlink" title="1、多Profile文件"></a>1、多Profile文件</h4><ul>
+<li>我们在主配置文件编写的时候，文件名可以是application-{profile}.properties/yml,默认使用application.properties,可以在默认配置文件中用spring.profiles.active=xxx来激活使用的配置文件,例如在application.properties下写spring.profiles.active=dev，Spring就会使用application-dev.properties作为它的配置文件，这样就可以灵活地在多个环境下的不同配置信息进行切换。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PROPERTIES"><figure class="iseeu highlight /properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">spring.profiles.active</span>=<span class="string">dev</span></span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PLAIN"><figure class="iseeu highlight /plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.port&#x3D;8081</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="1、yml多文档块"><a href="#1、yml多文档块" class="headerlink" title="1、yml多文档块"></a>1、yml多文档块</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="YML"><figure class="iseeu highlight /yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#默认的配置（文档块一）</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8888</span></span><br><span class="line"><span class="comment">#在这里激活使用哪个文档块</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span></span><br><span class="line">    <span class="attr">active:</span> <span class="string">prod</span></span><br><span class="line"><span class="comment"># 多个文档块间使用'---'进行分隔</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="comment"># 文档块二</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8081</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span> <span class="string">dev</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="comment"># 文档块三</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8082</span></span><br><span class="line"><span class="attr">person:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">张三</span></span><br><span class="line">  <span class="attr">age:</span> <span class="number">20</span></span><br><span class="line">  <span class="attr">sex:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">list:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">a</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">b</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">c</span></span><br><span class="line">  <span class="attr">birth:</span> <span class="number">2000</span><span class="string">/01/01</span></span><br></pre></td></tr></table></figure></div>
+
+<h4 id="激活指定的profile方式"><a href="#激活指定的profile方式" class="headerlink" title="激活指定的profile方式"></a>激活指定的profile方式</h4><ol>
+<li><p>spring.profiles.active=xxx来激活配置</p>
+</li>
+<li><p>在EditConfiguration设置里面点开SpringBoot先选定你想要设置的项目，然后修改Active profiles选项，即可修改profile配置。</p>
+</li>
+<li><p>命令行方式：java -jar spring-boot-01-helloworld-quick-0.0.1-SNAPSHOT.jar –spring.profiles.active=dev直接在命令行传入参数指定profile</p>
+</li>
+</ol>
+<hr>
+<h3 id="配置文件加载的位置"><a href="#配置文件加载的位置" class="headerlink" title="配置文件加载的位置"></a>配置文件加载的位置</h3><h4 id="1、内部配置文件加载位置"><a href="#1、内部配置文件加载位置" class="headerlink" title="1、内部配置文件加载位置"></a>1、内部配置文件加载位置</h4><p><img src="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8A%A0%E8%BD%BD%E4%BD%8D%E7%BD%AE.PNG" alt="SpringBoot配置文件加载位置"></p>
+<h4 id="2、外部配置文件加载顺序"><a href="#2、外部配置文件加载顺序" class="headerlink" title="2、外部配置文件加载顺序"></a>2、外部配置文件加载顺序</h4><p><img src="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E5%A4%96%E9%83%A8%E9%85%8D%E7%BD%AE%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F3.PNG" alt="SpringBoot外部配置加载顺序1"></p>
+<p><img src="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E5%A4%96%E9%83%A8%E9%85%8D%E7%BD%AE%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F1.PNG" alt="SpringBoot外部配置加载顺序2"></p>
+<p><img src="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/SpringBoot%E5%A4%96%E9%83%A8%E9%85%8D%E7%BD%AE%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F2.PNG" alt="SpringBoot外部配置加载顺序3"></p>
+<hr>
+<h3 id="自动配置原理"><a href="#自动配置原理" class="headerlink" title="自动配置原理"></a>自动配置原理</h3><p>配置文件到底能写什么？怎么写？</p>
+<p><a href="https://docs.spring.io/spring-boot/docs/2.2.3.RELEASE/reference/htmlsingle/#common-application-properties" target="_blank" rel="noopener">配置文件能配置的属性参照</a></p>
+<h4 id="1、原理"><a href="#1、原理" class="headerlink" title="1、原理"></a>1、原理</h4><ol>
+<li><p>SpringBoot启动的时候加载主配置类，开启自动配置功能@EnableAutoConfiguration</p>
+</li>
+<li><p>@EnableAutoConfiguration的作用：</p>
+</li>
+</ol>
+<ul>
+<li><p>使用AutoConfigurationImportSelector给容器中导入一些组件</p>
+</li>
+<li><p>AutoConfigurationImportSelector使用<code>List&lt;String&gt; configurations = this.getCandidateConfigurations(annotationMetadata, attributes);</code>来获取候选的配置</p>
+</li>
+<li><p>getCandidateConfigurations使用了SpringFactoriesLoader来将类路径下的”META-INF/spring.factories”EnableAutoConfiguration里面所有的配置的值加入到容器中，每一个xxxAutoConfiguration类都是容器中的一个组件，它们都会进行一个自动配置（自动配置功能），然后加入到容器中</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PLAIN"><figure class="iseeu highlight /plain"><figcaption><span>Library</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">org.springframework.boot.autoconfigure.EnableAutoConfiguration&#x3D;\</span><br><span class="line">org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.aop.AopAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration,\</span><br><span class="line">......总共有一百多个组件</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>下面以HttpEncoding的自动配置原理来进行讲解：</li>
+</ul>
+<p><img src="/images/SpringBoot/%E9%85%8D%E7%BD%AE%E5%9B%BE%E7%89%87/HttpE%E4%BD%A0%E4%BB%8E%E5%AE%9AAutoConfiguration%EF%BC%88Http%E7%BC%96%E7%A0%81%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%EF%BC%89%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E5%8E%9F%E7%90%86.PNG" alt="HttpEncodingAutoConfiguration"></p>
+<h3 id="Conditional派生注解和自动配置报告"><a href="#Conditional派生注解和自动配置报告" class="headerlink" title="Conditional派生注解和自动配置报告"></a>Conditional派生注解和自动配置报告</h3><h4 id="1、Conditional派生注解"><a href="#1、Conditional派生注解" class="headerlink" title="1、Conditional派生注解"></a>1、Conditional派生注解</h4><p><img src="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/Conditional%E6%B4%BE%E7%94%9F%E6%B3%A8%E8%A7%A3.PNG" alt="Conditional派生注解"></p>
+<h4 id="2、自动配置报告"><a href="#2、自动配置报告" class="headerlink" title="2、自动配置报告"></a>2、自动配置报告</h4><ul>
+<li>可以在配置文件中设置debug的值来让springboot生成自动配置报告，即写上debug=true（默认为false）</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">============================</span><br><span class="line">CONDITIONS EVALUATION REPORT</span><br><span class="line">============================</span><br><span class="line"></span><br><span class="line"><span class="comment">//启动的自动配置类</span></span><br><span class="line">Positive matches:</span><br><span class="line">-----------------</span><br><span class="line"></span><br><span class="line">   AopAutoConfiguration matched:</span><br><span class="line">      - <span class="meta">@ConditionalOnProperty</span> (spring.aop.auto=<span class="keyword">true</span>) matched (OnPropertyCondition)</span><br><span class="line"></span><br><span class="line">   AopAutoConfiguration.ClassProxyingConfiguration matched:</span><br><span class="line">      - <span class="meta">@ConditionalOnMissingClass</span> did not find unwanted <span class="class"><span class="keyword">class</span> '<span class="title">org</span>.<span class="title">aspectj</span>.<span class="title">weaver</span>.<span class="title">Advice</span>' (<span class="title">OnClassCondition</span>)</span></span><br><span class="line"><span class="class">      - @<span class="title">ConditionalOnProperty</span> (<span class="title">spring</span>.<span class="title">aop</span>.<span class="title">proxy</span>-<span class="title">target</span>-<span class="title">class</span></span>=<span class="keyword">true</span>) matched (OnPropertyCondition)</span><br><span class="line">      ......</span><br><span class="line"><span class="comment">//没有启动的自动配置类</span></span><br><span class="line">Negative matches:</span><br><span class="line">-----------------</span><br><span class="line"></span><br><span class="line">   ActiveMQAutoConfiguration:</span><br><span class="line">      Did not match:</span><br><span class="line">         - <span class="meta">@ConditionalOnClass</span> did not find required <span class="class"><span class="keyword">class</span> '<span class="title">javax</span>.<span class="title">jms</span>.<span class="title">ConnectionFactory</span>' (<span class="title">OnClassCondition</span>)</span></span><br><span class="line"><span class="class"></span></span><br><span class="line">   AopAutoConfiguration.AspectJAutoProxyingConfiguration:</span><br><span class="line">      Did not match:</span><br><span class="line">         - <span class="meta">@ConditionalOnClass</span> did not find required <span class="class"><span class="keyword">class</span> '<span class="title">org</span>.<span class="title">aspectj</span>.<span class="title">weaver</span>.<span class="title">Advice</span>' (<span class="title">OnClassCondition</span>)</span></span><br><span class="line"><span class="class">        ......</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在使用自动配置类属性时的精髓：</li>
+</ul>
+<p><img src="/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E7%9A%84%E7%B2%BE%E9%AB%93.PNG" alt="使用自动配置的精髓"></p>
+<hr>
+<p>参考视频：<a href="https://www.bilibili.com/video/av38657363?p=20" target="_blank" rel="noopener">B站</a><br>感谢观看</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/01/19/SpringBoot%E2%80%94%E2%80%94%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/" title="SpringBoot——配置文件">https://muchlab.github.io/2020/01/19/SpringBoot——配置文件/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/SpringBoot/" rel="tag"><i class="fa fa-tag"></i> SpringBoot</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/28/WPF%E4%B9%8B%E8%B5%84%E6%BA%90%E7%9A%84%E5%AE%9A%E4%B9%89%E5%92%8C%E4%BD%BF%E7%94%A8/" rel="prev" title="WPF之资源的定义和使用">
+      <i class="fa fa-chevron-left"></i> WPF之资源的定义和使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/10/SpringMVC-%E6%95%B4%E5%90%88ssm/" rel="next" title="SpringMVC--整合ssm">
+      SpringMVC--整合ssm <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#application-properties全局配置文件-amp-yml配置文件"><span class="nav-text">application.properties全局配置文件&amp;yml配置文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、yml以数据为中心，比json和xml更适合做数据型配置文件-如yml文件的基本语法如下"><span class="nav-text">1、yml以数据为中心，比json和xml更适合做数据型配置文件,如yml文件的基本语法如下</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、值的写法：都是可以用k-v的形式来写"><span class="nav-text">2、值的写法：都是可以用k:v的形式来写</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#yml配置文件值的获取"><span class="nav-text">yml配置文件值的获取</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConfigurationProperties和-Value的区别"><span class="nav-text">@ConfigurationProperties和@Value的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PropertySource"><span class="nav-text">@PropertySource</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ImportResource"><span class="nav-text">@ImportResource</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、配置类-Spring配置文件-在SpringBootApplication类中使用-ImportResource注解指定配置文件的路径"><span class="nav-text">1、配置类&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;Spring配置文件,在SpringBootApplication类中使用@ImportResource注解指定配置文件的路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、使用-Bean给容器中添加组件（推荐方式）"><span class="nav-text">2、使用@Bean给容器中添加组件（推荐方式）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件占位符"><span class="nav-text">配置文件占位符</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、随机数"><span class="nav-text">1、随机数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、占位符获取之前配置的值，若没有可以用指定的默认值"><span class="nav-text">2、占位符获取之前配置的值，若没有可以用指定的默认值</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Profile"><span class="nav-text">Profile</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、多Profile文件"><span class="nav-text">1、多Profile文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1、yml多文档块"><span class="nav-text">1、yml多文档块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#激活指定的profile方式"><span class="nav-text">激活指定的profile方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件加载的位置"><span class="nav-text">配置文件加载的位置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、内部配置文件加载位置"><span class="nav-text">1、内部配置文件加载位置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、外部配置文件加载顺序"><span class="nav-text">2、外部配置文件加载顺序</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自动配置原理"><span class="nav-text">自动配置原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、原理"><span class="nav-text">1、原理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Conditional派生注解和自动配置报告"><span class="nav-text">Conditional派生注解和自动配置报告</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、Conditional派生注解"><span class="nav-text">1、Conditional派生注解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、自动配置报告"><span class="nav-text">2、自动配置报告</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">337k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

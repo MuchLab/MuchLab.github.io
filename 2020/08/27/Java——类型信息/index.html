@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Java——类型信息">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java——类型信息">
+<meta property="og:url" content="https://muchlab.github.io/2020/08/27/Java%E2%80%94%E2%80%94%E7%B1%BB%E5%9E%8B%E4%BF%A1%E6%81%AF/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="Java——类型信息">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200530231452777.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-08-27T15:35:01.000Z">
+<meta property="article:modified_time" content="2020-09-26T01:17:49.054Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200530231452777.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/08/27/Java%E2%80%94%E2%80%94%E7%B1%BB%E5%9E%8B%E4%BF%A1%E6%81%AF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java——类型信息 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/08/27/Java%E2%80%94%E2%80%94%E7%B1%BB%E5%9E%8B%E4%BF%A1%E6%81%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java——类型信息
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-27 23:35:01" itemprop="dateCreated datePublished" datetime="2020-08-27T23:35:01+08:00">2020-08-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-26 09:17:49" itemprop="dateModified" datetime="2020-09-26T09:17:49+08:00">2020-09-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">-Java</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/08/27/Java%E2%80%94%E2%80%94%E7%B1%BB%E5%9E%8B%E4%BF%A1%E6%81%AF/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/27/Java%E2%80%94%E2%80%94%E7%B1%BB%E5%9E%8B%E4%BF%A1%E6%81%AF/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>9.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>9 分钟</span>
+            </span>
+            <div class="post-description">Java——类型信息</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><strong>运行时类型信息可以让我们在程序运行时发现和使用类型的信息</strong></p>
+<ul>
+<li>Java中在运行时识别对象和类的信息主要有两种方式：<ol>
+<li>传统的RTTI，它假定我们在编译时已经知道了所有的类型</li>
+<li>反射机制，它允许我们在运行时发现和使用类型信息</li>
+</ol>
+</li>
+</ul>
+<h3 id="RTTI"><a href="#RTTI" class="headerlink" title="RTTI"></a>RTTI</h3><p>在使用基本的向上转型时，就会使用到RTTI提供的类型转换，例如：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span></span>&#123;&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Circle</span> <span class="keyword">extends</span> <span class="title">Shape</span></span>&#123;&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Square</span> <span class="keyword">extends</span> <span class="title">Shape</span></span>&#123;&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RTTI</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">        List&lt;Shape&gt; list = Arrays.asList(<span class="keyword">new</span> Circle(), <span class="keyword">new</span> Square());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>在这里，Circle对象和Square对象会向上转型为Shape对象，而这同时也会丢失Shape对象的具体类型。在Java中，所有的类型转换都是在运行时进行正确性检查的，而RTTI的含义就是：在运行时，识别一个对象的类型。</p>
+<p>在编码时，就是使用容器和泛型来强制确保这个转换；在运行时，使用RTTI来确保这个转换</p>
+<p>但是，RTTI的类型转换并不彻底：它只是将Object转型为Shape，而不是转型为Circle、Square。而后面Shape会执行什么代码就是多态机制的事情了。</p>
+</blockquote>
+<h3 id="Class对象"><a href="#Class对象" class="headerlink" title="Class对象"></a>Class对象</h3><ul>
+<li><p>要理解RTTI在Java中的工作原理，就必须知道类型信息在运行时是如何表示的，而Class对象就是用来在运行时表示类型信息的，即是用来储存类型信息的。</p>
+</li>
+<li><p>在Java中，每编写并编译了一个新类，都会产生一个Class对象，而这些Class对象就是通过编译完后所生成的对应的.class文件来创建的，它们是一一对应的，让后JVM就可以使用Class对象来创建我们编写类的对象，在这个过程中将使用被称为”类加载器“的子系统，而将class文件加载到虚拟机的内存，这个过程称为类加载。</p>
+</li>
+<li><p>创建一个类对象的过程：</p>
+<ol>
+<li>编写一个新类；</li>
+<li>编译生成.class文件；</li>
+<li>加载：通过一个类的完全限定查找此类字节码文件，并利用字节码文件创建一个Class对象；</li>
+<li>链接：验证类中的字节码，为静态域分配空间，解析这个类创建的对其他类的所有引用；</li>
+<li>初始化：如果该类有超类，则对其初始化，执行静态初始化器和静态代码块。</li>
+</ol>
+</li>
+</ul>
+<h4 id="forName方法"><a href="#forName方法" class="headerlink" title="forName方法"></a>forName方法</h4><ul>
+<li>Class.forName(“类的包路径”)可以获取指定类的Class对象，使用该对象就可以获取类中包含信息</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.classinfo;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Candy</span></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Loading Candy"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Gum</span></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Loading Gum"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cookie</span></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Loading Cookie"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SweetShop</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"inside main"</span>);</span><br><span class="line">        <span class="keyword">new</span> Candy();</span><br><span class="line">        System.out.println(<span class="string">"After creating Candy"</span>);</span><br><span class="line"><span class="comment">//        new Gum();</span></span><br><span class="line"><span class="comment">//        System.out.println("After creating Gum");</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//使用Class.forName("类的包路径")可以获取指定类的Class对象，使用该对象就可以获取类中包含信息</span></span><br><span class="line">            <span class="comment">//在执行forName之前，该类还没被加载，所以，在执行forName时该类会被加载并执行static子句</span></span><br><span class="line">            <span class="keyword">final</span> Class gum = Class.forName(<span class="string">"com.muchlab.classinfo.Gum"</span>);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"Couldn't find Gum"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">"After Class.forName('Gum')"</span>);</span><br><span class="line">        <span class="keyword">final</span> Cookie cookie = <span class="keyword">new</span> Cookie();</span><br><span class="line">        <span class="comment">//当你有了一个具体类的对象之后，你可以使用getClass方法来获取该对象对应的类对象引用</span></span><br><span class="line">        <span class="keyword">final</span> Class&lt;? extends Cookie&gt; aClass = cookie.getClass();</span><br><span class="line">        System.out.println(aClass.getSimpleName());</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"After creating Cookie"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="getxxx"><a href="#getxxx" class="headerlink" title="getxxx"></a>getxxx</h4><ul>
+<li>xx.getClass：通过对象来获取该对象类型的Class对象</li>
+<li>getName：通过Class对象来获取全限定类名</li>
+<li>getSimpleName：通过Class对象来获取不含包名类名</li>
+<li>getCanonicalName：通过Class对象来获取全限定类名</li>
+<li>getInterfaces：通过Class对象来获取类实现的接口列表</li>
+<li>getSuperclass：通过Class对象来获取父类</li>
+<li>newInstance：通过Class对象来创建具体类的对象，使用这个方法需要注意的一点是，Class对象所指向的类必须要有一个无参构造器，如不符合条件将会获得一个异常。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.classinfo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">HasBatteries</span></span>&#123;&#125;</span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Waterproof</span></span>&#123;&#125;</span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Shoots</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Toy</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> number;</span><br><span class="line">    Toy()&#123;&#125;</span><br><span class="line">    Toy(<span class="keyword">int</span> i)&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FancyToy</span> <span class="keyword">extends</span> <span class="title">Toy</span> <span class="keyword">implements</span> <span class="title">HasBatteries</span>, <span class="title">Waterproof</span>, <span class="title">Shoots</span></span>&#123;</span><br><span class="line">    FancyToy()&#123; <span class="keyword">super</span>(<span class="number">1</span>); &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ToyTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printInfo</span><span class="params">(Class cc)</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Class name:"</span> + cc.getName() +</span><br><span class="line">                <span class="string">", is interface? ["</span>+cc.isInterface()+<span class="string">"]"</span>);</span><br><span class="line">        System.out.println(<span class="string">"Simple name:"</span> + cc.getSimpleName());</span><br><span class="line">        System.out.println(<span class="string">"Canonical name:"</span> + cc.getCanonicalName());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Class c = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            c = Class.forName(<span class="string">"com.muchlab.classinfo.FancyToy"</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"Can't find FancyToy"</span>);</span><br><span class="line">            System.exit(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        printInfo(c);</span><br><span class="line">        <span class="keyword">for</span> (Class anInterface : c.getInterfaces()) &#123;</span><br><span class="line">            printInfo(anInterface);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> Field field = c.getField(<span class="string">"name"</span>);</span><br><span class="line">            System.out.println(field.getName());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchFieldException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> Class superclass = c.getSuperclass();</span><br><span class="line">        Object o = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            o = superclass.newInstance();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InstantiationException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"Can't instantiate"</span>);</span><br><span class="line">            System.exit(<span class="number">1</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"Can't access"</span>);</span><br><span class="line">            System.exit(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        printInfo(o.getClass());</span><br><span class="line">        <span class="keyword">final</span> Class&lt;FancyToy&gt; fancyToyClass = FancyToy<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        <span class="comment">//类字面常量：基本类型.class等价于其包装类.TYPE</span></span><br><span class="line">        System.out.println(<span class="keyword">int</span><span class="class">.<span class="keyword">class</span></span>==Integer.TYPE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="类字面常量"><a href="#类字面常量" class="headerlink" title="类字面常量"></a>类字面常量</h3><ul>
+<li>如果使用forName方法来获取相关类的Class对象，不仅要指定类的全限定类名，而且在编译时不会受到检查，所以可以使用<code>类名.class</code>的方式来获取类的Class对象</li>
+<li>当使用<code>.class</code>方式来创建Class对象的引用时，不会自动地初始化该Class对象，初始化将会被延迟到对静态方法获知非常熟静态域进行首次引用时才执行</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.classinfo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Random;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Initable</span></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> staticFinal = <span class="number">47</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> staticFinal2 =</span><br><span class="line">            ClassInitialization.rand.nextInt(<span class="number">1000</span>);</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Initializing Initable"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Initable2</span></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> staticNonFinal = <span class="number">147</span>;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Initializing Initable2"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Initable3</span></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> staticNonFinal = <span class="number">74</span>;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Initializing Initable3"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassInitialization</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Random rand = <span class="keyword">new</span> Random(<span class="number">47</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</span><br><span class="line">        <span class="comment">//使用.class不会触发Initial的初始化</span></span><br><span class="line">        Class initable = Initable<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        System.out.println(<span class="string">"==========================="</span>);</span><br><span class="line">        <span class="comment">//Initable.staticFinal为编译期常量，所以这个值不需要对类进行初始化就可以读取</span></span><br><span class="line">        System.out.println(Initable.staticFinal);</span><br><span class="line">        System.out.println(<span class="string">"==========================="</span>);</span><br><span class="line">        <span class="comment">//Initable.staticFinal2不是一个编译期常量，所以这个值需要对类进行初始化才可以读取</span></span><br><span class="line">        <span class="comment">//Random随机数需要在运行后才能确定其值。</span></span><br><span class="line">        System.out.println(Initable.staticFinal2);</span><br><span class="line">        System.out.println(<span class="string">"==========================="</span>);</span><br><span class="line">        <span class="comment">//Initable2.staticNonFinal由于不是一个final常量，所以需要进行链接（分配空间）和初始化</span></span><br><span class="line">        System.out.println(Initable2.staticNonFinal);</span><br><span class="line">        <span class="comment">//如果使用forName则会触发Initial3的初始化</span></span><br><span class="line">        <span class="keyword">final</span> Class&lt;?&gt; initable3 = Class.forName(<span class="string">"com.muchlab.classinfo.Initable3"</span>);</span><br><span class="line">        System.out.println(Initable3.staticNonFinal);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="class和-TYPE"><a href="#class和-TYPE" class="headerlink" title=".class和.TYPE"></a>.class和.TYPE</h4><p>对于基本数据类型的包装类，有一个标准字段TYPE，TYPE字段是一个引用，指向对应的基本数据类型的Class对象，即<code>基本类型.class</code>就等价于<code>包装类.TYPE</code></p>
+<table>
+<thead>
+<tr>
+<th>基本类型.class</th>
+<th>包装类.TYPE</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>boolean.class</td>
+<td>Boolean.TYPE</td>
+</tr>
+<tr>
+<td>char.class</td>
+<td>Character.TYPE</td>
+</tr>
+<tr>
+<td>int.class</td>
+<td>Integer.TYPE</td>
+</tr>
+<tr>
+<td>……..</td>
+<td>……..</td>
+</tr>
+</tbody></table>
+<h3 id="泛化的Class引用"><a href="#泛化的Class引用" class="headerlink" title="泛化的Class引用"></a>泛化的Class引用</h3><h4 id="Class-lt-extends-xx-gt"><a href="#Class-lt-extends-xx-gt" class="headerlink" title="Class&lt;? extends xx&gt;"></a>Class&lt;? extends xx&gt;</h4><ul>
+<li>使用泛化的Class引用主要是对Class引用所指向的对象的确切类型进行限制，如下面代码所示：对Class引用所指向的对象限制为Integer</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.classinfo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GenericClassReferences</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Class&lt;Integer&gt; cc = <span class="keyword">int</span><span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        System.out.println(cc.getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>但有时我们会觉得这种限制太过严格了。为解决这个问题，我们可以放松一些限制，这时我们就会想使用Integer的父类Number来进行泛化。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class&lt;Number&gt; cc = <span class="keyword">int</span><span class="class">.<span class="keyword">class</span></span>;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>但这行代码其实会通不过编译，原因是Integer的Class对象并不是Number的Class对象的子类，这时就可以使用通配符来解决这个继承的问题。在Class泛型中的指向类的继承关系是这样表示的：<code>Class&lt;? extends Number&gt; cc = int.class;</code>它代表了继承于Number的某个类的Class对象</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.classinfo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WildcardClassReferences</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//虽然Integer继承了Number类型，但是Integer的Class对象并不是Number Class对象的子类</span></span><br><span class="line"><span class="comment">//        Class&lt;Number&gt; numberClass = int.class;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//当你需要指定一个类的声明类型时，又想放松一些限制，使用通配符能满足要求</span></span><br><span class="line">        <span class="comment">//这里的?表示一个非具体的类，这个非具体类继承了Number，所以intclass才能被赋值为</span></span><br><span class="line">        <span class="comment">//int.class和double.class</span></span><br><span class="line">        <span class="comment">//指定一个类的声明类型的好处是：为了提供编译期的类型检查</span></span><br><span class="line">        Class&lt;? extends Number&gt; intclass = <span class="keyword">int</span><span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        <span class="comment">//由于Double也是继承于Number类的，所以可以使用Double的Class对象为intClass赋值</span></span><br><span class="line">        intclass = <span class="keyword">double</span><span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="Class-lt-gt"><a href="#Class-lt-gt" class="headerlink" title="Class&lt;?&gt;"></a>Class&lt;?&gt;</h4><ul>
+<li>在编写Class对象时，<code>Class&lt;?&gt;</code>是要优于Class的，即便它们是等价的，<code>Class&lt;?&gt;</code>的好处就是它表示你并非是由于疏忽而忘记写泛型的类型，而是使用了一个非具体的类引用。</li>
+</ul>
+<h4 id="Class-lt-super-xxx-gt"><a href="#Class-lt-super-xxx-gt" class="headerlink" title="Class&lt;? super xxx&gt;"></a>Class&lt;? super xxx&gt;</h4><ul>
+<li>Class&lt;? super xxx&gt;代表的是Class中的泛型为xxx的超类，这里写成Class&lt;超类&gt;并不能起到作用。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.classinfo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GenericToyTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IllegalAccessException, InstantiationException </span>&#123;</span><br><span class="line">        Class&lt;FancyToy&gt; cc = FancyToy<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        <span class="comment">//? super FancyToy表示Fancy的超类，在这里不能写成Class&lt;Toy&gt;</span></span><br><span class="line">        Class&lt;? <span class="keyword">super</span> FancyToy&gt; superClass = cc.getSuperclass();</span><br><span class="line">        System.out.println(superClass.getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="反射，运行时的类型信息"><a href="#反射，运行时的类型信息" class="headerlink" title="反射，运行时的类型信息"></a>反射，运行时的类型信息</h3><ul>
+<li>如果不知道某个对象的确切类型，RTTI可以告诉你，但是有一个限制：这个类型在编译时必须已知，这样RTTI才能识别它，而反射则没有这个限制。</li>
+<li>Class类于java.lang.reflect类库一起对反射的概念进行了支持，该类库包含了Field、Method以及Constructor类（每个类都实现了Member接口）。这些类型的对象是由JVM在运行时创建的，用于表示未知类对应的成员。这样就可以使用Constructor来创建对象，用get()和set()来读取和修改Field对象相关联的字段，用invoke()来调用与Method相关联的方法。</li>
+<li>getxxx：<ol>
+<li>getConstructors()：获取构造器</li>
+<li>getFields()：获取成员变量</li>
+<li>getMethods()：获取成员方法</li>
+</ol>
+</li>
+</ul>
+<h3 id="JDK的动态代理"><a href="#JDK的动态代理" class="headerlink" title="JDK的动态代理"></a>JDK的动态代理</h3><p><img src="https://img-blog.csdnimg.cn/20200530231452777.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzczNDA5NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.reflect;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationHandler;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Proxy;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DynamicProxyHandler</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Object proxied;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DynamicProxyHandler</span><span class="params">(Object proxied)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.proxied = proxied;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 当调用被代理对象的方法时，调用将会被重定向到该方法中，可以在该方法中添加其他逻辑</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> proxy 代理对象</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method 被代理对象的方法</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> args 方法的参数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 原始方法的返回值</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Throwable</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"=============================Before Invoke=================================="</span>);</span><br><span class="line">        System.out.println(<span class="string">"**** proxy: "</span>+proxy.getClass()+</span><br><span class="line">                <span class="string">", method: "</span>+method+<span class="string">", arg: "</span> + args);</span><br><span class="line">        <span class="keyword">if</span> (args!=<span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">for</span> (Object arg : args) &#123;</span><br><span class="line">                System.out.println(<span class="string">" "</span> + arg);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//invoke表示对用法的调用</span></span><br><span class="line">        Object ret = method.invoke(proxied, args);</span><br><span class="line">        System.out.println(<span class="string">"=============================After Invoke=================================="</span>);</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleDynamicProxy</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">consumer</span><span class="params">(Interface iface)</span></span>&#123;</span><br><span class="line">        iface.doSomething();</span><br><span class="line">        iface.somethingElse(<span class="string">"bonobo"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        RealObj realObj = <span class="keyword">new</span> RealObj();</span><br><span class="line">        consumer(realObj);</span><br><span class="line">        <span class="comment">//调用静态方法Proxy.newProxyInstance可以创建动态代理，这个方法需要一个类加载器</span></span><br><span class="line">        <span class="comment">//动态代理可以将所有的调用重定向到调用处理器的invoke方法，而这需要向调用处理器的构造器传递实际的对象引用（即被代理的对象）</span></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 参数1：类加载器</span></span><br><span class="line"><span class="comment">         * 参数2：希望代理实现的接口列表，这希望代理Interface接口</span></span><br><span class="line"><span class="comment">         * 参数3：调用处理器的实现类的实例</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        Interface proxy = (Interface) Proxy.newProxyInstance(</span><br><span class="line">                Interface<span class="class">.<span class="keyword">class</span>.<span class="title">getClassLoader</span>(),</span></span><br><span class="line">                new Class[]&#123;Interface.class&#125;,</span><br><span class="line">                <span class="keyword">new</span> DynamicProxyHandler(realObj));</span><br><span class="line">        consumer(proxy);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<p>参考资料：Java编程思想</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/08/27/Java%E2%80%94%E2%80%94%E7%B1%BB%E5%9E%8B%E4%BF%A1%E6%81%AF/" title="Java——类型信息">https://muchlab.github.io/2020/08/27/Java——类型信息/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> -Java</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/24/MyBatis%E5%9F%BA%E7%A1%802/" rel="prev" title="MyBatis基础2">
+      <i class="fa fa-chevron-left"></i> MyBatis基础2
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/27/Java%E2%80%94%E2%80%94%E6%B3%A8%E8%A7%A3/" rel="next" title="Java——注解">
+      Java——注解 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#RTTI"><span class="nav-text">RTTI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Class对象"><span class="nav-text">Class对象</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#forName方法"><span class="nav-text">forName方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#getxxx"><span class="nav-text">getxxx</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类字面常量"><span class="nav-text">类字面常量</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#class和-TYPE"><span class="nav-text">.class和.TYPE</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#泛化的Class引用"><span class="nav-text">泛化的Class引用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Class-lt-extends-xx-gt"><span class="nav-text">Class&lt;? extends xx&gt;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Class-lt-gt"><span class="nav-text">Class&lt;?&gt;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Class-lt-super-xxx-gt"><span class="nav-text">Class&lt;? super xxx&gt;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反射，运行时的类型信息"><span class="nav-text">反射，运行时的类型信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JDK的动态代理"><span class="nav-text">JDK的动态代理</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">337k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
