@@ -7284,4 +7284,193 @@
         <tag>-OAuth2.0</tag>
       </tags>
   </entry>
+  <entry>
+    <title>AspNetCore——缓存</title>
+    <url>/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/</url>
+    <content><![CDATA[<h3 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h3><ul>
+<li>缓存是一种通过存储资源的备份，在请求时返回资源备份的技术。使用缓存能够减少服务器的压力和网络带宽，并减少客户端延迟。AspNetCore支持多种形式的缓存，Http的、内存的、分布式的，还提供了响应缓存中间件。</li>
+</ul>
+<h4 id="过期模型"><a href="#过期模型" class="headerlink" title="过期模型"></a>过期模型</h4><p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B71.PNG" alt="捕获1"></p>
+<h4 id="验证模型"><a href="#验证模型" class="headerlink" title="验证模型"></a>验证模型</h4><p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B72.PNG" alt="捕获2"></p>
+<h3 id="Http缓存"><a href="#Http缓存" class="headerlink" title="Http缓存"></a>Http缓存</h3><h4 id="缓存类型"><a href="#缓存类型" class="headerlink" title="缓存类型"></a>缓存类型</h4><ul>
+<li>Http有三种缓存：<ol>
+<li>客户端/浏览器缓存，存在于客户端，并且是私有的。</li>
+<li>网关缓存，它是共享的缓存，位于服务器端，所有的客户端都会共享这个缓存，它的别名还有反向代理服务器缓存，HTTP加速器等。</li>
+<li>代理缓存，位于网络上，是共享的，它既不位于客户端，也不位于服务器，类似于云存储或CDN。这种缓存经常被大型企业或ISP使用，用来服务大规模的用户。</li>
+</ol>
+</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%953.PNG" alt="捕3"></p>
+<h4 id="缓存相关的消息头"><a href="#缓存相关的消息头" class="headerlink" title="缓存相关的消息头"></a>缓存相关的消息头</h4><ul>
+<li><p>Http缓存的形式在Web应用程序的使用非常普遍，它主要是通过与缓存相关的消息头实现的，这些消息头指明了缓存行为（是否使用缓存、缓存的有效时间等），主要包括Cache-Control和Expires。</p>
+</li>
+<li><p>缓存相关的响应头的含义：</p>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B7.PNG" alt="捕获"></p>
+</li>
+</ul>
+<blockquote>
+<p>HTTP1.1 200 OK<br>Cache-Control:public, max-age=60</p>
+</blockquote>
+<ul>
+<li>Expires消息头也可以用来指定缓存的有效时间，但它的值是一个绝对时间</li>
+</ul>
+<h4 id="缓存是否有效"><a href="#缓存是否有效" class="headerlink" title="缓存是否有效"></a>缓存是否有效</h4><ul>
+<li>上面则表示了该响应支持缓存，并且在任何地方都可以存储该响应，有效时间为60s；当缓存的响应失效后，此时当客户端再次使用资源时，就需要请求服务器，已验证缓存的响应是否有效（是否被改变）。如果有效，则服务器返回304Not Modified状态码，响应中也不会包含任何响应体；如果失效，服务器则返回200OK状态码以及最新资源。</li>
+</ul>
+<h4 id="如何验证缓存是否有效"><a href="#如何验证缓存是否有效" class="headerlink" title="如何验证缓存是否有效"></a>如何验证缓存是否有效</h4><ul>
+<li>验证缓存资源的方式有两种，一种是Last-Modified，另一种是ETag<ol>
+<li>Last-Modified的值是资源最后更新的时间，在验证时，需要在请求消息中添加If-Modified-Since消息头，这个值是客户端最近一次收到该资源响应中Last-Modified的值，服务器就可以拿If-Modified-Since的值跟资源最后的更新时间进行比较，如果相同则缓存有效，不同则缓存无效。</li>
+<li>ETag可以看作是由服务器为当前资源生成的唯一标识，当客户端在请求验证时需要在消息头中添加If-None-Match，它的值为该资源最近异常从服务器中获得的ETag值。当服务器中资源发生改变时，它的ETag值会更改，所以服务器可以用它来识别缓存的响应是否和资源的最新状态一致。</li>
+</ol>
+</li>
+<li>建议使用ETag，因为Last-Modified是以秒为单位来进行验证的，有可能在一秒内对api进行了多次修改请求，Last-Modified的验证就会失效了。</li>
+</ul>
+<blockquote>
+<p>服务器<br>HTTP1.1 200OK<br>Cache-Control:public, max-age=60<br>ETag: “ead145f”<br>客户端<br>GET /api/authors<br>If-None-Match: “ead145f”<br>服务器<br>HTTP1.1 304 NotModified<br>Cache-Control:public, max-age=60<br>ETag: “ead145f”</p>
+</blockquote>
+<ul>
+<li>注意，只有请求方法为GET或HEAD，并且服务器返回200时的响应才支持缓存。</li>
+</ul>
+<h3 id="让WebApi支持Http缓存"><a href="#让WebApi支持Http缓存" class="headerlink" title="让WebApi支持Http缓存"></a>让WebApi支持Http缓存</h3><ul>
+<li>在AspNetCore中实现Http缓存需要提供两样东西：<ol>
+<li>表明资源的缓存信息，即响应的消息头，它由<code>ResponseCache</code>特性来支持，它只设置了响应消息头项的信息，并没有缓存任何的数据。</li>
+<li>缓存的存储器，它可以由response cache中间件来支持，也可以使用其他的存储器，比如redis等等。</li>
+</ol>
+</li>
+<li>在想要被缓存的Action上添加<code>ResponseCache</code>特性</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 添加响应缓存，有效期为60秒，响应缓存有三种类型：</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> Any：对应Cache-Control的值为public，表示响应可以被任何对象缓存</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> Client：对应Cache-Control的值为private，表示响应只能为单个用户缓存，不能作为共享缓存</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> None：对应Cache-Control的值为no-cache，表示必须到服务器验证才能使用缓存</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 默认是public</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="parameters"&gt;</span><span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;returns&gt;</span><span class="doctag">&lt;/returns&gt;</span></span></span><br><span class="line">[<span class="meta">HttpGet(<span class="meta-string">"&#123;authorId&#125;"</span>, Name = nameof(GetAuthorAsync))</span>]</span><br><span class="line">[<span class="meta">ResponseCache(Duration = 60, Location = ResponseCacheLocation.Client)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">async</span> Task&lt;ActionResult&lt;AuthorDto&gt;&gt; GetAuthorAsync(Guid authorId)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> author = <span class="keyword">await</span> _repositoryWrapper.Author.GetByIdAsync(authorId);</span><br><span class="line">    <span class="keyword">if</span> (author==<span class="literal">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> NotFound();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> authorDto = _mapper.Map&lt;AuthorDto&gt;(author);</span><br><span class="line">    <span class="keyword">return</span> Ok(authorDto);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>然后在Startup.cs添加缓存的中间件，在ConfigureServices方法添加以下代码</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line">services.AddResponseCaching();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在Configure方法添加以下代码</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="comment">//要在UseRouting之前</span></span><br><span class="line">app.UseResponseCaching();</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="添加缓存的Profile（属性的模板）"><a href="#添加缓存的Profile（属性的模板）" class="headerlink" title="添加缓存的Profile（属性的模板）"></a>添加缓存的Profile（属性的模板）</h3><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line">services.AddControllers(config =&gt;</span><br><span class="line">            &#123;</span><br><span class="line">                config.ReturnHttpNotAcceptable = <span class="literal">true</span>;</span><br><span class="line">                <span class="comment">//添加缓存的设置模板</span></span><br><span class="line">                config.CacheProfiles.Add(<span class="string">"120sCacheProfile"</span>, <span class="keyword">new</span> CacheProfile</span><br><span class="line">                &#123;</span><br><span class="line">                    Duration = <span class="number">120</span></span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在AuthorController添加全局的Profile，除了上面GetAuthorAsync方法外，其他方法的缓存有效期就都是120s</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line">[<span class="meta">Route(<span class="meta-string">"api/authors"</span>)</span>]</span><br><span class="line">[<span class="meta">ApiController</span>]</span><br><span class="line">[<span class="meta">ResponseCache(CacheProfileName = <span class="meta-string">"120sCacheProfile"</span>)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">AuthorController</span>:<span class="title">ControllerBase</span>&#123;...&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="缓存请求响应的Cache-Control的指令"><a href="#缓存请求响应的Cache-Control的指令" class="headerlink" title="缓存请求响应的Cache-Control的指令"></a>缓存请求响应的Cache-Control的指令</h3><ul>
+<li>请求</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B76.PNG" alt="捕获6"></p>
+<ul>
+<li>响应</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B75.PNG" alt="捕获5"></p>
+<h3 id="让WebApi支持ETag"><a href="#让WebApi支持ETag" class="headerlink" title="让WebApi支持ETag"></a>让WebApi支持ETag</h3><ul>
+<li>一般WebApi不会只对过期模型进行配置，还会对验证模型进行配置，验证模型分为强验证器（ETag）和弱验证器（Last-Modified）；实现ETag需要添加一个依赖<code>Marvin.Cache.Headers</code>。</li>
+<li>在Startup.cs添加全局的过期模型和验证模型的配置：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line">services.AddHttpCacheHeaders();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>然后在Configure方法中添加<code>app.UseHttpCacheHeaders();</code>。</li>
+<li>使用Postman进行请求后，可以看到Header如下：HttpCacheHeaders帮我们自动加上了强验证器和弱验证器。</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B77.PNG" alt="捕获7"></p>
+<h4 id="全局配置"><a href="#全局配置" class="headerlink" title="全局配置"></a>全局配置</h4><ul>
+<li>可以在AddHttpCacheHeaders方法参数中对过期模型和验证模型进行配置</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="comment">//添加过期模型和验证模型的配置</span></span><br><span class="line"><span class="comment">//在这里的配置是全局的配置</span></span><br><span class="line">services.AddHttpCacheHeaders(expires =&gt;</span><br><span class="line">                             &#123;</span><br><span class="line">                                 expires.CacheLocation = CacheLocation.Private;</span><br><span class="line">                                 expires.MaxAge = <span class="number">60</span>;</span><br><span class="line">                             &#125;, validation =&gt;</span><br><span class="line">                             &#123;</span><br><span class="line">                                 validation.MustRevalidate = <span class="literal">true</span>;</span><br><span class="line">                             &#125;);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>请求结果是这样的，由于缓存的类型为private，Api并不会帮我们保存缓存，所以就没有Age这个项。</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B78.PNG" alt="捕获8"></p>
+<ul>
+<li>Vary项的含义是：当请求的Accept的媒体类型和缓存中的数据类型不一致的时候，响应并不会从缓存返回，而会去请求Api的数据。</li>
+</ul>
+<h4 id="在Action或Controller级别上的配置"><a href="#在Action或Controller级别上的配置" class="headerlink" title="在Action或Controller级别上的配置"></a>在Action或Controller级别上的配置</h4><ul>
+<li>在GetAuthorsAsync这个Action上添加配置</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line">[<span class="meta">HttpGet(Name = nameof(GetAuthorsAsync))</span>]</span><br><span class="line"><span class="comment">//过期模型配置</span></span><br><span class="line">[<span class="meta">HttpCacheExpiration(CacheLocation = CacheLocation.Private, MaxAge = 120)</span>]</span><br><span class="line"><span class="comment">//验证模型配置</span></span><br><span class="line">[<span class="meta">HttpCacheValidation(MustRevalidate = false)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">async</span> Task&lt;ActionResult&lt;IEnumerable&lt;AuthorDto&gt;&gt;&gt; GetAuthorsAsync</span><br><span class="line">    ([FromQuery] AuthorResourceParameters parameters)&#123;...&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>Controller级别的类似，这里就不写了。</li>
+</ul>
+<h3 id="测试ETag（验证器）"><a href="#测试ETag（验证器）" class="headerlink" title="测试ETag（验证器）"></a>测试ETag（验证器）</h3><ul>
+<li>先请求一次，然后可以在响应头中获取到ETag，然后在请求头中添加If-None-Match，值为ETag的值，请求。返回结果可以看到304状态码，没有响应体，同时带回最新的ETag。</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B79.PNG" alt="捕获10"></p>
+<ul>
+<li>然后我们进行一次Put请求，修改资源成功</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B711.PNG" alt="捕获11"></p>
+<ul>
+<li>再用第一次的Get请求加If-None-Match项请求相同的数据，返回了200OK，并且返回了最新的ETag。</li>
+</ul>
+<p><img src="/2020/10/24/AspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98/D:%5CMy_blog%5Csource_posts%5CAspNetCore%E2%80%94%E2%80%94%E7%BC%93%E5%AD%98%5C%E6%8D%95%E8%8E%B712.PNG" alt="捕获12"></p>
+<hr>
+<p>学习资源：<a href>B站杨旭</a></p>
+]]></content>
+      <categories>
+        <category>-AspNetCore</category>
+      </categories>
+      <tags>
+        <tag>-AspNetCore -C#</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>WebSocket协议客户端和服务器websocket-sharp组件解析</title>
+    <url>/2020/10/24/WebSocket%E5%8D%8F%E8%AE%AE%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E5%99%A8websocket-sharp%E7%BB%84%E4%BB%B6%E8%A7%A3%E6%9E%90/</url>
+    <content><![CDATA[<h3 id="websocket-sharp组件概述"><a href="#websocket-sharp组件概述" class="headerlink" title="websocket-sharp组件概述"></a>websocket-sharp组件概述</h3><ul>
+<li>websocket-sharp是一个C#实现websocket协议客户端和服务端，websocket-sharp支持RFC 6455；WebSocket客户端和服务器；消息压缩扩展；安全连接；HTTP身份验证；查询字符串，起始标题和Cookie；通过HTTP代理服务器连接；.NET Framework 3.5或更高版本（包括兼容环境，如Mono）。</li>
+<li>websocket-sharp是一个单一的组件，websocket-sharp.dll。websocket-sharp是用MonoDevelop开发的。所以建立一个简单的方式是打开websocket-sharp.sln并使用MonoDevelop中的任何构建配置（例如<code>Debug</code>）运行websocket-sharp项目的构建。</li>
+<li>上面介绍了.NET项目中添加websocket-sharp组件，如果想向Unity项目中使用该DLL ，则应将其添加到Unity Editor中的项目的任何文件夹。在Unity的项目中，Unity Free有一些约束：Webplayer的安全沙箱（Web Player中不提供该服务器）；WebGL网络（ WebGL中不可用）；不适用于此类UWP；对System.IO.Compression的有限支持（压缩扩展在Windows上不可用）；iOS / Android的.NET Socket支持（如果您的Unity早于Unity 5，则需要iOS / Android Pro）；适用于iOS / Android的.NET API 2.0兼容级别。适用于iOS / Android的.NET API 2.0兼容性级别可能需要在.NET 2.0之后修复缺少某些功能，例如<code>System.Func&lt;...&gt;</code>代理（因此我已将其添加到该资产包中）。</li>
+<li>如果是Core项目，则引用下面的包</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="XML"><figure class="iseeu highlight /xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ItemGroup</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">PackageReference</span> <span class="attr">Include</span>=<span class="string">"websocketsharp.core"</span> <span class="attr">Version</span>=<span class="string">"1.0.0"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ItemGroup</span>&gt;</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="websocket-sharp组件使用方法"><a href="#websocket-sharp组件使用方法" class="headerlink" title="websocket-sharp组件使用方法"></a>websocket-sharp组件使用方法</h3><h4 id="WebSocket客户端"><a href="#WebSocket客户端" class="headerlink" title="WebSocket客户端"></a>WebSocket客户端</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> System;</span><br><span class="line"><span class="keyword">using</span> WebSocketSharp;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Example</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span> (<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">      <span class="keyword">using</span> (<span class="keyword">var</span> ws = <span class="keyword">new</span> WebSocket (<span class="string">"ws://127.0.0.1:8081/Laputa"</span>)) &#123;</span><br><span class="line">        ws.OnMessage += (sender, e) =&gt;</span><br><span class="line">            Console.WriteLine (<span class="string">"Laputa says: "</span> + e.Data);</span><br><span class="line"></span><br><span class="line">        ws.Connect ();</span><br><span class="line">        ws.Send (<span class="string">"BALUS"</span>);</span><br><span class="line">        Console.ReadKey (<span class="literal">true</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>由上面的代码示例中，使用<code>WebSocket</code>WebSocket URL 创建类的新实例来连接。一个<code>WebSocket.OnOpen</code>当WebSocket连接已经建立发生的事件。<code>WebSocket.OnMessage</code>当发生事件<code>WebSocket</code>接收消息。一个<code>WebSocket.OnClose</code>当WebSocket的连接已关闭发生的事件。如果要异步连接到服务器，应该使用该<code>WebSocket.ConnectAsync ()</code>方法。可以使用<code>WebSocket.Send (string)</code>，<code>WebSocket.Send (byte[])</code>或<code>WebSocket.Send (System.IO.FileInfo)</code>方法来发送数据。如果您想要异步发送数据，则应该使用该<code>WebSocket.SendAsync</code>方法。如果要明确地关闭连接，应该使用该<code>WebSocket.Close</code>方法。</li>
+</ul>
+<h4 id="WebSocket服务器"><a href="#WebSocket服务器" class="headerlink" title="WebSocket服务器"></a>WebSocket服务器</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> System;</span><br><span class="line"><span class="keyword">using</span> WebSocketSharp;</span><br><span class="line"><span class="keyword">using</span> WebSocketSharp.Server;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Example</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Laputa</span> : <span class="title">WebSocketBehavior</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnMessage</span> (<span class="params">MessageEventArgs e</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">      <span class="keyword">var</span> msg = e.Data == <span class="string">"BALUS"</span></span><br><span class="line">                ? <span class="string">"I've been balused already..."</span></span><br><span class="line">                : <span class="string">"I'm not available now."</span>;</span><br><span class="line"></span><br><span class="line">      Send (msg);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span> (<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function"></span>    &#123;</span><br><span class="line">      <span class="keyword">var</span> wssv = <span class="keyword">new</span> WebSocketServer (<span class="string">"ws://127.0.0.1:8081"</span>);</span><br><span class="line">      wssv.AddWebSocketService&lt;Laputa&gt; (<span class="string">"/Laputa"</span>);</span><br><span class="line">      wssv.Start ();</span><br><span class="line">      Console.ReadKey (<span class="literal">true</span>);</span><br><span class="line">      wssv.Stop ();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>以通过创建继承<code>WebSocketBehavior</code>该类的类定义任何WebSocket服务的行为。可以<code>WebSocketServer</code>通过使用<code>WebSocketServer.AddWebSocketService&lt;TBehaviorWithNew&gt; (string)</code>或<code>WebSocketServer.AddWebSocketService&lt;TBehavior&gt; (string, Func&lt;TBehavior&gt;)</code>方法将任何WebSocket服务添加到服务的指定行为和路径。wssv.Start ();启动WebSocket服务器。wssv.Stop (code, reason);停止WebSocket服务器。</li>
+</ul>
+<h4 id="消息压缩"><a href="#消息压缩" class="headerlink" title="消息压缩"></a>消息压缩</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line">ws.Compression = CompressionMethod.Deflate;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="HTTP身份验证"><a href="#HTTP身份验证" class="headerlink" title="HTTP身份验证"></a>HTTP身份验证</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line">ws.SetCredentials (<span class="string">"nobita"</span>, <span class="string">"password"</span>, preAuth);</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="通过HTTP代理服务器连接"><a href="#通过HTTP代理服务器连接" class="headerlink" title="通过HTTP代理服务器连接"></a>通过HTTP代理服务器连接</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> ws = <span class="keyword">new</span> WebSocket (<span class="string">"ws://example.com"</span>);</span><br><span class="line">ws.SetProxy (<span class="string">"http://localhost:3128"</span>, <span class="string">"nobita"</span>, <span class="string">"password"</span>);</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="websocket-sharp组件核心对象解析"><a href="#websocket-sharp组件核心对象解析" class="headerlink" title="websocket-sharp组件核心对象解析"></a>websocket-sharp组件核心对象解析</h3><h4 id="WebSocket-Send"><a href="#WebSocket-Send" class="headerlink" title="WebSocket.Send()"></a>WebSocket.Send()</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">bool</span> <span class="title">send</span> (<span class="params">Opcode opcode, Stream stream</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">lock</span> (_forSend) &#123;</span><br><span class="line">        <span class="keyword">var</span> src = stream;</span><br><span class="line">        <span class="keyword">var</span> compressed = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">var</span> sent = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (_compression != CompressionMethod.None) &#123;</span><br><span class="line">                stream = stream.Compress (_compression);</span><br><span class="line">                compressed = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            sent = send (opcode, stream, compressed);</span><br><span class="line">            <span class="keyword">if</span> (!sent)</span><br><span class="line">                error (<span class="string">"A send has been interrupted."</span>, <span class="literal">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">            _logger.Error (ex.ToString ());</span><br><span class="line">            error (<span class="string">"An error has occurred during a send."</span>, ex);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (compressed)</span><br><span class="line">                stream.Dispose ();</span><br><span class="line">            src.Dispose ();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sent;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>使用WebSocket连接发送指定的数据，该方法存在多个重载版本，并且该方法也有异步实现。该方法返回一个布尔类型的参数，表示本次信息是否发送成功。该方法接受两个参数，Opcode是一个枚举类型，表示WebSocket框架类型。该枚举类型值有Cont(等于数值0.表示连续帧)，Text(相当于数值1.表示文本框)，Binary(相当于数值2.表示二进制帧)，Close(相当于数值8.表示连接关闭框架)，Ping(相当于数值9.表示ping帧)，Pong(相当于数值10.指示pong框)。stream表示一个流对象。该方法设置了锁操作，防止并发时出现死锁问题。不过看到代码中对异常的捕获还是有些问题，该方法是直接捕获exception异常，这样会导致程序捕获代码块中的所有异常，这样会影响代码的稳定性和代码的可修复性，异常捕获的最好处理方式是将程序进行恢复。</li>
+</ul>
+<h4 id="WebSocket-CloseAsync"><a href="#WebSocket-CloseAsync" class="headerlink" title="WebSocket.CloseAsync()"></a>WebSocket.CloseAsync()</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">CloseAsync</span> (<span class="params">CloseStatusCode code, <span class="keyword">string</span> reason</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">string</span> msg;</span><br><span class="line">    <span class="keyword">if</span> (!CheckParametersForClose (code, reason, _client, <span class="keyword">out</span> msg)) &#123;</span><br><span class="line">        _logger.Error (msg);</span><br><span class="line">        error (<span class="string">"An error has occurred in closing the connection."</span>, <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    closeAsync ((<span class="keyword">ushort</span>) code, reason);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>该方法以指定的方式异步关闭WebSocket连接，该方法接受两个参数，CloseStatusCode表示关闭原因的状态码，该参数是一个枚举类型。reason表示关闭的原因。大小必须是123字节或更少。if (!CheckParametersForClose (code, reason, _client, out msg))检查参数关闭。</li>
+</ul>
+<h4 id="WebSocket-createHandshakeRequest"><a href="#WebSocket-createHandshakeRequest" class="headerlink" title="WebSocket.createHandshakeRequest()"></a>WebSocket.createHandshakeRequest()</h4><div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSHARP"><figure class="iseeu highlight /csharp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> HttpRequest <span class="title">createHandshakeRequest</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> ret = HttpRequest.CreateWebSocketRequest(_uri);</span><br><span class="line">    <span class="keyword">var</span> headers = ret.Headers;</span><br><span class="line">    <span class="keyword">if</span> (!_origin.IsNullOrEmpty())</span><br><span class="line">        headers[<span class="string">"Origin"</span>] = _origin;</span><br><span class="line">    headers[<span class="string">"Sec-WebSocket-Key"</span>] = _base64Key;</span><br><span class="line">    _protocolsRequested = _protocols != <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (_protocolsRequested)</span><br><span class="line">        headers[<span class="string">"Sec-WebSocket-Protocol"</span>] = _protocols.ToString(<span class="string">", "</span>);</span><br><span class="line">    _extensionsRequested = _compression != CompressionMethod.None;</span><br><span class="line">    <span class="keyword">if</span> (_extensionsRequested)</span><br><span class="line">        headers[<span class="string">"Sec-WebSocket-Extensions"</span>] = createExtensions();</span><br><span class="line">    headers[<span class="string">"Sec-WebSocket-Version"</span>] = _version;</span><br><span class="line">    AuthenticationResponse authRes = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (_authChallenge != <span class="literal">null</span> &amp;&amp; _credentials != <span class="literal">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        authRes = <span class="keyword">new</span> AuthenticationResponse(_authChallenge, _credentials, _nonceCount);</span><br><span class="line">        _nonceCount = authRes.NonceCount;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (_preAuth)</span><br><span class="line">    &#123;</span><br><span class="line">        authRes = <span class="keyword">new</span> AuthenticationResponse(_credentials);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (authRes != <span class="literal">null</span>)</span><br><span class="line">        headers[<span class="string">"Authorization"</span>] = authRes.ToString();</span><br><span class="line">    <span class="keyword">if</span> (_cookies.Count &gt; <span class="number">0</span>)</span><br><span class="line">        ret.SetCookies(_cookies);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>该方法用于客户端创建一个websocket请求，创建握手请求。var ret = HttpRequest.CreateWebSocketRequest(_uri);根据传入的uri调用HttpRequest的方法创建请求。该方法主要操作http头部信息，创建请求。</li>
+</ul>
+<hr>
+<ul>
+<li>转载自：<a href="https://www.cnblogs.com/pengze0902/p/6697192.html" target="_blank" rel="noopener">彭泽博客</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>-C#</category>
+      </categories>
+      <tags>
+        <tag>-C# -WebSocket</tag>
+      </tags>
+  </entry>
 </search>
