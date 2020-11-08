@@ -2463,6 +2463,41 @@
 <li>而日志有的时候可以一天一备或一周一备，这个各有好处。</li>
 <li>把innodb_flush_log_at_trx_commit这个参数设置为1时，表示每次的redo log都会持久化到磁盘，而sync_binlog这个参数设置为1时，可以保证MySql异常重启binlog不会丢失。</li>
 </ul>
+<h3 id="日志的类型"><a href="#日志的类型" class="headerlink" title="日志的类型"></a>日志的类型</h3><ul>
+<li>MySql的日志类型分为物理日志和逻辑日志，物理日志存储了数据被修改的值，而逻辑日志存储了逻辑Sql修改语句，redolog是物理日志，而binlog是逻辑日志</li>
+</ul>
+<h3 id="redolog"><a href="#redolog" class="headerlink" title="redolog"></a>redolog</h3><ul>
+<li>redolog是物理日志，物理日志存储的是数据被修改的值，所以在使用redolog来恢复数据库时，恢复的速度远超过逻辑日志。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/a2/e5/a25bdbbfc2cfc5d5e20690547fe7f2e5.jpg" alt="img"></p>
+<ul>
+<li>cp（checkpoint）：表示使用redolog flush的起始位置，checkpoint所做的事就是把脏页给刷新回磁盘。所以，当DB重启恢复时，只需要恢复checkpoint之后的数据。这样就能大大缩短恢复时间。</li>
+<li>write pos：数据写入redolog的位置，当redolog的write pos接近cp时，表示redolog要满了，这时InnoDB必须停下手中的工作，进行刷脏页，腾出一些空余空间才能继续写redolog。</li>
+<li>redolog其实分为两个部分：<ol>
+<li>重做日志缓冲(redo log buffer)，这部分内容存在于内存中。</li>
+<li>重做日志文件(redo log file)。这部分内容存在于磁盘中。</li>
+</ol>
+</li>
+<li>这样的设计同样也是为了调和内存与磁盘的速度差异。InnoDB写入磁盘的策略可以通过<code>innodb_flush_log_at_trx_commit</code>这个参数来控制。fsync表示redolog写入磁盘操作</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/11512754-e4090b96f2184e04.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/876/format/webp" alt="img"></p>
+<ul>
+<li>当该值为1时，当然是最安全的，但是数据库性能会受一定影响；为0时性能较好，但是会丢失掉master thread还没刷新进磁盘部分的数据。</li>
+<li>master thread：这是InnoDB一个在后台运行的主线程，它做的主要工作包括但不限于：刷新日志缓冲，合并插入缓冲，刷新脏页等。</li>
+<li>master thread大致分为每秒运行一次的操作和每10秒运行一次的操作。master thread中刷新数据，属于checkpoint的一种。所以如果在master thread在刷新日志的间隙，DB出现故障那么将丢失掉这部分数据。</li>
+</ul>
+<h3 id="binlog的模式"><a href="#binlog的模式" class="headerlink" title="binlog的模式"></a>binlog的模式</h3><ul>
+<li>mysql复制主要有三种方式：基于SQL语句的复制(statement-based replication, SBR)，基于行的复制(row-based replication, RBR)，混合模式复制(mixed-based replication, MBR)。对应的，binlog的格式也有三种：STATEMENT，ROW，MIXED。</li>
+</ul>
+<h4 id="STATEMENT模式（SBR）"><a href="#STATEMENT模式（SBR）" class="headerlink" title="STATEMENT模式（SBR）"></a>STATEMENT模式（SBR）</h4><ul>
+<li>每一条会修改数据的sql语句会记录到binlog中。优点是并不需要记录每一条sql语句和每一行的数据变化，减少了binlog日志量，节约IO，提高性能。缺点是在某些情况下会导致master-slave中的数据不一致(如sleep()函数， last_insert_id()，以及user-defined functions(udf)等会出现问题)</li>
+</ul>
+<h4 id="ROW模式（RBR）"><a href="#ROW模式（RBR）" class="headerlink" title="ROW模式（RBR）"></a>ROW模式（RBR）</h4><ul>
+<li>不记录每条sql语句的上下文信息，仅需记录哪条数据被修改了，修改成什么样了。而且不会出现某些特定情况下的存储过程、或function、或trigger的调用和触发无法被正确复制的问题。缺点是会产生大量的日志，尤其是alter table的时候会让日志暴涨。</li>
+</ul>
+<h4 id="MIXED模式（MBR）"><a href="#MIXED模式（MBR）" class="headerlink" title="MIXED模式（MBR）"></a>MIXED模式（MBR）</h4><ul>
+<li>以上两种模式的混合使用，一般的复制使用STATEMENT模式保存binlog，对于STATEMENT模式无法复制的操作使用ROW模式保存binlog，MySQL会根据执行的SQL语句选择日志保存方式。</li>
+</ul>
 ]]></content>
       <categories>
         <category>-MySql</category>
@@ -8040,6 +8075,210 @@ e，set：哈希表，整数数组</code></pre></li>
       </categories>
       <tags>
         <tag>-C#</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySql——幻读</title>
+    <url>/2020/11/08/MySql%E2%80%94%E2%80%94%E5%B9%BB%E8%AF%BB/</url>
+    <content><![CDATA[<h3 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h3><ul>
+<li>所谓幻读，就是指一个事务在前后两次查询同一个范围的时候，后一次查询看到的前一次查询没有看到的行。</li>
+<li>我们来看这样一个场景：创建一个表</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`t`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`c`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`d`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>),</span><br><span class="line">  <span class="keyword">KEY</span> <span class="string">`c`</span> (<span class="string">`c`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>),(<span class="number">5</span>,<span class="number">5</span>,<span class="number">5</span>),</span><br><span class="line">(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>),(<span class="number">15</span>,<span class="number">15</span>,<span class="number">15</span>),(<span class="number">20</span>,<span class="number">20</span>,<span class="number">20</span>),(<span class="number">25</span>,<span class="number">25</span>,<span class="number">25</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>当执行下面语句时，会命中d=5这一行，并给改行加一个写锁，由于两阶段锁协议，这个锁会在执行commit语句的时候释放。</li>
+<li>由于字段d上没有索引，因此这条语句会做全表扫描。其他被扫描到的，但是不满足d=5这个条件的，会不会加上锁呢？</li>
+<li>比如执行下面的事务：</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/5b/8b/5bc506e5884d21844126d26bbe6fa68b.png" alt="img"></p>
+<ul>
+<li>在读未提交的隔离级别下，上面sessionA在前后执行查询语句时，返回的结果并不相同，而这种多出几行的现象，被称为幻读</li>
+<li>在可重复读隔离级别下，普通的查询都是快照读，是不会看到别的事务插入的数据的，因此，幻读只会在当前都下才会出现。</li>
+<li>需要注意的是，在T2中sessionB的修改结果被sessionA之后的查询语句用“当前读”看到，并不能称为幻读，幻读仅专指“新插入的行”。</li>
+</ul>
+<h3 id="幻读有什么问题"><a href="#幻读有什么问题" class="headerlink" title="幻读有什么问题"></a>幻读有什么问题</h3><ul>
+<li><p>从语义上，sessionA在T1时刻就声明了，要把所有的d=5的行锁住，不准别的事务进行读写操作，但事实上，按照上面的逻辑，这个语义被破坏了。</p>
+</li>
+<li><p>其次，幻读会导致数据不一致问题，锁的设计是为了保证数据的一致性，而这个一致性，不止是数据库内部数据状态在此刻的一致性，还包括了数据和日志在逻辑上的一致性。</p>
+</li>
+<li><p>举个例子：执行下面的事务：</p>
+<p><img src="https://static001.geekbang.org/resource/image/dc/92/dcea7845ff0bdbee2622bf3c67d31d92.png" alt="img"></p>
+</li>
+<li><p>如果update和select…for update是一致的话，只会在d=5的语句加锁，那三个事务的执行过程如下：</p>
+<ol>
+<li>经过 T1 时刻，id=5 这一行变成 (5,5,100)，当然这个结果最终是在 T6 时刻正式提交的 ;</li>
+<li>经过 T2 时刻，id=0 这一行变成 (0,5,5);</li>
+<li>经过 T4 时刻，表里面多了一行 (1,5,5);</li>
+<li>其他行跟这个执行序列无关，保持不变</li>
+</ol>
+<p><img src="https://static001.geekbang.org/resource/image/dc/92/dcea7845ff0bdbee2622bf3c67d31d92.png" alt="img"></p>
+</li>
+<li><p>这样看的话，这些数据并没有什么问题，但来看看binlog中记录的内容：</p>
+<ol>
+<li>T2 时刻，session B 事务提交，写入了两条语句；</li>
+<li>T4 时刻，session C 事务提交，写入了两条语句；</li>
+<li>T6 时刻，session A 事务提交，写入了 update t set d=100 where d=5 这条语句。</li>
+</ol>
+</li>
+<li><p>也就是下面这样：</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,0,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">1</span>,<span class="number">1</span>,<span class="number">5</span>); <span class="comment">/*(1,1,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span>; <span class="comment">/*(1,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">100</span> <span class="keyword">where</span> d=<span class="number">5</span>;<span class="comment">/*所有d=5的行，d改成100*/</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>当我们拿这个binlog去备库时，这三行的结果，都变成了 (0,5,100)、(1,5,100) 和 (5,5,100)。</li>
+<li>也就是说，id=0和id=1发生了数据不一致的问题。</li>
+</ul>
+<h3 id="幻读问题如何解决"><a href="#幻读问题如何解决" class="headerlink" title="幻读问题如何解决"></a>幻读问题如何解决</h3><h4 id="锁住所有行"><a href="#锁住所有行" class="headerlink" title="锁住所有行"></a>锁住所有行</h4><ul>
+<li>其实只需要把扫描过程中遇到的行都加上写锁，由于sessionA把所有的行都加上写锁，需要在T6时刻提交事务后，sessionB才能执行，在binlog里的记录就会变成这样：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">1</span>,<span class="number">1</span>,<span class="number">5</span>); <span class="comment">/*(1,1,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span>; <span class="comment">/*(1,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">100</span> <span class="keyword">where</span> d=<span class="number">5</span>;<span class="comment">/*所有d=5的行，d改成100*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,0,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,5,5)*/</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>由于id=1这一行是新插入的，所以在sessionA加上写锁时，并没有对id=1这一行加上锁，这就导致了写入binlog时，id=1这一行的修改是在<code>update t set d=100 where d=5;</code>之前的，即id=1的数据不一致问题并没有得到解决。</li>
+</ul>
+<h4 id="间隙锁"><a href="#间隙锁" class="headerlink" title="间隙锁"></a>间隙锁</h4><ul>
+<li><p>现在我们知道了，产生幻读的原因是，行锁只能锁住行，但是新插入记录这个动作，要更新的是记录之间的间隙。因此，为了解决幻读问题，InnoDB只好引入了间隙锁。</p>
+</li>
+<li><p>顾名思义，间隙锁，锁的就是两个值之间的空隙。比如文章开头的表 t，初始化插入了 6 个记录，这就产生了 7 个间隙。</p>
+<p><img src="https://static001.geekbang.org/resource/image/e7/61/e7f7ca0d3dab2f48c588d714ee3ac861.png" alt="img"></p>
+</li>
+<li><p>这样，当你执行 select * from t where d=5 for update 的时候，就不止是给数据库中已有的 6 个记录加上了行锁，还同时加了 7 个间隙锁。这样就确保了无法再插入新的记录。</p>
+</li>
+<li><p>也就是说这时候，在一行行扫描的过程中，不仅将给行加上了行锁，还给行两边的空隙，也加上了间隙锁。</p>
+</li>
+<li><p>跟间隙锁存在冲突关系的，是“往这个间隙中插入一个记录”这个操作。间隙锁之间都不存在冲突关系。</p>
+</li>
+<li><p>间隙锁和行锁合称 next-key lock，每个 next-key lock 是前开后闭区间。也就是说，我们的表 t 初始化以后，如果用 select * from t for update 要把整个表所有记录锁起来，就形成了 7 个 next-key lock，分别是 (-∞,0]、(0,5]、(5,10]、(10,15]、(15,20]、(20, 25]、(25, +supremum]。</p>
+</li>
+<li><p>另外，间隙锁是在可重复读隔离级别下才会生效的。所以，你如果把隔离级别设置为读提交的话，就没有间隙锁了。但同时，你要解决可能出现的数据和日志不一致问题，需要把 binlog 格式设置为 row。间隙锁的引入，可能会导致同样的语句锁住更大的范围，这其实是影响了并发度的。</p>
+</li>
+<li><p>所以，你如果把隔离级别设置为读提交的话，就没有间隙锁了。但同时，你要解决可能出现的数据和日志不一致问题，需要把 binlog 格式设置为 row。这，也是现在不少公司使用的配置组合。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>-MySql</category>
+      </categories>
+      <tags>
+        <tag>-MySql</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySql——索引（下）</title>
+    <url>/2020/11/08/MySql%E2%80%94%E2%80%94%E7%B4%A2%E5%BC%95%EF%BC%88%E4%B8%8B%EF%BC%89/</url>
+    <content><![CDATA[<h3 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h3><ul>
+<li>上一节我们说了，使用二级索引需要回表，回表需要访问多一次磁盘，那有什么办法减少回表的次数呢？</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/dc/8d/dcda101051f28502bd5c4402b292e38d.png" alt="img"></p>
+<ul>
+<li>覆盖索引是指一个查询语句的执行只用从索引中就能够取得，不必从数据表中读取（回表）。</li>
+<li>如果执行语句不是以<code>select * ...</code>开头的，而是<code>select id from t where k=5</code>，则这个查询可以直接在k索引树上直接返回id，并不需要回表，这样可以显著地提高查询性能，所以使用覆盖索引是一个常见地性能优化手段。</li>
+</ul>
+<h3 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h3><ul>
+<li>基于上面覆盖索引的说明，我们来讨论一个问题：在一个市民信息表上，是否有必要将身份证号和名字建立联合索引？</li>
+<li>假设这个市民表的定义如下：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`tuser`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`id_card`</span> <span class="built_in">varchar</span>(<span class="number">32</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`name`</span> <span class="built_in">varchar</span>(<span class="number">32</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`age`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`ismale`</span> <span class="built_in">tinyint</span>(<span class="number">1</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>),</span><br><span class="line">  <span class="keyword">KEY</span> <span class="string">`name_age`</span> (<span class="string">`id_card`</span>, <span class="string">`name`</span>),</span><br><span class="line">  <span class="keyword">KEY</span> <span class="string">`name`</span> (<span class="string">`name`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>如果现在有一个高频的请求，要根据市民的身份证号查询他的姓名，这个联合索引就有意义了。它可以在这个高频请求上用到覆盖索引，不再需要回表查整行记录，减少语句的执行时间。</li>
+</ul>
+<h3 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h3><ul>
+<li>看到这里你一定有一个疑问，如果为每一种查询都设计一个索引，索引是不是太多了。单独为一个不频繁的请求创建一个（身份证号，地址）的索引又感觉有点浪费，但总不能让它走全表扫描吧</li>
+<li>这时，就可以使用索引的最左前缀，来减少索引的存储空间。</li>
+<li>最左前缀的含义是：索引的匹配原则会按照前几个字符进行模糊匹配，这里多少个字符要依据业务需求来确定。</li>
+<li>如果你要查的是所有名字第一个字是“张”的人，你的 SQL 语句的条件是”where name like ‘张 %’”。这时，你也能够用上这个索引，查找到第一个符合条件的记录是 ID3，然后向后遍历，直到不满足条件为止。</li>
+<li>可以看到，不只是索引的全部定义，只要满足最左前缀，就可以利用索引来加速检索。这个最左前缀可以是联合索引的最左 N 个字段，也可以是字符串索引的最左 M 个字符。</li>
+</ul>
+<h3 id="评估标准"><a href="#评估标准" class="headerlink" title="评估标准"></a>评估标准</h3><ul>
+<li>评估标准是，索引的复用能力。因为可以支持最左前缀，所以当已经有了 (a,b) 这个联合索引后，一般就不需要单独在 a 上建立索引了。因此，第一原则是，如果通过调整顺序，可以少维护一个索引，那么这个顺序往往就是需要优先考虑采用的。</li>
+<li>如果既有联合查询，又有基于 a、b 各自的查询呢？查询条件里面只有 b 的语句，是无法使用 (a,b) 这个联合索引的，这时候你不得不维护另外一个索引，也就是说你需要同时维护 (a,b)、(b) 这两个索引。</li>
+<li>这时候，我们要考虑的原则就是空间了。比如上面这个市民表的情况，name 字段是比 age 字段大的 ，那我就建议你创建一个（name,age) 的联合索引和一个 (age) 的单字段索引。</li>
+</ul>
+<h3 id="索引下推"><a href="#索引下推" class="headerlink" title="索引下推"></a>索引下推</h3><ul>
+<li><p>当要执行这句语句<code>select * from tuser where name like &#39;张%&#39; and age=10 and ismale=1;</code></p>
+</li>
+<li><p>所以这个语句在搜索索引树的时候，只能用 “张”，找到第一个满足条件的记录 ID3。当然，这还不错，总比全表扫描要好。然后呢？当然是判断其他条件是否满足。</p>
+</li>
+<li><p>在 MySQL 5.6 之前，只能从 ID3 开始一个个回表。到主键索引上找出数据行，再对比字段值。而 MySQL 5.6 引入的索引下推优化（index condition pushdown)， 可以在索引遍历过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数。</p>
+<p><img src="https://static001.geekbang.org/resource/image/76/1b/76e385f3df5a694cc4238c7b65acfe1b.jpg" alt="img"></p>
+</li>
+<li><p>这时，回表的次数就会从4次降到了2次。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>-MySql</category>
+      </categories>
+      <tags>
+        <tag>-MySql</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySql——索引（上）</title>
+    <url>/2020/11/08/MySql%E2%80%94%E2%80%94%E7%B4%A2%E5%BC%95%EF%BC%88%E4%B8%8A%EF%BC%89/</url>
+    <content><![CDATA[<h3 id="何为索引"><a href="#何为索引" class="headerlink" title="何为索引"></a>何为索引</h3><ul>
+<li>索引的出现其实就是为了提高数据查询的效率，就像书的目录一样。</li>
+<li>但是实现索引的方式却有很多种，有三种常见且简单的数据结构，它们分别是哈希表、有序数组和搜索树</li>
+<li>这里只说以下使用场景，哈希表索引适用于只有等值查询的场景，对于范围查询并不适用。</li>
+<li>而有序数组在等职查询和范围查询场景中性能都非常优秀，但是有序数组在插入和删除数据时，需要挪动大量的数据，比较耗时，所以有序数组索引只适用于静态存储引擎。</li>
+<li>二叉搜索树的特点是：父节点左子树所有结点的值小于父节点的值，右子树所有结点的值大于父节点的值。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/04/68/04fb9d24065635a6a637c25ba9ddde68.png" alt="img"></p>
+<ul>
+<li>为了维持O(logn)的时间复杂度，需要保持这棵树的平衡性，为了达到这个保证，更新的时间复杂度也是O(logn)。</li>
+<li>但是二叉搜索树每一层存储的结点并不多，这就会导致树高较大，而索引不仅是要存在内存中的，还要存储在磁盘中的，这就会导致磁盘中每次需要查找一个结点时，从磁盘随机读取一个数据块的次数较多（树高较大的情况）。</li>
+<li>举个例子，从磁盘随机读一个数据块需要 10 ms 左右的寻址时间。也就是说，对于一个 100 万行的表，如果使用二叉树来存储，单独访问一个行可能需要 20 个 10 ms 的时间，这个查询可真够慢的。</li>
+<li>所以，为了让一个查询尽量少地读磁盘，就不应该使用二叉树，而是要使用N叉树，这里的N取决于数据块的大小。以InnoDB的一个整数字段索引为例，这个N大概为1200，如果一棵树树高为4的话，就可以村1200的3次方，也就是17亿，这时，查找一个数据最多只需要访问3次磁盘（甚至更少），大大提高了访问速度。</li>
+<li>数据库技术发展到今天，跳表、LSM 树等数据结构也被用于引擎设计中，这里我就不再一一赘述。</li>
+</ul>
+<h3 id="InnoDB的索引模型"><a href="#InnoDB的索引模型" class="headerlink" title="InnoDB的索引模型"></a>InnoDB的索引模型</h3><ul>
+<li>在 InnoDB 中，表都是根据主键顺序以索引的形式存放的，这种存储方式的表称为索引组织表。InnoDB 使用了 B+ 树索引模型，所以数据都是存储在 B+ 树中的。每一个索引在 InnoDB 里面对应一棵 B+ 树。</li>
+<li>假设，有一个主键为id的表，表中有字段k，并且在k上有索引。则这个表的建表语句是：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> t(</span><br><span class="line">	<span class="keyword">id</span> <span class="built_in">int</span>,</span><br><span class="line">    k <span class="built_in">int</span> <span class="keyword">not</span> <span class="literal">null</span>,</span><br><span class="line">    <span class="keyword">name</span> <span class="built_in">varchar</span>(<span class="number">16</span>),</span><br><span class="line">    <span class="keyword">index</span> (k)</span><br><span class="line">)<span class="keyword">engine</span>=<span class="keyword">InnoDB</span>;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>表中 R1~R5 的 (ID,k) 值分别为 (100,1)、(200,2)、(300,3)、(500,5) 和 (600,6)，两棵树的示例示意图如下。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/dc/8d/dcda101051f28502bd5c4402b292e38d.png" alt="img"></p>
+<ul>
+<li>根据叶节点的内容，索引类型分为主键索引（聚簇索引）和非主键索引（二级索引）。</li>
+</ul>
+<blockquote>
+<p>这两种索引的区别是：</p>
+<ol>
+<li>如果语句是<code>select * from t where id=500</code>，就会使用主键索引；</li>
+<li>如果语句是<code>select * from t where k=5</code>，就会使用非主键索引，需要先搜索k索引树，得到id的值为500，再到id索引树搜索一次，这个过程称为回表。</li>
+</ol>
+</blockquote>
+<ul>
+<li>也就是说，基于非主键索引的查询需要多扫描一棵索引树。因此，我们在应用中应该尽量使用主键查询。</li>
+</ul>
+<h3 id="索引的维护"><a href="#索引的维护" class="headerlink" title="索引的维护"></a>索引的维护</h3><ul>
+<li>为了维护索引树的有序性，需要再插入和删除操作做必要的维护，在InnoDB中，每一个B+树的子节点为一个数据页，而数据页的默认大小是16KB。</li>
+<li>以上图为例，如果插入的新行id值为700，则只需要在R5后面插入一个新记录，而如果新插入的值为400，就会比较麻烦，需要逻辑上挪动后面的数据，空出位置。</li>
+<li>而更糟的情况是，如果 R5 所在的数据页已经满了，根据 B+ 树的算法，这时候需要申请一个新的数据页，然后挪动部分数据过去。这个过程称为页分裂。在这种情况下，性能自然会受影响。</li>
+<li>除了性能外，页分裂操作还影响数据页的利用率。原本放在一个页的数据，现在分到两个页中，整体空间利用率降低大约 50%。</li>
+<li>这里利用率降低50%的原因是，为了避免每次插入时都会挪动数据，InnoDB并不会去填满每个数据页，它会留有一小部分的空间以防下一次的插入，而这些空间就称为数据页的空洞。</li>
+<li>当然有分裂就有合并。当相邻两个页由于删除了数据，利用率很低之后，会将数据页做合并。合并的过程，可以认为是分裂过程的逆过程。</li>
+<li>所以，为了保证不会在数据的中间插入数据，可以将主键设置为自增模式，在建表语句中一般是这么定义的： <code>NOT NULL PRIMARY KEY AUTO_INCREMENT</code>。</li>
+<li>也就是说，自增主键的插入数据模式，正符合了我们前面提到的递增插入的场景。每次插入一条新记录，都是追加操作，都不涉及到挪动其他记录，也不会触发叶子节点的分裂。</li>
+<li>还有一个选择索引原则：主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。所以，一般不会用业务字段去作为索引，这样做也不能保证索引的有序性。</li>
+<li>使用业务字段做索引的情况：<ol>
+<li>只有一个索引；</li>
+<li>该索引必须是唯一索引。</li>
+</ol>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>-MySql</category>
+      </categories>
+      <tags>
+        <tag>-MySql</tag>
       </tags>
   </entry>
 </search>

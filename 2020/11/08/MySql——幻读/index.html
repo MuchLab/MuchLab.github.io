@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MySql——幻读">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql——幻读">
+<meta property="og:url" content="https://muchlab.github.io/2020/11/08/MySql%E2%80%94%E2%80%94%E5%B9%BB%E8%AF%BB/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="MySql——幻读">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/5b/8b/5bc506e5884d21844126d26bbe6fa68b.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/dc/92/dcea7845ff0bdbee2622bf3c67d31d92.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/dc/92/dcea7845ff0bdbee2622bf3c67d31d92.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/e7/61/e7f7ca0d3dab2f48c588d714ee3ac861.png">
+<meta property="article:published_time" content="2020-11-08T08:26:47.000Z">
+<meta property="article:modified_time" content="2020-11-08T08:34:24.048Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-MySql">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/5b/8b/5bc506e5884d21844126d26bbe6fa68b.png">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/11/08/MySql%E2%80%94%E2%80%94%E5%B9%BB%E8%AF%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySql——幻读 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/11/08/MySql%E2%80%94%E2%80%94%E5%B9%BB%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySql——幻读
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-11-08 16:26:47 / 修改时间：16:34:24" itemprop="dateCreated datePublished" datetime="2020-11-08T16:26:47+08:00">2020-11-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySql/" itemprop="url" rel="index"><span itemprop="name">-MySql</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/11/08/MySql%E2%80%94%E2%80%94%E5%B9%BB%E8%AF%BB/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/11/08/MySql%E2%80%94%E2%80%94%E5%B9%BB%E8%AF%BB/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">MySql——幻读</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h3><ul>
+<li>所谓幻读，就是指一个事务在前后两次查询同一个范围的时候，后一次查询看到的前一次查询没有看到的行。</li>
+<li>我们来看这样一个场景：创建一个表</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`t`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`c`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`d`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>),</span><br><span class="line">  <span class="keyword">KEY</span> <span class="string">`c`</span> (<span class="string">`c`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>),(<span class="number">5</span>,<span class="number">5</span>,<span class="number">5</span>),</span><br><span class="line">(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>),(<span class="number">15</span>,<span class="number">15</span>,<span class="number">15</span>),(<span class="number">20</span>,<span class="number">20</span>,<span class="number">20</span>),(<span class="number">25</span>,<span class="number">25</span>,<span class="number">25</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>当执行下面语句时，会命中d=5这一行，并给改行加一个写锁，由于两阶段锁协议，这个锁会在执行commit语句的时候释放。</li>
+<li>由于字段d上没有索引，因此这条语句会做全表扫描。其他被扫描到的，但是不满足d=5这个条件的，会不会加上锁呢？</li>
+<li>比如执行下面的事务：</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/5b/8b/5bc506e5884d21844126d26bbe6fa68b.png" alt="img"></p>
+<ul>
+<li>在读未提交的隔离级别下，上面sessionA在前后执行查询语句时，返回的结果并不相同，而这种多出几行的现象，被称为幻读</li>
+<li>在可重复读隔离级别下，普通的查询都是快照读，是不会看到别的事务插入的数据的，因此，幻读只会在当前都下才会出现。</li>
+<li>需要注意的是，在T2中sessionB的修改结果被sessionA之后的查询语句用“当前读”看到，并不能称为幻读，幻读仅专指“新插入的行”。</li>
+</ul>
+<h3 id="幻读有什么问题"><a href="#幻读有什么问题" class="headerlink" title="幻读有什么问题"></a>幻读有什么问题</h3><ul>
+<li><p>从语义上，sessionA在T1时刻就声明了，要把所有的d=5的行锁住，不准别的事务进行读写操作，但事实上，按照上面的逻辑，这个语义被破坏了。</p>
+</li>
+<li><p>其次，幻读会导致数据不一致问题，锁的设计是为了保证数据的一致性，而这个一致性，不止是数据库内部数据状态在此刻的一致性，还包括了数据和日志在逻辑上的一致性。</p>
+</li>
+<li><p>举个例子：执行下面的事务：</p>
+<p><img src="https://static001.geekbang.org/resource/image/dc/92/dcea7845ff0bdbee2622bf3c67d31d92.png" alt="img"></p>
+</li>
+<li><p>如果update和select…for update是一致的话，只会在d=5的语句加锁，那三个事务的执行过程如下：</p>
+<ol>
+<li>经过 T1 时刻，id=5 这一行变成 (5,5,100)，当然这个结果最终是在 T6 时刻正式提交的 ;</li>
+<li>经过 T2 时刻，id=0 这一行变成 (0,5,5);</li>
+<li>经过 T4 时刻，表里面多了一行 (1,5,5);</li>
+<li>其他行跟这个执行序列无关，保持不变</li>
+</ol>
+<p><img src="https://static001.geekbang.org/resource/image/dc/92/dcea7845ff0bdbee2622bf3c67d31d92.png" alt="img"></p>
+</li>
+<li><p>这样看的话，这些数据并没有什么问题，但来看看binlog中记录的内容：</p>
+<ol>
+<li>T2 时刻，session B 事务提交，写入了两条语句；</li>
+<li>T4 时刻，session C 事务提交，写入了两条语句；</li>
+<li>T6 时刻，session A 事务提交，写入了 update t set d=100 where d=5 这条语句。</li>
+</ol>
+</li>
+<li><p>也就是下面这样：</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,0,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">1</span>,<span class="number">1</span>,<span class="number">5</span>); <span class="comment">/*(1,1,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span>; <span class="comment">/*(1,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">100</span> <span class="keyword">where</span> d=<span class="number">5</span>;<span class="comment">/*所有d=5的行，d改成100*/</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>当我们拿这个binlog去备库时，这三行的结果，都变成了 (0,5,100)、(1,5,100) 和 (5,5,100)。</li>
+<li>也就是说，id=0和id=1发生了数据不一致的问题。</li>
+</ul>
+<h3 id="幻读问题如何解决"><a href="#幻读问题如何解决" class="headerlink" title="幻读问题如何解决"></a>幻读问题如何解决</h3><h4 id="锁住所有行"><a href="#锁住所有行" class="headerlink" title="锁住所有行"></a>锁住所有行</h4><ul>
+<li>其实只需要把扫描过程中遇到的行都加上写锁，由于sessionA把所有的行都加上写锁，需要在T6时刻提交事务后，sessionB才能执行，在binlog里的记录就会变成这样：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">1</span>,<span class="number">1</span>,<span class="number">5</span>); <span class="comment">/*(1,1,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span>; <span class="comment">/*(1,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">100</span> <span class="keyword">where</span> d=<span class="number">5</span>;<span class="comment">/*所有d=5的行，d改成100*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,0,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,5,5)*/</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>由于id=1这一行是新插入的，所以在sessionA加上写锁时，并没有对id=1这一行加上锁，这就导致了写入binlog时，id=1这一行的修改是在<code>update t set d=100 where d=5;</code>之前的，即id=1的数据不一致问题并没有得到解决。</li>
+</ul>
+<h4 id="间隙锁"><a href="#间隙锁" class="headerlink" title="间隙锁"></a>间隙锁</h4><ul>
+<li><p>现在我们知道了，产生幻读的原因是，行锁只能锁住行，但是新插入记录这个动作，要更新的是记录之间的间隙。因此，为了解决幻读问题，InnoDB只好引入了间隙锁。</p>
+</li>
+<li><p>顾名思义，间隙锁，锁的就是两个值之间的空隙。比如文章开头的表 t，初始化插入了 6 个记录，这就产生了 7 个间隙。</p>
+<p><img src="https://static001.geekbang.org/resource/image/e7/61/e7f7ca0d3dab2f48c588d714ee3ac861.png" alt="img"></p>
+</li>
+<li><p>这样，当你执行 select * from t where d=5 for update 的时候，就不止是给数据库中已有的 6 个记录加上了行锁，还同时加了 7 个间隙锁。这样就确保了无法再插入新的记录。</p>
+</li>
+<li><p>也就是说这时候，在一行行扫描的过程中，不仅将给行加上了行锁，还给行两边的空隙，也加上了间隙锁。</p>
+</li>
+<li><p>跟间隙锁存在冲突关系的，是“往这个间隙中插入一个记录”这个操作。间隙锁之间都不存在冲突关系。</p>
+</li>
+<li><p>间隙锁和行锁合称 next-key lock，每个 next-key lock 是前开后闭区间。也就是说，我们的表 t 初始化以后，如果用 select * from t for update 要把整个表所有记录锁起来，就形成了 7 个 next-key lock，分别是 (-∞,0]、(0,5]、(5,10]、(10,15]、(15,20]、(20, 25]、(25, +supremum]。</p>
+</li>
+<li><p>另外，间隙锁是在可重复读隔离级别下才会生效的。所以，你如果把隔离级别设置为读提交的话，就没有间隙锁了。但同时，你要解决可能出现的数据和日志不一致问题，需要把 binlog 格式设置为 row。间隙锁的引入，可能会导致同样的语句锁住更大的范围，这其实是影响了并发度的。</p>
+</li>
+<li><p>所以，你如果把隔离级别设置为读提交的话，就没有间隙锁了。但同时，你要解决可能出现的数据和日志不一致问题，需要把 binlog 格式设置为 row。这，也是现在不少公司使用的配置组合。</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/11/08/MySql%E2%80%94%E2%80%94%E5%B9%BB%E8%AF%BB/" title="MySql——幻读">https://muchlab.github.io/2020/11/08/MySql——幻读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/MySql/" rel="tag"><i class="fa fa-tag"></i> -MySql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/08/MySql%E2%80%94%E2%80%94%E7%B4%A2%E5%BC%95%EF%BC%88%E4%B8%8B%EF%BC%89/" rel="prev" title="MySql——索引（下）">
+      <i class="fa fa-chevron-left"></i> MySql——索引（下）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#幻读"><span class="nav-text">幻读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#幻读有什么问题"><span class="nav-text">幻读有什么问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#幻读问题如何解决"><span class="nav-text">幻读问题如何解决</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#锁住所有行"><span class="nav-text">锁住所有行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#间隙锁"><span class="nav-text">间隙锁</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">84</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AspNetCore-C/" rel="tag">-AspNetCore -C#</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WebSocket/" rel="tag">-C# -WebSocket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">-MySql</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth2-0/" rel="tag">-OAuth2.0</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">376k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:42</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
