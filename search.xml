@@ -8281,4 +8281,212 @@ e，set：哈希表，整数数组</code></pre></li>
         <tag>-MySql</tag>
       </tags>
   </entry>
+  <entry>
+    <title>MySql——如何保证高可用</title>
+    <url>/2020/11/09/MySql%E2%80%94%E2%80%94%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E9%AB%98%E5%8F%AF%E7%94%A8/</url>
+    <content><![CDATA[<h3 id="主备延迟"><a href="#主备延迟" class="headerlink" title="主备延迟"></a>主备延迟</h3><p><img src="https://static001.geekbang.org/resource/image/89/cc/89290bbcf454ff9a3dc5de42a85a69cc.png" alt="img"></p>
+<ul>
+<li><p>主备切换可能是一个主动运维动作，比如软件升级、主库所在机器按计划下线等，也可能是被动操作，比如主库所在机器掉电。</p>
+</li>
+<li><p>在介绍主动切换流程的详细步骤之前，我要先跟你说明一个概念，即“同步延迟”。与数据同步有关的时间点主要包括以下三个：</p>
+<ol>
+<li>主库 A 执行完成一个事务，写入 binlog，我们把这个时刻记为 T1;</li>
+<li>之后传给备库 B，我们把备库 B 接收完这个 binlog 的时刻记为 T2;</li>
+<li>备库 B 执行完成这个事务，我们把这个时刻记为 T3。</li>
+</ol>
+</li>
+<li><p>所谓主备延迟，就是同一个事务，在备库执行完成的时间和主库执行完成的时间之间的差值，也就是 T3-T1。</p>
+</li>
+<li><p>你可以在备库上执行 show slave status 命令，它的返回结果里面会显示 seconds_behind_master，用于表示当前备库延迟了多少秒。</p>
+</li>
+<li><p>seconds_behind_master 的计算方法是这样的：</p>
+<ol>
+<li>每个事务的 binlog 里面都有一个时间字段，用于记录主库上写入的时间；</li>
+<li>备库取出当前正在执行的事务的时间字段的值，计算它与当前系统时间的差值，得到 seconds_behind_master。</li>
+</ol>
+</li>
+<li><p>所以说，主备延迟最直接的表现是，备库消费中转日志（relay log）的速度，比主库生产 binlog 的速度要慢。</p>
+</li>
+</ul>
+<h3 id="主备延迟的来源"><a href="#主备延迟的来源" class="headerlink" title="主备延迟的来源"></a>主备延迟的来源</h3><blockquote>
+<p>有些部署条件下，<strong>备库所在机器的性能要比主库所在的机器性能差。</strong>但实际上，更新过程中也会触发大量的读操作。所以，当备库主机上的多个备库都在争抢资源的时候，就可能会导致主备延迟了。</p>
+<p>解决方法是：采用对称部署，也就是说让备库和主库所在的机器性能一致，这样做也方便了主备切换</p>
+</blockquote>
+<blockquote>
+<p><strong>备库的压力大</strong>。一般的想法是，主库既然提供了写能力，那么备库可以提供一些读能力。或者一些运营后台需要的分析语句，不能影响正常业务，所以只能在备库上跑。结果就是，备库上的查询耗费了大量的 CPU 资源，影响了同步速度，造成主备延迟。</p>
+<p>解决办法是：</p>
+<ol>
+<li>一主多从。除了备库外，可以多接几个从库，让这些从库来分担读的压力。</li>
+<li>通过 binlog 输出到外部系统，比如 Hadoop 这类系统，让外部系统提供统计类查询的能力。</li>
+</ol>
+</blockquote>
+<blockquote>
+<p><strong>大事务</strong>，因为主库上必须等事务执行完成才会写入 binlog，再传给备库。所以，如果一个主库上的语句执行 10 分钟，那这个事务很可能就会导致从库延迟 10 分钟。</p>
+</blockquote>
+<ul>
+<li>另外，导致主备延迟的还有大表DDL和备库的并行能力等等。</li>
+</ul>
+<h3 id="可靠性优先策略"><a href="#可靠性优先策略" class="headerlink" title="可靠性优先策略"></a>可靠性优先策略</h3><ul>
+<li>在上图双M的转换，详细过程如下：<ol>
+<li>判断备库 B 现在的 seconds_behind_master，如果小于某个值（比如 5 秒）继续下一步，否则持续重试这一步；</li>
+<li>把主库 A 改成只读状态，即把 readonly 设置为 true；</li>
+<li>判断备库 B 的 seconds_behind_master 的值，直到这个值变成 0 为止；</li>
+<li>把备库 B 改成可读写状态，也就是把 readonly 设置为 false；</li>
+<li>把业务请求切到备库 B。</li>
+</ol>
+</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/54/4a/54f4c7c31e6f0f807c2ab77f78c8844a.png" alt="img"></p>
+<ul>
+<li>这个策略的优点是可靠性高，不会导致数据的不一致问题，但缺点也很明显，就是第三步需要等待second_behind_master的值变为0，这会导致整个系统处于一种不可用状态。</li>
+</ul>
+<h3 id="可用性优先策略"><a href="#可用性优先策略" class="headerlink" title="可用性优先策略"></a>可用性优先策略</h3><ul>
+<li>可用性优先策略就是把可靠性优先策略的第四五步调到最前面，保证系统没有不可用的时间。但是这么做就会导致主备库数据不一致的问题。</li>
+<li>举个例子：有一张表，并插入两行数据</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`t`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">unsigned</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  <span class="string">`c`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span>;</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t(c) <span class="keyword">values</span>(<span class="number">1</span>),(<span class="number">2</span>),(<span class="number">3</span>);</span><br><span class="line"><span class="comment">/*========================*/</span></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t(c) <span class="keyword">values</span>(<span class="number">4</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t(c) <span class="keyword">values</span>(<span class="number">5</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>假设，现在主库上其他的数据表有大量的更新，导致主备延迟达到了5秒，当插入一条c=4的语句后，发生了主备切换。</li>
+<li>如果此时binlog_format=mixed，用可用性优先策略进行切换，将会是如下情况：</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/37/3a/3786bd6ad37faa34aca25bf1a1d8af3a.png" alt="img"></p>
+<ul>
+<li><p>具体流程：</p>
+<ol>
+<li>步骤 2 中，主库 A 执行完 insert 语句，插入了一行数据（4,4），之后开始进行主备切换。</li>
+<li>步骤 3 中，由于主备之间有 5 秒的延迟，所以备库 B 还没来得及应用“插入 c=4”这个中转日志，就开始接收客户端“插入 c=5”的命令。</li>
+<li>步骤 4 中，备库 B 插入了一行数据（4,5），并且把这个 binlog 发给主库 A。</li>
+<li>步骤 5 中，备库 B 执行“插入 c=4”这个中转日志，插入了一行数据（5,4）。而直接在备库 B 执行的“插入 c=5”这个语句，传到主库 A，就插入了一行新数据（5,5）。</li>
+</ol>
+</li>
+<li><p>最后的结果就是，主库 A 和备库 B 上出现了两行不一致的数据。可以看到，这个数据不一致，是由可用性优先流程导致的。</p>
+</li>
+<li><p>如果把binlog_format设置成row格式，这时由于row格式下的binlog会记录数据行的所有字段，并是使用rowid进行应用的，所以回报重复主键异常，具体流程如下：</p>
+<p><img src="https://static001.geekbang.org/resource/image/b8/43/b8d2229b2b40dd087fd3b111d1bdda43.png" alt="img"></p>
+</li>
+<li><p>所以，主备切换一般采用可靠性优先策略，毕竟数据的可靠性是要优于可用性的。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>-MySql</category>
+      </categories>
+      <tags>
+        <tag>-MySql</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySql——如何保证主备一致</title>
+    <url>/2020/11/09/MySql%E2%80%94%E2%80%94%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E4%B8%BB%E5%A4%87%E4%B8%80%E8%87%B4/</url>
+    <content><![CDATA[<h3 id="主备的基本原理"><a href="#主备的基本原理" class="headerlink" title="主备的基本原理"></a>主备的基本原理</h3><ul>
+<li>在MySQL中主备库是可以切换的，如下：在状态1中，客户端的读写都直接访问节点A，而节点B是A的备库，只是将节点A的更新都同步过来，到本地执行，这样就可以保证AB的数据是一致的。</li>
+<li>当切换节点时，也就是变成状态2后，客户端的读写访问节点都是节点B，而节点A就是节点B的备库。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/fd/10/fd75a2b37ae6ca709b7f16fe060c2c10.png" alt="img"></p>
+<ul>
+<li>建议把备库设置为只读模式，这样做的原因有以下三点：<ol>
+<li>有时候一些运营类的查询语句会被放到备库上去查，设置为只读可以防止误操作；</li>
+<li>防止切换逻辑有 bug，比如切换过程中出现双写，造成主备不一致；</li>
+<li>可以用 readonly 状态，来判断节点的角色。</li>
+</ol>
+</li>
+</ul>
+<h3 id="主备的执行流程"><a href="#主备的执行流程" class="headerlink" title="主备的执行流程"></a>主备的执行流程</h3><ul>
+<li>上面的图中，进行主备复制的就是A和B之间的线，那这条线究竟是怎么执行的呢？</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/a6/a3/a66c154c1bc51e071dd2cc8c1d6ca6a3.png" alt="img"></p>
+<ul>
+<li>当需要进行主备复制时，备库B跟主库A之间需要维持一个长连接。主库A内部有一个线程，专门服务B的这个长连接，完整的执行过程时这样的：<ol>
+<li>在备库B上通过<code>change master</code>命令，设置主库A的IP、端口、用户名、密码以及要从哪个位置开始请求binlog，这个位置包含了binlog的文件名和日志的偏移量。</li>
+<li>在备库上执行<code>save slave</code>命令，这时备库就会启动两个线程<code>io_thread</code>和<code>sql_thread</code>，一个负责维持与主库的长连接，一个负责执行<code>relay log</code>中的sql语句。</li>
+<li>而主库A在校验完用户名和密码后，开始按照备库B传来的位置，从本地读取binlog并发送给B</li>
+<li>备库B拿到binlog后，写到本地文件，这个文件为<code>relay log</code>，也叫中转日志。</li>
+<li><code>sql_thread</code>解析<code>relay log</code>中的命令并执行。</li>
+</ol>
+</li>
+</ul>
+<h3 id="binlog的三种格式对比"><a href="#binlog的三种格式对比" class="headerlink" title="binlog的三种格式对比"></a>binlog的三种格式对比</h3><ul>
+<li>binlog一共有三种格式：可以使用<code>show binlog events in [binlog文件位置];</code>命令来查看binlog中的内容。</li>
+</ul>
+<h4 id="Statement"><a href="#Statement" class="headerlink" title="Statement"></a>Statement</h4><ul>
+<li>在Statement格式下，binlog里面记录的就是SQL语句的原文，它使用commit来判断事务是否提交。</li>
+<li>举个例子：执行这行语句<code>delete from t /*comment*/  where a&gt;=4 and t_modified&lt;=&#39;2018-11-10&#39; limit 1;</code>，它生成的binlog如下：</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/b9/31/b9818f73cd7d38a96ddcb75350b52931.png" alt="img"></p>
+<ul>
+<li>由上图可以看到：statement格式下，binlog记录的都是SQL语句，而第一行 SET @@SESSION.GTID_NEXT=’ANONYMOUS’使用来做主备切换的。</li>
+<li>看起来使用statement格式好像没有什么问题，但在执行这个语句时其实是不安全的，这是因为delete带了limit，这很有可能会出现主备不一致的情况：<ol>
+<li>如果 delete 语句使用的是索引 a，那么会根据索引 a 找到第一个满足条件的行，也就是说删除的是 a=4 这一行；</li>
+<li>但如果使用的是索引 t_modified，那么删除的就是 t_modified=’2018-11-09’也就是 a=5 这一行。</li>
+</ol>
+</li>
+<li>因此，使用statement格式是有风险的。</li>
+</ul>
+<h4 id="Row"><a href="#Row" class="headerlink" title="Row"></a>Row</h4><ul>
+<li>在Row格式下，binlog中记录的是执行SQL语句的event，例如下图：前后的 BEGIN 和 COMMIT 是一样的。但是，row 格式的 binlog 里没有了 SQL 语句的原文，而是替换成了两个 event：Table_map 和 Delete_rows。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/d6/26/d67a38db154afff610ae3bb64e266826.png" alt="img"></p>
+<ol>
+<li>Table_map event，用于说明接下来要操作的表是 test 库的表 t;</li>
+<li>Delete_rows event，用于定义删除的行为。</li>
+</ol>
+<ul>
+<li>可以使用mysqlbinlog 工具，用下面这个命令解析和查看 binlog 中的内容。从上图可以知道，这个事务的 binlog 是从 8900 这个位置开始的，所以可以用 start-position 参数来指定从这个位置的日志开始解析。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line">mysqlbinlog  -vv [binlog文件位置] <span class="comment">--start-position=8900;</span></span><br></pre></td></tr></table></figure></div>
+
+<p><img src="https://static001.geekbang.org/resource/image/c3/c2/c342cf480d23b05d30a294b114cebfc2.png" alt="img"></p>
+<ul>
+<li>从这个图，我们可以知道：<ol>
+<li>server id 1，表示这个事务是在 server_id=1 的这个库上执行的。</li>
+<li>每个 event 都有 CRC32 的值，这是因为我把参数 binlog_checksum 设置成了 CRC32。</li>
+<li>我们在 mysqlbinlog 的命令中，使用了 -vv 参数是为了把内容都解析出来，所以从结果里面可以看到各个字段的值（比如，@1=4、 @2=4 这些值）。</li>
+<li>最后的 Xid event，用于表示事务被正确地提交了。</li>
+</ol>
+</li>
+<li>从这里可以看到，使用Row格式时，binlog记录的是需要进行操作的rowid=xxx的行，这样binlog传到备库中去的时候，就肯定会删除id=xxx的行，因为主键是唯一的，就不会出现主备删除不同行的问题。</li>
+</ul>
+<h4 id="Mixed"><a href="#Mixed" class="headerlink" title="Mixed"></a>Mixed</h4><ul>
+<li>由上面可知，statement 格式的 binlog 可能会导致主备不一致，所以要使用 row 格式。</li>
+<li>但 row 格式的缺点是，很占空间。比如你用一个 delete 语句删掉 10 万行数据，用 statement 的话就是一个 SQL 语句被记录到 binlog 中，占用几十个字节的空间。但如果用 row 格式的 binlog，就要把这 10 万条记录都写到 binlog 中。这样做，不仅会占用更大的空间，同时写 binlog 也要耗费 IO 资源，影响执行速度。</li>
+<li>所以，MySql就取了个折中方案，也就是有了 mixed 格式的 binlog。mixed 格式的意思是，MySQL 自己会判断这条 SQL 语句是否可能引起主备不一致，如果有可能，就用 row 格式，否则就用 statement 格式。</li>
+</ul>
+<h4 id="小总结"><a href="#小总结" class="headerlink" title="小总结"></a>小总结</h4><ul>
+<li>如果你的线上 MySQL 设置的 binlog 格式是 statement 的话，那基本上就可以认为这是一个不合理的设置。你至少应该把 binlog 的格式设置为 mixed。</li>
+<li>但是，越来越多的场景会要求把binlog_format设置成row格式，这么做有一个好处，那就是可以用binlog来恢复数据，因为row格式的binlog会把增删改的操作的所有数据记录起来，当你要恢复数据时，你只需要执行相应的反向操作。</li>
+<li>最后，用 binlog 来恢复数据的标准做法是，用 mysqlbinlog 工具解析出来，然后把解析结果整个发给 MySQL 执行。类似下面的命令：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line">mysqlbinlog [binlog文件位置]  <span class="comment">--start-position=2738 --stop-position=2973 | mysql -h127.0.0.1 -P13000 -u$user -p$pwd;</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="双M结构——循环复制"><a href="#双M结构——循环复制" class="headerlink" title="双M结构——循环复制"></a>双M结构——循环复制</h3><ul>
+<li>在第一张图我们所用到的是M-S的主备结构，但实际生产上使用得较多的是双M结构，也就是下图：</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/20/56/20ad4e163115198dc6cf372d5116c956.png" alt="img"></p>
+<ul>
+<li>其实这和图一相比，只是多了一条线，这代表了A和B之间是互为主备的关系，在切换客户端连接的时候就不用再修改主备关系了</li>
+<li>业务逻辑在节点 A 上更新了一条语句，然后再把生成的 binlog 发给节点 B，节点 B 执行完这条更新语句后也会生成 binlog。（建议把参数 log_slave_updates 设置为 on，表示备库执行· relay log 后生成 binlog）。那么，如果节点 A 同时是节点 B 的备库，相当于又把节点 B 新生成的 binlog 拿过来执行了一次，然后节点 A 和 B 间，会不断地循环执行这个更新语句，也就是循环复制了。这个要怎么解决呢？</li>
+<li>从上面的知识可以知道，binlog会记录下 server id 的值，这就可以使用这个id来解决循环复制问题：<ol>
+<li>规定两个库的 server id 必须不同，如果相同，则它们之间不能设定为主备关系；</li>
+<li>一个备库接到 binlog 并在重放的过程中，生成与原 binlog 的 server id 相同的新的 binlog；</li>
+<li>每个库在收到从自己的主库发过来的日志后，先判断 server id，如果跟自己的相同，表示这个日志是自己生成的，就直接丢弃这个日志。</li>
+</ol>
+</li>
+<li>则双M结构下，日志的执行流就会变成这样：<ol>
+<li>从节点 A 更新的事务，binlog 里面记的都是 A 的 server id；</li>
+<li>传到节点 B 执行一次以后，节点 B 生成的 binlog 的 server id 也是 A 的 server id；</li>
+<li>再传回给节点 A，A 判断到这个 server id 与自己的相同，就不会再处理这个日志。所以，死循环在这里就断掉了。</li>
+</ol>
+</li>
+</ul>
+<hr>
+<p>学习资料：<a href="https://time.geekbang.org/column/intro/100020801" target="_blank" rel="noopener">MySql实战45讲</a></p>
+]]></content>
+      <categories>
+        <category>-MySql</category>
+      </categories>
+      <tags>
+        <tag>-MySql</tag>
+      </tags>
+  </entry>
 </search>
