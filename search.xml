@@ -8489,4 +8489,152 @@ e，set：哈希表，整数数组</code></pre></li>
         <tag>-MySql</tag>
       </tags>
   </entry>
+  <entry>
+    <title>JVM——类加载器子系统</title>
+    <url>/2020/11/22/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/</url>
+    <content><![CDATA[<p><img src="/2020/11/22/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/D:%5CMy_blog%5Csource_posts%5CJVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F%5CSnipaste_2020-11-06_23-02-22.png" alt="Snipaste_2020-11-06_23-02-22"></p>
+<ul>
+<li>类加载器子系统负责从文件系统或者网络中加载Class文件，class文件在文件开头有特定的文件标识。</li>
+<li>ClassLoader只负责class文件的加载，至于它是否可以运行，则由执行引擎决定。</li>
+<li>加载的类信息存放于一块称为方法去的内存空间，除了类的信息外，方法区中还会存放运行时常量池的信息、字符串字面量和数字常量。</li>
+<li>sun.misc.Launcher是一个Java虚拟机的应用入口</li>
+</ul>
+<h3 id="加载阶段"><a href="#加载阶段" class="headerlink" title="加载阶段"></a>加载阶段</h3><ul>
+<li>加载阶段分为3部分：<ol>
+<li>通过一个类的全限定名获取定义此类的二进制字节流。</li>
+<li>将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。</li>
+<li>在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据访问入口。</li>
+</ol>
+</li>
+</ul>
+<h3 id="链接阶段"><a href="#链接阶段" class="headerlink" title="链接阶段"></a>链接阶段</h3><ul>
+<li>链接阶段分为3部分：<ol>
+<li>验证：在于确保Class文件的字节流中包含信息符合当前虚拟机的要求，保证被加载类的正确性，不会危害到虚拟机。主要包括四种验证：文件格式验证、元数据验证、字节码验证、符号引用验证。</li>
+<li>准备：为变量分配内存并且设置该类变量的默认初始值，即0。这里的初始化不包含final修饰的static，因为final在编译的时候就已经分配了。不会为实例变量分配初始化。</li>
+<li>解析：将常量池中的符号引用转换为直接引用的过程</li>
+</ol>
+</li>
+</ul>
+<h3 id="初始化阶段"><a href="#初始化阶段" class="headerlink" title="初始化阶段"></a>初始化阶段</h3><ul>
+<li>初始化阶段就是执行类构造方法<code>&lt;clinit&gt;()</code>的过程，此方法不需要定义，是javac编译器自动收集类中的所有类变量的赋值动作和静态代码块中的语句合并而来。</li>
+<li>JVM会保证在子类的<code>&lt;clinit&gt;()</code>方法执行前，父类的<code>&lt;clinit&gt;()</code>方法已经执行完毕。</li>
+<li>JVM必须保证一个类的<code>&lt;clinit&gt;()</code>方法在多线程下被同步加锁。</li>
+</ul>
+<h3 id="加载器的类型"><a href="#加载器的类型" class="headerlink" title="加载器的类型"></a>加载器的类型</h3><ul>
+<li>JVM支持两种类型的类加载器，分别是引导类加载器（BootstrapClassLoader）和自定义加载器</li>
+<li>从概念上讲，自定义类加载器一般指的是程序中由开发人员自定义的一类类加载器，但Java虚拟机规范却没有这么定义，而是将所有派生于抽象类ClassLoader的类加载器都划分为自定义加载器。所以ExtensionClassLoader和SystemClassLoader也是自定义加载器，</li>
+<li>而最常见的类加载器就只有三个：BootstrapClassLoader（引导加载器）、ExtensionClassLoader（扩展加载器）、SystemClassLoader（系统加载器）</li>
+<li>加载器的继承关系如下：其中引导类加载器采用C++语言编写，其他用的是Java</li>
+</ul>
+<p><img src="/2020/11/22/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/Snipaste_2020-11-07_20-50-56.png" alt="Snipaste_2020-11-07_20-50-56"></p>
+<ul>
+<li>对于用户自定义类来说，默认使用系统类加载器进行加载；对于Java的核心类库，都是使用引导类来加载的。</li>
+</ul>
+<h4 id="引导类加载器（BootstrapClassLoader）"><a href="#引导类加载器（BootstrapClassLoader）" class="headerlink" title="引导类加载器（BootstrapClassLoader）"></a>引导类加载器（BootstrapClassLoader）</h4><ul>
+<li>引导类加载器使用C/C++语言实现的，嵌套在JVM内部</li>
+<li>它用来加载Java的核心库（rt.jar、resources.jar或sun.boot.class.path路径下的内容），用于提供JVM自身需要的类。</li>
+<li>并不继承自java.lang.ClassLoader，没有父类加载器，用于加载扩展类和系统类加载器，并指定为它们的父类加载器</li>
+<li>出于安全考虑，引导类加载器只加载包名为java、javax、sun等开头的类。执行<code>getURLs()</code>就可以获取类加载器加载的类库路径。</li>
+</ul>
+<h4 id="扩展类加载器（ExtClassLoader）"><a href="#扩展类加载器（ExtClassLoader）" class="headerlink" title="扩展类加载器（ExtClassLoader）"></a>扩展类加载器（ExtClassLoader）</h4><ul>
+<li>派生于ClassLoader类，父类为引导类加载器，从java.ext.dirs系统属性所指定的目录中加载类库，或从JDK的安装目录的jre.lib/ext子目录下加载类库。</li>
+<li>通过<code>System.getProperty(&quot;java.ext.dirs&quot;);</code>可以获取扩展类加载器加载的类库路径</li>
+</ul>
+<h4 id="系统类加载器（AppClassLoader）"><a href="#系统类加载器（AppClassLoader）" class="headerlink" title="系统类加载器（AppClassLoader）"></a>系统类加载器（AppClassLoader）</h4><ul>
+<li>派生于ClassLoader类，父类为扩展类加载器，它负责加载环境变量classpath或系统属性java.class.path指定路径下的类库，一般来说，Java应用的类都是由它来完成加载。</li>
+<li>可以通过个<code>getSystemClassLoader()</code>来获取该加载器</li>
+</ul>
+<h4 id="用户自定义加载器"><a href="#用户自定义加载器" class="headerlink" title="用户自定义加载器"></a>用户自定义加载器</h4><ul>
+<li>在平时项目开发中，类的加载几乎是由上述3中类加载器相互配合执行的，那什么时候需要使用自定义类加载类：<ol>
+<li>隔离加载器，当需要多个jar一起整合时，类路径和类名一样，发生冲突的时候就需要隔离</li>
+<li>修改类加载的方式，除了引导类加载器是必须的外，其他都可以自定义</li>
+<li>扩展加载源</li>
+<li>防止源码泄露，自定义加密解密</li>
+</ol>
+</li>
+<li>用户自定义类加载器实现步骤：<ol>
+<li>继承ClassLoader类</li>
+<li>把自定义类加载逻辑写在findClass()方法中</li>
+<li>也可以继承URLClassLoader类，这样可以避免自己编写findClass()方法以及获取字节码流。</li>
+</ol>
+</li>
+</ul>
+<h3 id="类加载器中的方法"><a href="#类加载器中的方法" class="headerlink" title="类加载器中的方法"></a>类加载器中的方法</h3><table>
+<thead>
+<tr>
+<th>方法名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>getParent()</td>
+<td>返回该类加载器的父类加载器</td>
+</tr>
+<tr>
+<td>loadClass(String name)</td>
+<td>加载名称为name的类，返回该类的Class对象</td>
+</tr>
+<tr>
+<td>findClass(String name)</td>
+<td>查找名称为name的类，返回该类的Class对象</td>
+</tr>
+<tr>
+<td>findLoadedClass(String name)</td>
+<td>查找名称为name的已经被加载过的类，返回该类的Class对象</td>
+</tr>
+<tr>
+<td>defineClass(String name, byte[] b, int off, int len)</td>
+<td>把字节数组b中的内容转换称一个Java类，返回该类的Class对象</td>
+</tr>
+<tr>
+<td>resolveClass(Class&lt;?&gt; c)</td>
+<td>连接指定的一个Java类</td>
+</tr>
+</tbody></table>
+<h3 id="获取加载器的方法"><a href="#获取加载器的方法" class="headerlink" title="获取加载器的方法"></a>获取加载器的方法</h3><ol>
+<li>clazz.getClassLoader()</li>
+<li>Thread.currentThread()/getContextClassLoader()</li>
+<li>ClassLoader.getSystemClassLoader()</li>
+</ol>
+<h3 id="双亲委派机制"><a href="#双亲委派机制" class="headerlink" title="双亲委派机制"></a>双亲委派机制</h3><ol>
+<li>如果一个类加载器收到了一个加载请求，它并不会自己先去加载，而是把这个请求委托给父类的加载器去执行。</li>
+<li>如果父类加载器还存在其父类加载器，则进一步向上委托，直至到达顶层的启动类加载器。</li>
+<li>如果父类加载器可以完成类加载任务，就成功返回，倘若父类加载器无法完成此加载任务，就会返回该子类加载器加载，判断是否能加载就是看该类的路径是否可以被加载器识别。</li>
+</ol>
+<ul>
+<li>双亲委派机制的优点：<ol>
+<li>避免类的重复加载</li>
+<li>保护程序的安全，防止核心API被随意篡改</li>
+</ol>
+</li>
+</ul>
+<h3 id="注意的点"><a href="#注意的点" class="headerlink" title="注意的点"></a>注意的点</h3><ul>
+<li>在JVM中表示两个class对象是否为同一个类存在两个必要条件：<ol>
+<li>类的完整类名必须一致，包括包名。</li>
+<li>加载这个类的ClassLoader必须相同。</li>
+</ol>
+</li>
+<li>如果一个类是由用户类加载器加载的，那么JVM会将这个类加载器的一个引用作为类型信息的一部分保存在方法区中；当解析一个类型到另一个类型的引用的时候，JVM需要保证这两个类型的类加载器是相同的。</li>
+</ul>
+<h3 id="类的主动使用和被动使用"><a href="#类的主动使用和被动使用" class="headerlink" title="类的主动使用和被动使用"></a>类的主动使用和被动使用</h3><ul>
+<li>主动使用：<ol>
+<li>创建类的实例（new）</li>
+<li>访问某个类或接口的静态变量，或者堆该静态变量进行赋值</li>
+<li>调用类的静态方法</li>
+<li>反射</li>
+<li>初始化一个类的子类</li>
+<li>Java虚拟机启动时被标明为启动类的类</li>
+<li>动态语言支持</li>
+</ol>
+</li>
+<li>被动使用：除了上面七种情况，其他的都是被动使用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>-JVM——类加载器子系统</category>
+      </categories>
+      <tags>
+        <tag>-JVM——类加载器子系统</tag>
+      </tags>
+  </entry>
 </search>
