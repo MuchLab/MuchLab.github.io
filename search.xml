@@ -8637,4 +8637,334 @@ e，set：哈希表，整数数组</code></pre></li>
         <tag>-JVM——类加载器子系统</tag>
       </tags>
   </entry>
+  <entry>
+    <title>SequoiaDB使用shell来创建集群并进行部署并创建实例</title>
+    <url>/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/</url>
+    <content><![CDATA[<h3 id="安装SequoiaDB"><a href="#安装SequoiaDB" class="headerlink" title="安装SequoiaDB"></a>安装SequoiaDB</h3><p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-26_14-09-34.png" alt="Snipaste_2020-11-26_14-09-34"></p>
+<ul>
+<li>先创建三台虚拟机，然后将ip配置为192.168.xx.11-13，然后配置hostname和hosts</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">hostname sdb1</span><br><span class="line">hostname sdb2</span><br><span class="line">hostname sdb3</span><br><span class="line"><span class="meta">#</span><span class="bash"> 将下面的内容追加到/etc/hosts中</span></span><br><span class="line">192.168.xx.11 sdb1</span><br><span class="line">192.168.xx.12 sdb2</span><br><span class="line">192.168.xx.13 sdb3</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>关闭掉三台机子的防火墙，把开机自启动防火墙设置成禁止</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">systemctl stop firewalld.service</span><br><span class="line">systemctl disable firewalld.service</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>安装SequoiaDB</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">tar -zxvf sequoiadb-5.0.1-linux_x86_64.tar.gz</span><br><span class="line">cd sequoiadb-5.0.1</span><br><span class="line"><span class="meta">#</span><span class="bash"> --mode表示安装时采用的模式，text表示使用shell交互模式，--SMS表示，最后的<span class="literal">true</span>表示启动SequoiaSAC</span></span><br><span class="line">./sequoiadb-5.0.1-linux_x86_64-installer.run --mode text --SMS true</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在安装完之后，就可以通过图形化界面或者shell来创建集群了。</li>
+</ul>
+<h3 id="使用shell创建集群"><a href="#使用shell创建集群" class="headerlink" title="使用shell创建集群"></a>使用shell创建集群</h3><ul>
+<li>创建临时的协调节点</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 使用集群管理对象来创建临时的协调节点</span></span><br><span class="line">var oma = new Oma("localhost", 11790)</span><br><span class="line">oma.createCoord(18900, "/opt/sequoiadb/database/tmp/coord/18900")</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>启动临时协调节点</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">oma.startNode(18900)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>连接临时协调节点</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">var db = new Sdb("localhost", 18900)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建编目节点组</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">db.createCataRG("sdb1", 11800, "/opt/sequoiadb/database/catalog/11800")</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>获取编目节点组的句柄，用于创建其他编目节点</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">var rg = db.getRG(1)</span><br><span class="line">var node = rg.createNode("sdb2", 11800, "/opt/sequoiadb/database/catalog/11800")</span><br><span class="line">node.start()</span><br><span class="line">var node = rg.createNode("sdb3", 11800, "/opt/sequoiadb/database/catalog/11800")</span><br><span class="line">node.start()</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>使用临时协调节点创建数据节点组group1，并创建数据节点</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">var rg = db.createRG("group1")</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在数据组group1中创建三个数据节点</span></span><br><span class="line">rg.createNode("sdb1", 11820, "/opt/sequoiadb/database/data/11820")</span><br><span class="line">rg.createNode("sdb2", 11820, "/opt/sequoiadb/database/data/11820")</span><br><span class="line">rg.createNode("sdb3", 11820, "/opt/sequoiadb/database/data/11820")</span><br><span class="line">rg.start()</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>再使用临时协调节点创建数据节点组group2，并创建数据节点</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">var rg = db.createRG("group2")</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在数据组group2中创建三个数据节点</span></span><br><span class="line">rg.createNode("sdb1", 11830, "/opt/sequoiadb/database/data/11830")</span><br><span class="line">rg.createNode("sdb2", 11830, "/opt/sequoiadb/database/data/11830")</span><br><span class="line">rg.createNode("sdb3", 11830, "/opt/sequoiadb/database/data/11830")</span><br><span class="line">rg.start()</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li><p>这样就创建了一个两分区三副本的一个数据集群</p>
+</li>
+<li><p>创建协调节点组并启动，然后删除之前的临时协调节点</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建协调节点组并启动</span></span><br><span class="line">var rg = db.createCoordRG()</span><br><span class="line">rg = db.getRG(2)</span><br><span class="line">rg.createNode("sdb1", 11810, "/opt/sequoiadb/database/coord/11810")</span><br><span class="line">rg.createNode("sdb2", 11810, "/opt/sequoiadb/database/coord/11810")</span><br><span class="line">rg.createNode("sdb3", 11810, "/opt/sequoiadb/database/coord/11810")</span><br><span class="line">rg.start()</span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除之前的临时协调节点</span></span><br><span class="line">oma.stopNode(18900)</span><br><span class="line">oma.removeCoord(18900)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这样，一个集群就创建好了</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PLAIN"><figure class="iseeu highlight /plain"><table><tr><td class="code"><pre><span class="line">SPARK_MASTER_PORT&#x3D;&quot;7077&quot;</span><br><span class="line">SPARK_MASTER_WEBUI_PORT&#x3D;&quot;8080&quot;</span><br><span class="line">SPARK_MASTER_IP&#x3D;&quot;sdb1&quot;</span><br><span class="line">SPARK_WORKER_INSTANCES&#x3D;&quot;1&quot;</span><br><span class="line">MASTER&#x3D;&quot;spark:&#x2F;&#x2F;$&#123;SPARK_MASTER_IP&#125;:$&#123;SPARK_MASTER_PORT&#125;&quot;</span><br><span class="line">SPARK_WORKER_MEMORY&#x3D;&quot;1g&quot;</span><br><span class="line">SPARK_WORKER_CORES&#x3D;1</span><br><span class="line">export JAVA_HOME&#x3D;&quot;&#x2F;root&#x2F;jdk1.8.0_202&quot;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="创建SparkSql实例"><a href="#创建SparkSql实例" class="headerlink" title="创建SparkSql实例"></a>创建SparkSql实例</h3><h4 id="JDK配置"><a href="#JDK配置" class="headerlink" title="JDK配置"></a>JDK配置</h4><ul>
+<li>首先，为三台虚拟机sdb1、sdb2、sdb3解压JDK压缩包，并配置Java环境变量</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">tar -zxvf ./jdk-8u202-linux-x64.tar.gz</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在/etc/profile的最后面添加</span></span><br><span class="line">export JAVA_HOME=[jdk目录]</span><br><span class="line">export PATH=$JAVA_HOME/bin:$PATH</span><br><span class="line"><span class="meta">#</span><span class="bash"> 然后重新进入用户，刷新环境变量</span></span><br><span class="line">su - root</span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用以下语句来验证配置是否正确</span></span><br><span class="line">java -version</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>为三台虚拟机配置ssh，以便虚拟机之间互相连接时不用验证身份</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 生成ssh密钥，密钥将会在~/.ssh/id_rsa.pub生成</span></span><br><span class="line">ssh-keygen</span><br><span class="line"><span class="meta">#</span><span class="bash"> 将生成的密钥拷贝到ssh连接认证密钥文件中（~/.ssh/authorized_keys）</span></span><br><span class="line">ssh-copy-id -i ~/.ssh/id_rsa.pub root@localhost</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>然后在其余两台虚拟机也执行以上两个操作，然后将sdb2和sdb3的密钥拷贝到sdb1的authorized_keys中，再将sdb1的authorized_keys复制到sdb2和sdb3中</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">scp ~/.ssh/authorized_keys root@sdb2:~/.ssh/</span><br><span class="line">scp ~/.ssh/authorized_keys root@sdb3:~/.ssh/</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="Spark配置"><a href="#Spark配置" class="headerlink" title="Spark配置"></a>Spark配置</h4><ul>
+<li>在三台虚拟机中安装sparksql，并修改sparksql的环境配置</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">tar -zxvf spark-2.4.7-bin-hadoop2.7.tgz</span><br><span class="line">cd spark-2.4.7-bin-hadoop2.7/conf</span><br><span class="line">cp spark-env.sh.template spark-env.sh</span><br><span class="line">vi spark-env.sh</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在spark-env.sh文件中添加以下语句</span></span><br><span class="line">SPARK_MASTER_PORT="7077" # spark实例的端口</span><br><span class="line">SPARK_MASTER_WEBUI_PORT="8080" # spark的webui端口</span><br><span class="line">SPARK_MASTER_IP="sdb1" # spark的主宿主ip，这里可以指定宿主名</span><br><span class="line">SPARK_WORKER_INSTANCES="1"  # 指定spark的worker实例个数</span><br><span class="line">MASTER="spark://$&#123;SPARK_MASTER_IP&#125;:$&#123;SPARK_MASTER_PORT&#125;" # spark的连接url</span><br><span class="line">SPARK_WORKER_MEMORY="1g" # worker的内存容量</span><br><span class="line">SPARK_WORKER_CORES=1 # worker的核数</span><br><span class="line">export JAVA_HOME="/root/jdk1.8.0_202" # 指定JDK目录</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>再将spark-env.sh文件复制到sdb2和sdb3</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">scp spark-env.sh sdb2:/root/spark-2.4.7-bin-hadoop2.7/conf/</span><br><span class="line">scp spark-env.sh sdb3:/root/spark-2.4.7-bin-hadoop2.7/conf/</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>修改spark的slaves，指定集群列表</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cp slaves.template slaves</span><br><span class="line">vi slaves</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在slaves文件中添加以下语句</span></span><br><span class="line">sdb1</span><br><span class="line">sdb2</span><br><span class="line">sdb3</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>再将slaves文件复制到sdb2和sdb3</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">scp ./slaves sdb2:/root/spark-2.4.7-bin-hadoop2.7/conf/</span><br><span class="line">scp ./slaves sdb3:/root/spark-2.4.7-bin-hadoop2.7/conf/</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>将sequoiadb的驱动jar包复制到spark的jars目录中</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在spark的目录下执行以下语句</span></span><br><span class="line">cp /opt/sequoiadb/java/sequoiadb-driver-5.0.1.jar jars/</span><br><span class="line">cp /opt/sequoiadb/spark/spark-sequoiadb_2.11-5.0.1.jar jars/</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="Spark运行"><a href="#Spark运行" class="headerlink" title="Spark运行"></a>Spark运行</h4><ul>
+<li>在三台虚拟机中启动sparksql</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sbin/start-all.sh</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在sdb1运行jps命令可以看到sdb1既有一个主节点，又有一个工作节点，而在sdb2和sdb3中没有主节点</span></span><br><span class="line">jps</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>启动Thrift Server服务，使spark可以兼容HiveServer2（接口和协议），这样我们就可以使用hive的beeline访问Spark Thrift Server执行相关语句</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sbin/start-thriftserver.sh --master spark://sdb1:7077</span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用beeline连接Thrift Server服务，在用户名密码上直接回车</span></span><br><span class="line">bin/beeline</span><br></pre></td></tr></table></figure></div>
+
+<p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-27_00-02-10.png" alt="Snipaste_2020-11-27_00-02-10"></p>
+<h4 id="部署集合空间"><a href="#部署集合空间" class="headerlink" title="部署集合空间"></a>部署集合空间</h4><ul>
+<li>使用巨杉数据库引擎的集合空间可以很容易地在不同的宿主之间操作同一个spark实例，具体步骤：</li>
+<li>在sdb2中进入sequoiadb的shell环境</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">su - sdbadmin</span><br><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>进入shell环境后，执行下面语句</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JS"><figure class="iseeu highlight /js"><table><tr><td class="code"><pre><span class="line"><span class="comment">//创建一个Sdb实例，用于连接SequoiaDB</span></span><br><span class="line">db = <span class="keyword">new</span> Sdb(<span class="number">0</span>)</span><br><span class="line"><span class="comment">//在SequoiaDB中创建集合空间foo，并在空间中创建集合bar</span></span><br><span class="line">db.createCS(<span class="string">"foo"</span>).createCL(<span class="string">"bar"</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在sdb1的beeline中创建数据表，并指定该表的宿主、集合空间、集合</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*using表示使用巨杉数据库引擎*/</span></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> t1 (<span class="keyword">id</span> <span class="built_in">int</span>, <span class="keyword">name</span> <span class="keyword">string</span>) <span class="keyword">using</span> com.sequoiadb.spark options (host <span class="string">"sdb1:11810, sdb2:11810, sdb3:11810"</span>, collectionspace <span class="string">"foo"</span>, collection <span class="string">"bar"</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>然后在sdb2中往bar中插入数据</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JS"><figure class="iseeu highlight /js"><table><tr><td class="code"><pre><span class="line">db.foo.bar.insert(&#123;<span class="attr">id</span>:<span class="number">1</span>, <span class="attr">name</span>:<span class="string">"sequoiadb"</span>&#125;)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>插入后可以在sdb1中看到这条数据</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> t1</span><br></pre></td></tr></table></figure></div>
+
+<p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-27_00-13-45.png" alt="Snipaste_2020-11-27_00-13-45"></p>
+<ul>
+<li>同样，在sdb1中插入数据，在sdb2中也可以查看到，这个就不演示了</li>
+</ul>
+<h3 id="创建sequoiasql-mysql实例"><a href="#创建sequoiasql-mysql实例" class="headerlink" title="创建sequoiasql-mysql实例"></a>创建sequoiasql-mysql实例</h3><ul>
+<li>首先，安装sequoiasql-mysql的服务器</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd sequoiadb-5.0.1</span><br><span class="line">./sequoiasql-mysql-5.0.1-linux_x86_64-installer.run --mode text</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>进入sdbadmin角色，再cd到<code>/opt/sequoiasql/mysql/</code>目录里</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">su - sdbadmin</span><br><span class="line">cd /opt/sequoiasql/mysql/</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>使用巨杉数据库提供的sdb_sql_ctl工具来部署mysql实例</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 这里默认端口是3306，可以使用-p来指定端口</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> bin/sdb_sql_ctl addinst [实例名] -D [实例目录]</span></span><br><span class="line">bin/sdb_sql_ctl addinst mytest -D /opt/sequoiasql/mysql/database/3306</span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看实例列表</span></span><br><span class="line">bin/sdb_sql_ctl listinst</span><br><span class="line"><span class="meta">#</span><span class="bash"> 可以使用status来查看mytest实例的状态</span></span><br><span class="line">bin/sdb_sql_ctl status mytest</span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止实例</span></span><br><span class="line">bin/sdb_sql_ctl stop [实例名]</span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动实例</span></span><br><span class="line">bin/sdb_sql_ctl start [实例名]</span><br><span class="line"><span class="meta">#</span><span class="bash"> 可以使用delinst来删除实例</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> bin/sdb_sql_ctl delinst [实例名]</span></span><br><span class="line">bin/sdb_sql_ctl delinst mytest</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>启动完实例后，这个mysql实例已经在巨杉系统架构中进行管理了，进入mysql的shell环境</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">mysql -uroot -h 127.0.0.1</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这时，创建出来的database和table都可以在sequoiadb的sdb工具查询到</li>
+</ul>
+<p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-27_09-43-55.png" alt="MySql"></p>
+<p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-27_09-44-10.png" alt="SequoiaDB"></p>
+<h3 id="创建sequoiasql-postgresql实例"><a href="#创建sequoiasql-postgresql实例" class="headerlink" title="创建sequoiasql-postgresql实例"></a>创建sequoiasql-postgresql实例</h3><ul>
+<li>首先，安装sequoiasql-posgresql的服务器</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd sequoiadb-5.0.1</span><br><span class="line">./sequoiasql-postgresql-5.0.1-x86_64-installer.run --mode text</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>进入sdbadmin角色，再cd到<code>/opt/sequoiasql/postgresql/</code>目录里，创建一个database目录</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">su - sdbadmin</span><br><span class="line">cd /opt/sequoiasql/postgresql/</span><br><span class="line">mkdir database</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>使用巨杉数据库提供的sdb_sql_ctl工具来部署postgresql实例，这个和mysql一样</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 这里默认端口是5432，可以使用-p来指定端口</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> bin/sdb_sql_ctl addinst [实例名] -D [实例目录]</span></span><br><span class="line">bin/sdb_sql_ctl addinst mytest -D /opt/sequoiasql/mysql/database/3306</span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看实例列表</span></span><br><span class="line">bin/sdb_sql_ctl listinst</span><br><span class="line"><span class="meta">#</span><span class="bash"> 可以使用status来查看mytest实例的状态</span></span><br><span class="line">bin/sdb_sql_ctl status mytest</span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止实例</span></span><br><span class="line">bin/sdb_sql_ctl stop [实例名]</span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动实例</span></span><br><span class="line">bin/sdb_sql_ctl start [实例名]</span><br><span class="line"><span class="meta">#</span><span class="bash"> 可以使用delinst来删除实例</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> bin/sdb_sql_ctl delinst [实例名]</span></span><br><span class="line">bin/sdb_sql_ctl delinst mytest</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>使用<code>bin/createdb [数据库名称]</code>来创建pgsql的数据库，然后使用<code>bin/psql</code>进入pgsql的shell环境</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">bin/createdb foo</span><br><span class="line">bin/psql foo</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>加载 SequoiaDB 连接驱动</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">foo=# create extension sdb_fdw;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在pgsql中创建巨杉服务器，设置一些配置信息</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> address：表示该服务器对应的宿主，service：服务端口，transaction：是否开启事务，还有一些其他的配置项，可以到官网查看</span></span><br><span class="line">create server sdb_server foreign data wrapper sdb_fdw options(address 'localhost', service '11810', transaction 'on',);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建外表</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 指定服务器，并设置集合空间和集合</span></span><br><span class="line">create foreign table test(name text, id numeric) server sdb_server options(collectionspace 'foo', collection 'bar', decimal 'on');</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>现在，这个test表在sdb1中的psql中可以访问到，在sdb2中的sdb中也可以访问到</li>
+</ul>
+<p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-27_09-59-38.png" alt="psql"></p>
+<p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-27_10-02-51.png" alt="sdb"></p>
+<h3 id="同步MySql"><a href="#同步MySql" class="headerlink" title="同步MySql"></a>同步MySql</h3><ul>
+<li>由于在sdb1使用mysql命令创建的数据表在sdb2中使用mysql命令访问不到，所以需要一个同步mysql命令的一个过程。即现在只做到sequoiadb层面的同步，但并没有做到在mysql层面上的同步，这里就需要使用一个meta_sync的工具</li>
+</ul>
+<p><img src="/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B/D:%5CMy_blog%5Csource_posts%5CSequoiaDB%E4%BD%BF%E7%94%A8shell%E6%9D%A5%E5%88%9B%E5%BB%BA%E9%9B%86%E7%BE%A4%E5%B9%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2%E5%B9%B6%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B%5CSnipaste_2020-11-27_10-22-11.png" alt="Snipaste_2020-11-27_10-22-11"></p>
+<ul>
+<li>首先切换到sdbadmin用户，在三台虚拟机登录mysql的shell，然后执行以下语句：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> <span class="string">'sdbadmin'</span>@<span class="string">'%'</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">BY</span>  <span class="string">'sdbadmin'</span>;</span><br><span class="line"><span class="keyword">GRANT</span> <span class="keyword">all</span> <span class="keyword">on</span> *.* <span class="keyword">TO</span> <span class="string">'sdbadmin'</span>@<span class="string">'%'</span> <span class="keyword">with</span> <span class="keyword">grant</span>  <span class="keyword">option</span>;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建存放同步日志auditlog目录，并修改实例的配置文件<code>auto.cnf</code></li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">mkdir database/3306/auditlog</span><br><span class="line">vi database/3306/auto.cnf</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在[mysqld]部分添加以下内容：</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 加载审计插件</span></span><br><span class="line">plugin-load=server_audit=server_audit.so</span><br><span class="line"><span class="meta">#</span><span class="bash"> 记录审计日志的操作类型，当用于元数据同步时仅记录 DDL 和 DCL 即可</span></span><br><span class="line">server_audit_events=QUERY_DDL,QUERY_DCL</span><br><span class="line"><span class="meta">#</span><span class="bash"> 开启审计</span></span><br><span class="line">server_audit_logging=ON</span><br><span class="line"><span class="meta">#</span><span class="bash"> 审计日志路径及文件名</span></span><br><span class="line">server_audit_file_path=/opt/sequoiasql/mysql/database/auditlog/server_audit.log</span><br><span class="line"><span class="meta">#</span><span class="bash"> 强制日志文件轮转，保持配置为 OFF 即可</span></span><br><span class="line">server_audit_file_rotate_now=OFF</span><br><span class="line"><span class="meta">#</span><span class="bash"> 审计日志文件大小阈值，默认 10MB，超过该大小时将进行轮转，单位为byte</span></span><br><span class="line">server_audit_file_rotate_size=10485760</span><br><span class="line"><span class="meta">#</span><span class="bash"> 审计日志保留个数，超过后会丢弃最旧的</span></span><br><span class="line">server_audit_file_rotations=999</span><br><span class="line"><span class="meta">#</span><span class="bash"> 输出类型为文件</span></span><br><span class="line">server_audit_output_type=file</span><br><span class="line"><span class="meta">#</span><span class="bash"> 限制每行查询日志的大小为100kb，若表比较复杂，对应的操作语句比较长，建议增大该值</span></span><br><span class="line">server_audit_query_log_limit=102400</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>切换至root用户，把server_audit.so复制到plugin目录下，修改权限使得sdbadmin用户可以运行它</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cp /opt/sequoiasql/mysql/tools/lib/release/server_audit.so /opt/sequoiasql/mysql/lib/plugin/</span><br><span class="line">chmod a+x /opt/sequoiasql/mysql/lib/plugin/server_audit.so</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>切换至sdbadmin用户，重启 MySQL 实例</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdb_sql_ctl restart myinst</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在tools/metaSync目录中，有两个文件，一个是<code>config.sample</code>，另一个是<code>log.config.sample</code>，将它们拷贝到当前目录，并改名为<code>config</code>和<code>log.config</code>，注意这两个文件的配置需要根据情况进行修改</li>
+<li>在三台虚拟机中启动工具</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">python /opt/sequoiasql/mysql/tools/metaSync/meta_sync.py &amp;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>完成环境配置后，可通过在各实例进行少量 DDL 操作，进行简单的同步验证</li>
+</ul>
+<h3 id="卸载"><a href="#卸载" class="headerlink" title="卸载"></a>卸载</h3><h4 id="卸载mysql服务"><a href="#卸载mysql服务" class="headerlink" title="卸载mysql服务"></a>卸载mysql服务</h4><ul>
+<li>进入sdbadmin用户，停止mysql实例</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">su - sdbadmin</span><br><span class="line">bin/sdb_sql_ctl stop mytest</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>停止实例后，查看有没有关于mysql的进程，有的话就杀死进程</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">ps -ef |grep mysql</span><br><span class="line">kill -9 [pid]</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>杀死同步工具meta_sync的进程</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">ps -ef |grep python</span><br><span class="line">kill -9 [pid]</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>进入root用户，执行卸载程序</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">su - root</span><br><span class="line">cd /opt/sequoiasql/mysql/</span><br><span class="line">./uninstall</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>如果不想保存原数据的话，可以把mysql文件给删除</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd /opt/sequoiasql/</span><br><span class="line">rm -rf mysql/</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="卸载postgresql服务"><a href="#卸载postgresql服务" class="headerlink" title="卸载postgresql服务"></a>卸载postgresql服务</h4><ul>
+<li>进入sdbadmin用户，停止posgresql实例</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">su - sdbadmin</span><br><span class="line">bin/sdb_sql_ctl stop mytest</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>停止实例后，进入root用户，执行卸载程序</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">su - root</span><br><span class="line">cd /opt/sequoiasql/postgresql/</span><br><span class="line">./uninstall</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>如果不想保存原数据的话，可以把postgresql文件给删除</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd /opt/sequoiasql/</span><br><span class="line">rm -rf postgresql/</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这样就把pgsql完全卸载了。</li>
+</ul>
+<h4 id="卸载sequoiadb服务"><a href="#卸载sequoiadb服务" class="headerlink" title="卸载sequoiadb服务"></a>卸载sequoiadb服务</h4><ul>
+<li>进入sdbadmin用户，停止sequoiadb所有的节点</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbstop -t all</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>查看关于sdb的进程，如果有sdbcm进程，就将其杀死</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">ps -ef |grep sdb</span><br><span class="line">sdbcmtop</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>查看sdbadmin是否有运行与sdb相关的进程，有的话就将其杀死</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">ps -ef |grep sdbadmin</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>切换到root用户，执行卸载程序</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd /opt/sequoiadb/</span><br><span class="line">./uninstall --mode text</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>最后将sequoiadb目录和sequoiasql目录删除</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">rm -rf /opt/sequoiadb</span><br><span class="line">rm -rf /opt/sequoiasql</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这样就卸载完毕。</li>
+</ul>
+<hr>
+<p>学习资料：<a href="[Oma(">巨杉官网文档</a>_Oma_SequoiaDB Shell方法_参考手册_文档中心_SequoiaDB巨杉数据库](<a href="http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1495022521-edition_id-500" target="_blank" rel="noopener">http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1495022521-edition_id-500</a>))</p>
+]]></content>
+      <categories>
+        <category>-SequoiaDB</category>
+      </categories>
+      <tags>
+        <tag>-SequoiaDB</tag>
+      </tags>
+  </entry>
 </search>
