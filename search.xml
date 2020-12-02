@@ -8965,4 +8965,387 @@ e，set：哈希表，整数数组</code></pre></li>
         <tag>-SequoiaDB</tag>
       </tags>
   </entry>
+  <entry>
+    <title>SequoiaDB使用sdbtop监控</title>
+    <url>/2020/12/02/SequoiaDB%E4%BD%BF%E7%94%A8sdbtop%E7%9B%91%E6%8E%A7/</url>
+    <content><![CDATA[<p>sdbtop 是一个 SequoiaDB 数据库的性能监控工具。通过 sdbtop，可以监控和查看集群中各个节点的监视信息。</p>
+<p>1）运行 sdbtop 并连接上数据库，其中协调节点服务端口为 11810；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbtop -i localhost -s 11810</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/6948319f219366c64fc9bdf0a1336288" alt="img"></p>
+<p>2）按 “d” 键，切换至数据库性能指标界面，按 “Tab” 键切换至 “AVERAGE” 模式，查看此时数据库的性能指标；</p>
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/be8c3ab8281e2cd78ce6a776585bc274" alt="img"></p>
+<p>3）按 “q” 键，退出 sdbtop；</p>
+<h4 id="sdbtop监控数据库状态"><a href="#sdbtop监控数据库状态" class="headerlink" title="sdbtop监控数据库状态"></a>sdbtop监控数据库状态</h4><p>在 SequoiaDB 安装目录 bin 中执行：sdbtop –h 显示参数信息</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>–help</td>
+<td>-h</td>
+<td>返回基本帮助和用法文本</td>
+</tr>
+<tr>
+<td>–version</td>
+<td>-v</td>
+<td>sdbtop版本信息</td>
+</tr>
+<tr>
+<td>–confpath</td>
+<td>-c</td>
+<td>sdbtop 的配置文件，sdbtop 界面形态以及输出字段都依赖该文件（缺省使用默认配置文件）</td>
+</tr>
+<tr>
+<td>–hostname</td>
+<td></td>
+<td>指定需要监控的主机名</td>
+</tr>
+<tr>
+<td>–servicename</td>
+<td></td>
+<td>指定监控的端口服务名</td>
+</tr>
+<tr>
+<td>–usrname</td>
+<td></td>
+<td>数据库用户名</td>
+</tr>
+<tr>
+<td>–password</td>
+<td></td>
+<td>数据库密码</td>
+</tr>
+<tr>
+<td>–ssl</td>
+<td></td>
+<td>使用 SSL 连接。</td>
+</tr>
+</tbody></table>
+<h4 id="sdbtop组成部分"><a href="#sdbtop组成部分" class="headerlink" title="sdbtop组成部分"></a>sdbtop组成部分</h4><p>进入到sdbtop主窗口后，主要有三部分组成，头部区域、中间区域、底部区域。</p>
+<p>头部区域主要包括版本信息、刷新频率（refresh）、快照模式（snapshotMode）、打印模式（displayMode）、快照获取模式（snapshotModeInput）、监控主机名（hostname）、监控端口服务名（servicename）、排序方式（sortingWay）、排序字段（sortingField）、过滤行号（filtering Number）、登录用户名（usrName）。</p>
+<p>中间区域主要显示监控信息。具体快捷键如下：</p>
+<p>主窗口选择快捷键说明：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>m</td>
+<td>返回主窗口</td>
+</tr>
+<tr>
+<td>s</td>
+<td>列出数据库节点上的所有会话</td>
+</tr>
+<tr>
+<td>c</td>
+<td>列出数据库节点上的所有集合空间</td>
+</tr>
+<tr>
+<td>t</td>
+<td>列出数据库节点上的系统资源使用情况</td>
+</tr>
+<tr>
+<td>d</td>
+<td>列出数据库节点的数据库监视信息</td>
+</tr>
+</tbody></table>
+<p>进入主窗口后快捷操作键说明：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>G</td>
+<td>global_snapshot，监控所有的数据节点组</td>
+</tr>
+<tr>
+<td>g</td>
+<td>group_snapshot，指定监控某个数据节点组</td>
+</tr>
+<tr>
+<td>n</td>
+<td>node_snapshot，列出指定的数据库节点的监视信息</td>
+</tr>
+<tr>
+<td>r</td>
+<td>设置刷屏的时间间隔，单位秒/s</td>
+</tr>
+<tr>
+<td>A</td>
+<td>将监视信息按照某列进行顺序排序</td>
+</tr>
+<tr>
+<td>D</td>
+<td>将监视信息按照某列进行逆序排序</td>
+</tr>
+<tr>
+<td>C</td>
+<td>将监视信息按照某个条件进行筛选</td>
+</tr>
+<tr>
+<td>Q</td>
+<td>返回没有使用条件进行筛选前的监视信息</td>
+</tr>
+<tr>
+<td>N</td>
+<td>将监视信息中对应行号的记录过滤不显示</td>
+</tr>
+<tr>
+<td>W</td>
+<td>返回没有使用行号进行过滤前的监视信息</td>
+</tr>
+<tr>
+<td>h</td>
+<td>查看使用帮助</td>
+</tr>
+<tr>
+<td>Esc</td>
+<td>取消已进入的操作</td>
+</tr>
+<tr>
+<td>Enter</td>
+<td>返回上一次监视界面，（在已进入 help 帮助输出中有效）</td>
+</tr>
+<tr>
+<td>F5</td>
+<td>强制刷新后台监视信息</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>向左移动，以查看隐藏的左边列的监视信息</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>向右移动，以查看隐藏的右边列的监视信息</td>
+</tr>
+<tr>
+<td>q</td>
+<td>退出程序</td>
+</tr>
+<tr>
+<td>Tab</td>
+<td>切换数据计算的模式（绝对值，平均值，差值三个模式）</td>
+</tr>
+</tbody></table>
+<h4 id="sdbtop监控内容"><a href="#sdbtop监控内容" class="headerlink" title="sdbtop监控内容"></a>sdbtop监控内容</h4><p>sdbtop提供了对数据库节点会话、集合空间、系统资源使用情况、数据库的监控单元。通过这些信息，用户可以了解当前数据库的连接信息以及连接的活动情况，数据库集合空间的分布以及使用情况，数据库集群的资源使用情况，以及数据库集群的读写、更新、删除、复制、索引读写等性能情况。</p>
+<p>1）数据库会话监控；</p>
+<p>进入主窗口，按‘s’键，列出数据库节点的所有会话信息</p>
+<p>按‘Tab’键，可以看到屏幕左上方的‘displayMode’的值会发生切换</p>
+<p>按‘r’键，在屏幕最下方输入‘2’，回车，设置刷新间隔时间，可以看到屏幕左上方的‘refresh’的值变为 2</p>
+<p>按‘A’键，并输入‘TID’，列表结果按照 TID 进行顺序排序</p>
+<p>按‘N’键，并输入1，列表中将原来行号为1的记录过滤不显示</p>
+<p>按‘W’键，返回没有按行号进行过滤前的列表信息</p>
+<p>按‘C’键，并输入‘TID：1034”进行筛选，则只显示 TID 值为1034的记录</p>
+<p>按‘Q’键，返回没有按照筛选条件前的列表信息</p>
+<p>按‘&lt;’或者‘&gt;’键，可以查看隐藏在左边或者右边的列</p>
+<p>2）数据库集合空间监控 进入主窗口，按‘c’键，列出数据库节点上的所有集合空间</p>
+<p>数据库节点上的所有集合空间可以从数据库 SDB_SNAP_COLLECTIONSPACES 快照中获取，在上述窗口中，各监控字段说明如下：</p>
+<table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Name</td>
+<td>字符串</td>
+<td>集合空间名</td>
+</tr>
+<tr>
+<td>PageSize</td>
+<td>整型</td>
+<td>集合空间数据页大小</td>
+</tr>
+<tr>
+<td>Collection</td>
+<td>字符串数组</td>
+<td>集合空间中所包含的所有集合</td>
+</tr>
+<tr>
+<td>Group.GroupName</td>
+<td>字符串</td>
+<td>该集合空间所在的分区组名列表</td>
+</tr>
+</tbody></table>
+<p>3）数据库系统资源使用情况监控 进入主窗口，按‘t’键，列出数据库节点上的所有集合空间 快捷键功能可参考数据库会话监控。</p>
+<p>数据库系统资源使用情况可以从数据库 SDB_SNAP_SYSTEM 快照中获取，在上述窗口中，各监控字段说明如下：</p>
+<table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UserCPU</td>
+<td>浮点数</td>
+<td>操作系统启动后所消耗的总用户 CPU（秒）</td>
+</tr>
+<tr>
+<td>SysCPU</td>
+<td>浮点数</td>
+<td>操作系统启动后所消耗的总系统 CPU（秒）</td>
+</tr>
+<tr>
+<td>IdleCPU</td>
+<td>浮点数</td>
+<td>操作系统启动后所消耗的总空闲 CPU（秒）</td>
+</tr>
+<tr>
+<td>OtherCPU</td>
+<td>浮点数</td>
+<td>操作系统启动后所消耗的总其它 CPU（秒）</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>长整型</td>
+<td>当前操作系统的总内存空间（字节）</td>
+</tr>
+<tr>
+<td>FreeRAM</td>
+<td>长整型</td>
+<td>当前操作系统的空闲内存空间（字节）</td>
+</tr>
+<tr>
+<td>MemorySwap</td>
+<td>长整型</td>
+<td>当前操作系统的总交换空间（字节）</td>
+</tr>
+<tr>
+<td>FreeSwap</td>
+<td>长整型</td>
+<td>当前操作系统的空闲交换空间（字节）</td>
+</tr>
+<tr>
+<td>VirtualMemory</td>
+<td>长整型</td>
+<td>当前操作系统的总虚拟空间（字节）</td>
+</tr>
+<tr>
+<td>FreeVirtual</td>
+<td>长整型</td>
+<td>当前操作系统的空闲虚拟空间（字节）</td>
+</tr>
+<tr>
+<td>DiskSpace</td>
+<td>长整型</td>
+<td>数据库路径总空间（字节）</td>
+</tr>
+<tr>
+<td>FreeDiskSpace</td>
+<td>长整型</td>
+<td>数据库路径空闲空间（字节）</td>
+</tr>
+</tbody></table>
+<p>4）数据库集群监控 进入主窗口，按‘d’键，列出数据库集群监控信息。 快捷键功能可参考数据库会话监控。</p>
+<p>数据库集群监控信息可以从数据库 SDB_SNAP_DATABASE 快照中获取，在上述窗口中，各监控字段说明如下：</p>
+<table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NumConnects</td>
+<td>整型</td>
+<td>数据库连接请求数量</td>
+</tr>
+<tr>
+<td>DataRead</td>
+<td>长整型</td>
+<td>总数据读请求</td>
+</tr>
+<tr>
+<td>IndexRead</td>
+<td>长整型</td>
+<td>总索引读请求</td>
+</tr>
+<tr>
+<td>DataWrite</td>
+<td>长整型</td>
+<td>总数据写请求</td>
+</tr>
+<tr>
+<td>IndexWrite</td>
+<td>长整型</td>
+<td>总索引写请求</td>
+</tr>
+<tr>
+<td>Update</td>
+<td>长整型</td>
+<td>总更新记录数量</td>
+</tr>
+<tr>
+<td>Delete</td>
+<td>长整型</td>
+<td>总删除记录数量</td>
+</tr>
+<tr>
+<td>Insert</td>
+<td>长整型</td>
+<td>总插入记录数量</td>
+</tr>
+<tr>
+<td>ReplUpdate</td>
+<td>长整型</td>
+<td>复制更新记录数量</td>
+</tr>
+<tr>
+<td>ReplDelete</td>
+<td>长整型</td>
+<td>复制删除记录数量</td>
+</tr>
+<tr>
+<td>ReplInsert</td>
+<td>长整型</td>
+<td>复制插入记录数量</td>
+</tr>
+<tr>
+<td>Select</td>
+<td>长整型</td>
+<td>总选择记录数量</td>
+</tr>
+<tr>
+<td>Read</td>
+<td>长整型</td>
+<td>总读取记录数量</td>
+</tr>
+<tr>
+<td>ReadTime</td>
+<td>长整型</td>
+<td>总读取时间（毫秒）</td>
+</tr>
+<tr>
+<td>WriteTime</td>
+<td>长整型</td>
+<td>总写入时间（毫秒）</td>
+</tr>
+</tbody></table>
+]]></content>
+      <categories>
+        <category>-SequoiaDB</category>
+      </categories>
+      <tags>
+        <tag>-SequoiaDB</tag>
+      </tags>
+  </entry>
 </search>
