@@ -9348,4 +9348,394 @@ e，set：哈希表，整数数组</code></pre></li>
         <tag>-SequoiaDB</tag>
       </tags>
   </entry>
+  <entry>
+    <title>SequoiaDB备份与恢复</title>
+    <url>/2020/12/02/SequoiaDB%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D/</url>
+    <content><![CDATA[<h3 id="准备测试数据"><a href="#准备测试数据" class="headerlink" title="准备测试数据"></a>准备测试数据</h3><ul>
+<li>通过 Linux 命令行进入 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>通过 javascript 语言连接协调节点，获取数据库连接；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建 company_domain 逻辑域；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.createDomain(<span class="string">"company_domain"</span>, [ <span class="string">"group1"</span>, <span class="string">"group2"</span>, <span class="string">"group3"</span> ], &#123; <span class="attr">AutoSplit</span>: <span class="literal">true</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建 company 集合空间；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.createCS(<span class="string">"company"</span>, &#123; <span class="attr">Domain</span>: <span class="string">"company_domain"</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建 employee 集合；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.company.createCL(<span class="string">"employee"</span>, &#123; <span class="string">"ShardingKey"</span>: &#123; <span class="string">"_id"</span>: <span class="number">1</span> &#125;, <span class="string">"ShardingType"</span>: <span class="string">"hash"</span>, <span class="string">"ReplSize"</span>: <span class="number">-1</span>, <span class="string">"Compressed"</span>: <span class="literal">true</span>, <span class="string">"CompressionType"</span>: <span class="string">"lzw"</span>, <span class="string">"AutoSplit"</span>: <span class="literal">true</span>, <span class="string">"EnsureShardingIndex"</span>: <span class="literal">false</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>写入测试数据。使用 javascript 的 for 循环向 employee 表写入1000条记录；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) </span><br><span class="line">&#123; </span><br><span class="line">db.company.employee.insert( &#123; <span class="attr">empno</span>: i, <span class="attr">ename</span>: <span class="string">"TEST"</span>, <span class="attr">age</span>: <span class="number">20</span> &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="全量备份与增量备份"><a href="#全量备份与增量备份" class="headerlink" title="全量备份与增量备份"></a>全量备份与增量备份</h3><p>当前版本中，数据库备份支持全量备份和增量备份。全量备份过程中会阻塞数据库变更操作，即数据插入、更新、删除等变更操作会被阻塞直到全量备份完成才会执行；增量备份过程中不阻塞数据库变更操作。</p>
+<ul>
+<li>全量备份：备份整个数据库的配置、数据和日志（可选）；</li>
+<li>增量备份：在上一个全量备份或增量备份的基础上备份新增的日志和配置；增量备份需要保证日志的连续性和一致性，如果日志不连续，或日志 Hash 校验不一致，则增量备份失败。因此，周期性的增量备份需要计算好日志和周期的关系，以防止日志覆写。</li>
+</ul>
+<p>在协调节点上对整个数据库或指定组进行备份，默认是只在该数据组主节点上进行备份。Catalog 编目组的名称固定为 SYSCatalogGroup。</p>
+<p>使用 Sdb.backup() 命令可以进行备份。具体参数说明参考</p>
+<ul>
+<li><a href="http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1432190664-edition_id-0" target="_blank" rel="noopener">数据备份</a></li>
+</ul>
+<h4 id="全量备份"><a href="#全量备份" class="headerlink" title="全量备份"></a>全量备份</h4><ul>
+<li>执行集群全量备份命令</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.backup( &#123; <span class="attr">Name</span>: <span class="string">"cluster_backup"</span>, <span class="attr">Path</span>: <span class="string">"/tmp/%g"</span>, <span class="attr">Overwrite</span>: <span class="literal">true</span>, <span class="attr">Description</span>: <span class="string">"full backup"</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>Path 中的 “%g”是一个通配符代表group name，当在协调节点上执行命令使用该参数时，需要使用通配符，以避免所有的节点往同一个路径下进行操作而导致未知IO错误。</p>
+</blockquote>
+<ul>
+<li>退出 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="ABNF"><figure class="iseeu highlight /abnf"><table><tr><td class="code"><pre><span class="line">quit<span class="comment">;</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>检查备份文件是否生成；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">ls /tmp</span><br><span class="line">ls /tmp/group1/</span><br><span class="line">ls /tmp/group2/</span><br><span class="line">ls /tmp/group3/</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/860139b7833ae444ea57c68c8b469cc1-0" alt="全量备份"></p>
+<p>可以看到，在/tmp目录下有 4 个文件夹，SYSCatalogGroup，group1，group2 和 group3 ，分别对应编目节点组，数据组 1 ，数据组 2，数据组 3。</p>
+<h4 id="增量备份"><a href="#增量备份" class="headerlink" title="增量备份"></a>增量备份</h4><ul>
+<li>通过 Linux 命令行进入 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>通过 javascript 语言连接协调节点，获取数据库连接；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>写入 500 条增量数据；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">1000</span>; i &lt; <span class="number">1500</span>; i++) </span><br><span class="line">&#123; </span><br><span class="line">db.company.employee.insert( &#123; <span class="attr">empno</span>: i, <span class="attr">ename</span>: <span class="string">"TEST"</span>, <span class="attr">age</span>: <span class="number">20</span> &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>执行增量备份；这里EnsureInc表示为增量备份</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.backup( &#123; <span class="attr">Name</span>: <span class="string">"cluster_backup"</span>, <span class="attr">Path</span>: <span class="string">"/tmp/%g"</span>, <span class="attr">EnsureInc</span>: <span class="literal">true</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>查看备份信息；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.listBackup( &#123; <span class="attr">Path</span>: <span class="string">"/tmp"</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/616748c8144c730f475978909e6040e9-0" alt="查看备份信息"></p>
+<ul>
+<li>退出 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="ABNF"><figure class="iseeu highlight /abnf"><table><tr><td class="code"><pre><span class="line">quit<span class="comment">;</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>检查备份文件是否生成；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">ls /tmp/group1/</span><br><span class="line">ls /tmp/group2/</span><br><span class="line">ls /tmp/group3/</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>增量备份的备份名应和上一次全量备份保持一致。</p>
+</blockquote>
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/662f9912e38d3acb9dba089437422791-0" alt="增量备份"></p>
+<p>可以看到，相比于第一次备份生成的文件，本次增量备份在 group1 ，group2 和 group3 目录下新生成了两个文件。</p>
+<h3 id="全量恢复与增量恢复"><a href="#全量恢复与增量恢复" class="headerlink" title="全量恢复与增量恢复"></a>全量恢复与增量恢复</h3><p>使用备份的数据恢复当前集群中的节点或者恢复到离线数据的说明：</p>
+<ul>
+<li>恢复当前集群中的节点：执行数据恢复必须确保该节点对应的数据组已停止运行，数据恢复首先会清空原节点的所有数据和日志，然后从备份的数据中恢复配置、数据和日志。</li>
+<li>恢复到离线数据：可以将全量备份和增量备份的数据不断合并成一份与节点内数据完全相同格式的离线数据，可以在原节点故障后使用该离线数据实现快速恢复。</li>
+</ul>
+<p>如果一个分区组包含多个数据节点，必须停止该组中每个数据节点并进行恢复。如果将备份的数据恢复至非备份数据节点，添加 –isSelf 参数并设置成 false，同时设置相关的配置参数。</p>
+<p>恢复分区组其他节点数据，恢复方式有以下几种：</p>
+<ol>
+<li>删除该分区组中其它数据节点的所有 .data 和 .idx 、.lobd、.lobm 文件以及 replicalog 日志，节点启动后会自行同步数据。</li>
+<li>拷贝恢复节点的所有 .data 和 .idx 、.lobd、.lobm文件拷贝至其它数据节点的数据目录和索引目录下，以及将该节点的所有 replicalog 日志拷贝至其它数据节点的 replicalog 日志目录下。</li>
+<li>将备份文件拷贝至其它数据节点，并通过 sdbrestore 工具恢复。</li>
+</ol>
+<p>使用 sdbrestore 可以进行数据恢复，具体参数说明参考下面这个链接：(sdbrestore)[<a href="http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1432190666-edition_id-0]" target="_blank" rel="noopener">http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1432190666-edition_id-0]</a></p>
+<h4 id="全量恢复"><a href="#全量恢复" class="headerlink" title="全量恢复"></a>全量恢复</h4><ul>
+<li>通过 Linux 命令行进入 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>通过 javascript 语言连接协调节点，获取数据库连接；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>删除集群上的集合空间；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.dropCS(<span class="string">"company"</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>退出 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>停止所有节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbstop -t all</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>执行全量恢复操作；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbrestore -p /tmp/SYSCatalogGroup/ -n cluster_backup -b 0 -i 0</span><br><span class="line">sdbrestore -p /tmp/group1/ -n cluster_backup -b 0 -i 0</span><br><span class="line">sdbrestore -p /tmp/group2/ -n cluster_backup -b 0 -i 0</span><br><span class="line">sdbrestore -p /tmp/group3/ -n cluster_backup -b 0 -i 0</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>-b 后面带的参数代表需要从第几次备份开始恢复，从 0 开始算起，缺省由系统自动计算 ( -1 )。</p>
+<p>-i 后面带的参数代表需要恢复到第几次数据备份，从 0 开始算起，缺省恢复到最后一次 ( -1 )。</p>
+</blockquote>
+<ul>
+<li>启动节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbstart -t all</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>执行全量恢复时要先停节点，恢复完后再启动，为了方便，将整个集群停下来 恢复的时候需要按节点恢复，分别是编目节点，数据组1，数据组2，数据组3</p>
+</blockquote>
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/53609c8eb609c2a778a322de7000afe2-0" alt="全量恢复1"></p>
+<ul>
+<li>检查数据是否正确，此时只能查到集合中的第一次插入的数据；</li>
+</ul>
+<p>通过 Linux 命令行进入 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<p>通过 javascript 语言连接协调节点，获取数据库连接；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>统计 company.employee 数据量；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.company.employee.count();</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/e8051268e56d055dfcae88ea41d1cf0d-0" alt="全量恢复后检查"></p>
+<p>退出 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<p>此时只能看到第一次插入的 1000 条记录，第二次插入的 500 条记录看不到。</p>
+<h4 id="增量恢复"><a href="#增量恢复" class="headerlink" title="增量恢复"></a>增量恢复</h4><ul>
+<li>停止所有节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbstop -t all</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>增量恢复操作；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbrestore -p /tmp/group1/ -n cluster_backup -b -1</span><br><span class="line">sdbrestore -p /tmp/group2/ -n cluster_backup -b -1</span><br><span class="line">sdbrestore -p /tmp/group3/ -n cluster_backup -b -1</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>启动节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdbstart -t all</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/06a5a1854dc2c701d95ddb28bc11eca8-0" alt="增量恢复"></p>
+<ul>
+<li>检查数据是否正确，此时能看到第二次插入的记录； 通过 Linux 命令行进入 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<p>通过 javascript 语言连接协调节点，获取数据库连接；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>统计 company.employee 数据量；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="CSS"><figure class="iseeu highlight /css"><table><tr><td class="code"><pre><span class="line"><span class="selector-tag">db</span><span class="selector-class">.company</span><span class="selector-class">.employee</span><span class="selector-class">.count</span>();</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/9b94fac37f6cae4b2452ff443278a2db-0" alt="增量恢复后检查"></p>
+<p>退出 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="ABNF"><figure class="iseeu highlight /abnf"><table><tr><td class="code"><pre><span class="line">quit<span class="comment">;</span></span><br></pre></td></tr></table></figure></div>]]></content>
+      <categories>
+        <category>-SequoiaDB</category>
+      </categories>
+      <tags>
+        <tag>-SequoiaDB</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SequoiaDB集群扩容与缩容</title>
+    <url>/2020/12/02/SequoiaDB%E9%9B%86%E7%BE%A4%E6%89%A9%E5%AE%B9%E4%B8%8E%E7%BC%A9%E5%AE%B9/</url>
+    <content><![CDATA[<h3 id="创建域、集合空间、集合"><a href="#创建域、集合空间、集合" class="headerlink" title="创建域、集合空间、集合"></a>创建域、集合空间、集合</h3><ul>
+<li>通过 Linux 命令行进入 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>通过 javascript 语言连接协调节点，获取数据库连接；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建 company_domain 逻辑域；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.createDomain(<span class="string">"company_domain"</span>, [ <span class="string">"group1"</span>, <span class="string">"group2"</span>, <span class="string">"group3"</span> ], &#123; <span class="attr">AutoSplit</span>: <span class="literal">true</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建 company 集合空间；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.createCS(<span class="string">"company"</span>, &#123; <span class="attr">Domain</span>: <span class="string">"company_domain"</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>创建 employee 集合；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.company.createCL(<span class="string">"employee"</span>, &#123; <span class="string">"ShardingKey"</span>: &#123; <span class="string">"_id"</span>: <span class="number">1</span> &#125;, <span class="string">"ShardingType"</span>: <span class="string">"hash"</span>, <span class="string">"ReplSize"</span>: <span class="number">-1</span>, <span class="string">"Compressed"</span>: <span class="literal">true</span>, <span class="string">"CompressionType"</span>: <span class="string">"lzw"</span>, <span class="string">"AutoSplit"</span>: <span class="literal">true</span>, <span class="string">"EnsureShardingIndex"</span>: <span class="literal">false</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="写入测试数据"><a href="#写入测试数据" class="headerlink" title="写入测试数据"></a>写入测试数据</h3><p>使用 JavaScript 的 for 循环向 employee 表写入 1000 条记录，用于测试。</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) </span><br><span class="line">&#123; </span><br><span class="line">db.company.employee.insert( &#123; <span class="attr">ename</span>: <span class="string">"TEST"</span>, <span class="attr">age</span>: <span class="number">20</span> &#125; ); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="集群扩容"><a href="#集群扩容" class="headerlink" title="集群扩容"></a>集群扩容</h3><ul>
+<li><p>集群扩容是通过在集群中新增分区组实现的，新增分区组可以在原有服务器也可以是新加入集群的服务器，本小节通过在本机新增 group4 展示扩容的场景。</p>
+</li>
+<li><p>创建一个新的数据组；</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.createRG(<span class="string">"group4"</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>在 group4 上创建1个数据节点副本；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.getRG(<span class="string">"group4"</span>).createNode(<span class="string">"sdbserver1"</span>, <span class="number">11850</span>, <span class="string">"/opt/sequoiadb/database/data/11850/"</span>);</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>createNode() 方法的定义格式有四个参数：host，service，dbpath，config，如上表所示，host，dbpath 为字符串类型，Service 类型支持 int 或 string ，必填；最后一个是 Json 对象，选填，如配置日志大小，是否打开事务等，具体可参考<a href="http://doc.sequoiadb.com/cn/SequoiaDB-cat_id-1432190643-edition_id-304" target="_blank" rel="noopener">数据库配置</a>。</p>
+<p>格式：( “&lt;主机名&gt;”, “&lt;端口号&gt;”, “&lt;节点路径&gt;, “[ {key : value, … } ] )</p>
+<p>createNode 方法的详细说明请参考：<a href="http://doc.sequoiadb.com/cn/index-cat_id-1432190867-edition_id-304" target="_blank" rel="noopener">createNode 方法说明</a>。</p>
+</blockquote>
+<ul>
+<li>启动 group4 数据组；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.getRG(<span class="string">"group4"</span>).start();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>数据域 company_domain 增加数据组；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.getDomain(<span class="string">"company_domain"</span>).addGroups( &#123; <span class="attr">Groups</span>: [ <span class="string">'group4'</span> ] &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>将集合的数据迁移部分到新的数据组上；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.company.employee.split(<span class="string">"group1"</span>, <span class="string">"group4"</span>, <span class="number">25</span>);</span><br><span class="line">db.company.employee.split(<span class="string">"group2"</span>, <span class="string">"group4"</span>, <span class="number">25</span>);</span><br><span class="line">db.company.employee.split(<span class="string">"group3"</span>, <span class="string">"group4"</span>, <span class="number">25</span>);</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>以上split的含义时是把 group1、group2 和 group3 上的数据分别移25%到 group4 上。 split 方法的详细说明请参考：<a href="http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1432190844-edition_id-304" target="_blank" rel="noopener">split 方法说明</a>。</p>
+</blockquote>
+<h4 id="分析数据分布"><a href="#分析数据分布" class="headerlink" title="分析数据分布"></a>分析数据分布</h4><ul>
+<li>连接第一个数据分区的存储节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db1 = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11820</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>统计第一个数据分区的数据量；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db1.company.employee.count();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>连接第二个数据分区的存储节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db2 = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11830</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>统计第二个数据分区的数据量；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db2.company.employee.count();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>连接第三个数据分区的存储节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db3 = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11840</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>统计第三个数据分区的数据量；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db3.company.employee.count();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>连接第四个数据分区的存储节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> db4 = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11850</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>统计第四个数据分区的数据量；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db4.company.employee.count();</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/5d5401257e1bbbba329660efea88786f-0" alt="扩容完成"></p>
+<p>可以看到，四个数据组上的记录数基本为平均分布。</p>
+<h3 id="集群缩容"><a href="#集群缩容" class="headerlink" title="集群缩容"></a>集群缩容</h3><ul>
+<li>本小节展示把 group4 的数据迁移到其他节点后把其剔出 company_domain 域，并把 group4 删除的操作。</li>
+<li>将集合1在新数据组上的数据迁移回旧的数据组；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.company.employee.split(<span class="string">"group4"</span>, <span class="string">"group1"</span>, <span class="number">33</span>);</span><br><span class="line">db.company.employee.split(<span class="string">"group4"</span>, <span class="string">"group2"</span>, <span class="number">50</span>);</span><br><span class="line">db.company.employee.split(<span class="string">"group4"</span>, <span class="string">"group3"</span>, <span class="number">100</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>统计 group1，group2，group3 数据量，它们加起来等于 1000 ；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db1.company.employee.count();</span><br><span class="line">db2.company.employee.count();</span><br><span class="line">db3.company.employee.count();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>把 group4 移出 company_domain 域；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.getDomain(<span class="string">"company_domain"</span>).removeGroups( &#123; <span class="attr">Groups</span>: [ <span class="string">'group4'</span> ] &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>删除上一章新增加的数据组和数据节点；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.removeRG(<span class="string">"group4"</span>);</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>统计 employee 的数据量；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.company.employee.count();</span><br></pre></td></tr></table></figure></div>
+
+<p>数据量为1000，说明数据被正确迁移回来了。</p>
+<h4 id="关闭数据库连接"><a href="#关闭数据库连接" class="headerlink" title="关闭数据库连接"></a>关闭数据库连接</h4><ul>
+<li>关闭 db、db1、db2、db3、db4 数据库连接；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="code"><pre><span class="line">db.close();</span><br><span class="line">db1.close();</span><br><span class="line">db2.close();</span><br><span class="line">db3.close();</span><br><span class="line">db4.close();</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>退出 SequoiaDB Shell；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>检查集群状态是否正常；</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">sdblist -l -m local</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1480/1207281/1ae2f9df5e7cccd13c81ee1ca97c5b21-0" alt="缩容完成"></p>
+<p>可以看到，group4 已经从集群中剔除。</p>
+]]></content>
+      <categories>
+        <category>-SequoiaDB</category>
+      </categories>
+      <tags>
+        <tag>-SequoiaDB</tag>
+      </tags>
+  </entry>
 </search>
