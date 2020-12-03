@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MySql执行计划分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql执行计划分析">
+<meta property="og:url" content="https://muchlab.github.io/2020/12/03/MySql%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="MySql执行计划分析">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1541/1207281/d7da5c9733ad1ac3457ac7eb8717423f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1541/1207281/3b20e5df60d4edb2b13c994c09caeb2b-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1541/1207281/2f9ff6db1624d57ce8eecadce7791c2f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1541/1207281/6b2d6b2baeef45a6085717a67e1da41b-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1541/1207281/7355701f9c0ac2644bf1f39be70bc17a-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1541/1207281/3476b255fb5dcd1e6e4bf7443be70d5f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1541/1207281/b273ed8a1bd8a7da086933393ef0baa3-0">
+<meta property="article:published_time" content="2020-12-03T08:09:17.000Z">
+<meta property="article:modified_time" content="2020-12-03T08:12:26.277Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-MySql -SequoiaDB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://doc.shiyanlou.com/courses/1541/1207281/d7da5c9733ad1ac3457ac7eb8717423f-0">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/12/03/MySql%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySql执行计划分析 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/12/03/MySql%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySql执行计划分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-12-03 16:09:17 / 修改时间：16:12:26" itemprop="dateCreated datePublished" datetime="2020-12-03T16:09:17+08:00">2020-12-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySql/" itemprop="url" rel="index"><span itemprop="name">-MySql</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/12/03/MySql%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E5%88%86%E6%9E%90/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/12/03/MySql%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E5%88%86%E6%9E%90/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>3 分钟</span>
+            </span>
+            <div class="post-description">MySql执行计划分析</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="执行计划分析"><a href="#执行计划分析" class="headerlink" title="执行计划分析"></a>执行计划分析</h3><ul>
+<li>通过 mysqldumpslow 只能找出慢SQL，分析一条SQL为什么执行慢需要查看它的执行计划。在MySQL中，可以通过 explain 命令查看一条sql的执行计划。而执行 explain 的分析指标解释如下：</li>
+</ul>
+<ul>
+<li><p>id:记录 select 序列号，有几个 select 就有几个 id，id 的顺序按select 出现的顺序递增</p>
+</li>
+<li><p>table：执行计划所在的表，可能是实际存在的，也可能是临时表，临时表由系统起名</p>
+</li>
+<li><p>select_type：表示 select 的类型，常见取值如下：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SIMPLE</td>
+<td>简单表，不使用表连接或子查询</td>
+</tr>
+<tr>
+<td>PRIMARY</td>
+<td>主查询，即外层的查询</td>
+</tr>
+<tr>
+<td>UNION</td>
+<td>UNION中的第二个或者后面的查询语句</td>
+</tr>
+<tr>
+<td>SUBQUERY</td>
+<td>子查询中的第一个</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>partitions：如果查询是基于分区表的话，会显示查询将访问的分区</p>
+</li>
+<li><p>possible_keys：可能用到的索引</p>
+</li>
+<li><p>key：实际用到的索引，这个字段很重要，如果实际key为空，想强制使用前面的possible_keys，可以在查询中使用force index</p>
+</li>
+<li><p>key_len：索引的长度，一般规律是所用到索引的列数越多，key_len 越长，SQL的性能也越佳</p>
+</li>
+<li><p>ref：显示在key列记录的索引中，表查找值所用到的列或常量，该列不需要太过关注</p>
+</li>
+<li><p>rows：读取并扫描的行数，行数越少，效率越高</p>
+</li>
+<li><p>filtered：存储引擎返回的数据在 server 层过滤后，剩下多少满足查询的记录数量的比例(百分比)</p>
+</li>
+<li><p>extra：额外信息，主要是不适合在其他列中显示，但十分重要的信息，比如下压给引擎的条件</p>
+</li>
+<li><p>type：这一列表示关联类型或访问类型，即 MySQL 决定如何查找表中的行</p>
+</li>
+<li><p>type 取值有如下几种，依次从最优到最差分别为：NULL &gt; system &gt; const &gt; eq_ref &gt; ref &gt; fulltext &gt; ref_or_null &gt; index_merge &gt; unique_subquery &gt; index_subquery &gt; range &gt; index &gt; ALL</p>
+</li>
+</ul>
+<h3 id="创建数据库及数据表"><a href="#创建数据库及数据表" class="headerlink" title="创建数据库及数据表"></a>创建数据库及数据表</h3><ul>
+<li>创建 company 数据库和 employee 数据表用于后续小节分析执行计划。</li>
+</ul>
+<p>1）登录 MySQL Shell 连接 MySQL 实例；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/sequoiasql/mysql/bin/mysql -h 127.0.0.1 -P 3306 -u root</span><br></pre></td></tr></table></figure></div>
+
+<p>2）在 MySQL 实例中创建新数据库 company，并切换到 company；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> company;</span><br><span class="line"><span class="keyword">USE</span> company;</span><br></pre></td></tr></table></figure></div>
+
+<p>3）在 MySQL 实例 company 数据库中创建分区表 employee；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> employee </span><br><span class="line">(</span><br><span class="line">empno <span class="built_in">INT</span>,</span><br><span class="line">ename <span class="built_in">VARCHAR</span>(<span class="number">128</span>),</span><br><span class="line">age <span class="built_in">INT</span>,</span><br><span class="line">PRIMARY <span class="keyword">KEY</span> (empno)</span><br><span class="line">) <span class="keyword">ENGINE</span> = sequoiadb <span class="keyword">COMMENT</span> = <span class="string">"雇员表, sequoiadb: &#123; table_options: &#123; ShardingKey: &#123; 'empno': 1 &#125;, ShardingType: 'hash', 'Compressed': true, 'CompressionType': 'lzw', 'AutoSplit': true, 'EnsureShardingIndex': false &#125; &#125;"</span>;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="构造数据"><a href="#构造数据" class="headerlink" title="构造数据"></a>构造数据</h3><p>使用 MySQL 的存储过程，构造出测试数据用于计划分析。</p>
+<h4 id="构造数据-1"><a href="#构造数据-1" class="headerlink" title="构造数据"></a>构造数据</h4><p>使用存储过程构造数据，生成 1000 条测试数据到 employee 表中；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">PROCEDURE</span> <span class="keyword">IF</span> <span class="keyword">EXISTS</span> gen_data;</span><br><span class="line"><span class="keyword">USE</span> company;</span><br><span class="line"><span class="comment">-- 创建存储过程</span></span><br><span class="line">DELIMITER $$</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">PROCEDURE</span> gen_data(<span class="keyword">IN</span> <span class="keyword">num</span> <span class="built_in">INT</span>)</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line"><span class="keyword">DECLARE</span> i <span class="built_in">INT</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">SET</span> i = <span class="number">0</span>;</span><br><span class="line">WHILE i &lt; num DO</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> employee <span class="keyword">VALUES</span> (i, <span class="string">'Name'</span>, <span class="number">21</span>);</span><br><span class="line"><span class="keyword">SET</span> i = i + <span class="number">1</span>;</span><br><span class="line"><span class="keyword">END</span> <span class="keyword">WHILE</span>;</span><br><span class="line"><span class="keyword">END</span> $$</span><br><span class="line">DELIMITER ;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 调用存储过程生成 1000 条数据</span></span><br><span class="line"><span class="keyword">CALL</span> gen_data(<span class="number">1000</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图:<br><img src="https://doc.shiyanlou.com/courses/1541/1207281/d7da5c9733ad1ac3457ac7eb8717423f-0" alt="图片描述"></p>
+<blockquote>
+<p><strong>注意</strong>:<br>仅为实验需要，仅用了1000条数据</p>
+</blockquote>
+<h4 id="数据检查"><a href="#数据检查" class="headerlink" title="数据检查"></a>数据检查</h4><p>检查存储过程构造的数据；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(<span class="number">1</span>) <span class="keyword">FROM</span> employee;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employee <span class="keyword">LIMIT</span> <span class="number">10</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图: <img src="https://doc.shiyanlou.com/courses/1541/1207281/3b20e5df60d4edb2b13c994c09caeb2b-0" alt="图片描述"></p>
+<p>退出MySQL；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="慢查询日志配置"><a href="#慢查询日志配置" class="headerlink" title="慢查询日志配置"></a>慢查询日志配置</h3><p>开启慢查询日志需要修改配置文件并重启 MySQL 数据库实例。</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>1)修改MySQL配置文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;&gt; /opt/sequoiasql/mysql/database/3306/auto.cnf &lt;&lt;EOF</span><br><span class="line"><span class="meta">#</span><span class="bash"> 开启慢查询日志</span></span><br><span class="line">slow_query_log=on </span><br><span class="line"><span class="meta">#</span><span class="bash"> 慢查询日志存放路径</span></span><br><span class="line">slow_query_log_file = /opt/sequoiasql/mysql/database/sdb-mysql-slow.log </span><br><span class="line"><span class="meta">#</span><span class="bash"> 超过多长时间的查询为慢查询</span></span><br><span class="line">long_query_time = 1 </span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></div>
+
+<p>2）重启 MySQL 数据库实例生效；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/sequoiasql/mysql/bin/sdb_sql_ctl restart myinst</span><br></pre></td></tr></table></figure></div>
+
+<p>3）登录MySQL；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/sequoiasql/mysql/bin/mysql -h 127.0.0.1 -P 3306 -u root</span><br></pre></td></tr></table></figure></div>
+
+<p>4）进行数据查询；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">USE</span> company;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">sleep</span>(<span class="number">2</span>), empno, ename, age <span class="keyword">FROM</span> employee <span class="keyword">WHERE</span> empno = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> empno, ename, age <span class="keyword">FROM</span> employee <span class="keyword">WHERE</span> empno = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">sleep</span>(<span class="number">2</span>), empno, ename, age <span class="keyword">FROM</span> employee <span class="keyword">WHERE</span> empno = <span class="number">20</span>;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p><strong>注意</strong>:<br>因为数据量不大， 为了构造慢查询情况，其中 sleep(2) 是为了构造查询 SQL 比较慢。</p>
+</blockquote>
+<p>操作截图: <img src="https://doc.shiyanlou.com/courses/1541/1207281/2f9ff6db1624d57ce8eecadce7791c2f-0" alt="图片描述"></p>
+<p>5）退出MySQL；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure></div>
+
+<p>6）分析慢查询SQL；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow /opt/sequoiasql/mysql/database/sdb-mysql-slow.log</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p><strong>注意</strong>: 开启慢查询日志后，MySQL 会记录执行时间超出 long_query_time 的 sql 语句，对于生成的慢查询日志，可以使用 MySQL 自带的 mysqldumpslow 工具进行分析，mysqldumpslow 有比较多的分析参数， 可以通过 mysqldumpslow –help 查看。</p>
+</blockquote>
+<p>操作截图: <img src="https://doc.shiyanlou.com/courses/1541/1207281/6b2d6b2baeef45a6085717a67e1da41b-0" alt="图片描述"></p>
+<h3 id="执行计划分析-1"><a href="#执行计划分析-1" class="headerlink" title="执行计划分析"></a>执行计划分析</h3><p>查看执行计划对于分析慢查询的优化具有重要意义。</p>
+<p>1）登录 MySQL 实例；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/sequoiasql/mysql/bin/mysql -h 127.0.0.1 -P 3306 -u root</span><br></pre></td></tr></table></figure></div>
+
+<p>2）查看执行计划； 通过 mysqldumpslow 只能找出慢 SQL，分析一条SQL为什么执行慢需要查看它的执行计划。在 MySQL 中，可以通过 explain 命令查看一条sql的执行计划。如查看刚才使用 mysqldumpslow 找到的慢 SQL 的执行计划；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">USE</span> company;</span><br><span class="line"><span class="keyword">EXPLAIN</span> <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employee <span class="keyword">WHERE</span> age = <span class="number">20</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图: <img src="https://doc.shiyanlou.com/courses/1541/1207281/7355701f9c0ac2644bf1f39be70bc17a-0" alt="图片描述"></p>
+<blockquote>
+<p><strong>注意</strong>:<br>如图可通过 EXPALIN 分析 SQL 的执行计划， 看到此到 SQL 没有走索引。</p>
+</blockquote>
+<h4 id="创建索引"><a href="#创建索引" class="headerlink" title="创建索引"></a>创建索引</h4><p>3）观察索引对执行计划的影响，为数据表 employee 的 age 查询字段创建索引；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> age_Index <span class="keyword">ON</span> employee(age);</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图: <img src="https://doc.shiyanlou.com/courses/1541/1207281/3476b255fb5dcd1e6e4bf7443be70d5f-0" alt="图片描述"></p>
+<h4 id="再次执行计划分析"><a href="#再次执行计划分析" class="headerlink" title="再次执行计划分析"></a>再次执行计划分析</h4><p>4）在创建好索引的表上再次进行执行计划分析；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">EXPLAIN</span> <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employee <span class="keyword">WHERE</span> age = <span class="number">20</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图: <img src="https://doc.shiyanlou.com/courses/1541/1207281/b273ed8a1bd8a7da086933393ef0baa3-0" alt="图片描述"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/12/03/MySql%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E5%88%86%E6%9E%90/" title="MySql执行计划分析">https://muchlab.github.io/2020/12/03/MySql执行计划分析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/MySql-SequoiaDB/" rel="tag"><i class="fa fa-tag"></i> -MySql -SequoiaDB</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/03/MySql%E7%9A%84%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D/" rel="prev" title="MySql的备份与恢复">
+      <i class="fa fa-chevron-left"></i> MySql的备份与恢复
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/03/SequoiaDB-PostgreSql%E5%AE%9E%E4%BE%8B%E7%9A%84%E5%88%9B%E5%BB%BA/" rel="next" title="SequoiaDB-PostgreSql实例的创建">
+      SequoiaDB-PostgreSql实例的创建 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#执行计划分析"><span class="nav-text">执行计划分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建数据库及数据表"><span class="nav-text">创建数据库及数据表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构造数据"><span class="nav-text">构造数据</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#构造数据-1"><span class="nav-text">构造数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据检查"><span class="nav-text">数据检查</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#慢查询日志配置"><span class="nav-text">慢查询日志配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#配置"><span class="nav-text">配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行计划分析-1"><span class="nav-text">执行计划分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建索引"><span class="nav-text">创建索引</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#再次执行计划分析"><span class="nav-text">再次执行计划分析</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">100</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AspNetCore-C/" rel="tag">-AspNetCore -C#</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WebSocket/" rel="tag">-C# -WebSocket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag">-JVM——类加载器子系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">-MySql</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql-SequoiaDB/" rel="tag">-MySql -SequoiaDB</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth2-0/" rel="tag">-OAuth2.0</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB/" rel="tag">-SequoiaDB</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">429k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:30</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
