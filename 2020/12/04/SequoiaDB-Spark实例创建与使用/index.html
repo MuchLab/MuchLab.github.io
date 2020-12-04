@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="SequoiaDB-Spark实例创建与使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SequoiaDB-Spark实例创建与使用">
+<meta property="og:url" content="https://muchlab.github.io/2020/12/04/SequoiaDB-Spark%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BA%E4%B8%8E%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="SequoiaDB-Spark实例创建与使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1542/1207281/bb4c027c1c181b51b6b426634b031b90-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/dadb2110e578da42604ef2c2fe755b0a-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/be92979fc0c48b4df2524cb0567173f5-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/402f6dd5278c7c5bed9bffc9f2a7169b-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/a9d2c03cfd24eccc58195dae6d62afed-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/31c9e3da7b150cd27fc3604ea891ba31-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/4575f232fdabedfc6054e9c59a30cb8d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/c59b79202d81658745530ab4abf754ee-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1542/1207281/8a986975b479eecf299fb94eeaeb682f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1542/1207281/5fa19ce996c1be2ecacd887f720171cc-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/6d7c7a5d31b09c8bce451aa1c5a32a4d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/41138f5eb03e5749b14c242e89cae8df-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1542/1207281/f5d0ae41a071828789c2dcd7cfbb5896-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1542/1207281/07b1ab4881eb54b734d27ff6105940f3-0">
+<meta property="article:published_time" content="2020-12-04T01:17:12.000Z">
+<meta property="article:modified_time" content="2020-12-04T01:18:19.046Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-SequoiaDB -Spark">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://doc.shiyanlou.com/courses/1542/1207281/bb4c027c1c181b51b6b426634b031b90-0">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/12/04/SequoiaDB-Spark%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BA%E4%B8%8E%E4%BD%BF%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SequoiaDB-Spark实例创建与使用 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/12/04/SequoiaDB-Spark%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BA%E4%B8%8E%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SequoiaDB-Spark实例创建与使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-12-04 09:17:12 / 修改时间：09:18:19" itemprop="dateCreated datePublished" datetime="2020-12-04T09:17:12+08:00">2020-12-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SequoiaDB-Spark/" itemprop="url" rel="index"><span itemprop="name">-SequoiaDB-Spark</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/12/04/SequoiaDB-Spark%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BA%E4%B8%8E%E4%BD%BF%E7%94%A8/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/12/04/SequoiaDB-Spark%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BA%E4%B8%8E%E4%BD%BF%E7%94%A8/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>6.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>6 分钟</span>
+            </span>
+            <div class="post-description">SequoiaDB-Spark实例创建与使用</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="SequoiaDB-Spark实例创建与使用"><a href="#SequoiaDB-Spark实例创建与使用" class="headerlink" title="SequoiaDB-Spark实例创建与使用"></a>SequoiaDB-Spark实例创建与使用</h2><h3 id="安装-Spark-实例"><a href="#安装-Spark-实例" class="headerlink" title="安装 Spark 实例"></a>安装 Spark 实例</h3><p>下面开始安装 Spark 实例，并对 Spark 实例进行必要的配置。</p>
+<h4 id="解压-Spark-安装包"><a href="#解压-Spark-安装包" class="headerlink" title="解压 Spark 安装包"></a>解压 Spark 安装包</h4><p>1）检查 Spark 安装包；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -trl /home/sdbadmin/soft/</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1542/1207281/bb4c027c1c181b51b6b426634b031b90-0" alt="1542-610-1"></p>
+<p>2）解压 Spark 安装包；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zxf /home/sdbadmin/soft/spark-2.4.4-bin-hadoop2.7.tar.gz -C /opt</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="添加驱动包"><a href="#添加驱动包" class="headerlink" title="添加驱动包"></a>添加驱动包</h4><p>1）拷贝 SequoiaDB for Spark 的连接器到 Spark 的 jars 目录下；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /opt/sequoiadb/spark/spark-sequoiadb_2.11-3.4.jar /opt/spark-2.4.4-bin-hadoop2.7/jars/</span><br></pre></td></tr></table></figure></div>
+
+<p>2）拷贝 MySQL 驱动到 Spark 的 jars 目录下；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /home/sdbadmin/soft/mysql-jdbc.jar /opt/spark-2.4.4-bin-hadoop2.7/jars/</span><br></pre></td></tr></table></figure></div>
+
+<p>3）拷贝 SequoiaDB 的 JAVA 驱动到 Spark 的 jars 目录下；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /opt/sequoiadb/java/sequoiadb-driver-3.4.jar /opt/spark-2.4.4-bin-hadoop2.7/jars/</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="设置免密"><a href="#设置免密" class="headerlink" title="设置免密"></a>设置免密</h4><p>1）执行 ssh-keygen 生成公钥和密钥，执行后连续回车即可；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br></pre></td></tr></table></figure></div>
+
+<p>2）执行 ssh-copy-id，把公钥拷贝到本机的 sdbadmin 用户；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id  sdbadmin@sdbserver1</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>sdbadmin 的密码是：<code>sdbadmin</code> 。 单机不需要拷贝到其它服务器上，如果是多机部署，需要配置所有服务器的互相关系。</p>
+</blockquote>
+<h4 id="配置-Spark"><a href="#配置-Spark" class="headerlink" title="配置 Spark"></a>配置 Spark</h4><p>1）设置 spark-env.sh；</p>
+<p>从模板中复制一份 spark-env.sh 脚本：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /opt/spark-2.4.4-bin-hadoop2.7/conf/spark-env.sh.template /opt/spark-2.4.4-bin-hadoop2.7/conf/spark-env.sh</span><br></pre></td></tr></table></figure></div>
+
+<p>在 spark-env.sh 中设置 WORKER 的数量和 MASTER 的 IP；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo "SPARK_WORKER_INSTANCES=2" &gt;&gt; /opt/spark-2.4.4-bin-hadoop2.7/conf/spark-env.sh</span><br><span class="line">echo "SPARK_MASTER_IP=127.0.0.1" &gt;&gt; /opt/spark-2.4.4-bin-hadoop2.7/conf/spark-env.sh</span><br></pre></td></tr></table></figure></div>
+
+<p>2）复制以下代码到实验环境终端执行，用于创建设置元数据信息的数据库配置文件 hive-site.xml；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /opt/spark-2.4.4-bin-hadoop2.7/conf/hive-site.xml &lt;&lt; EOF</span><br><span class="line">&lt;configuration&gt;</span><br><span class="line">   &lt;property&gt;</span><br><span class="line">     &lt;name&gt;hive.metastore.schema.verification&lt;/name&gt;</span><br><span class="line">     &lt;value&gt;false&lt;/value&gt;</span><br><span class="line">   &lt;/property&gt;</span><br><span class="line">   &lt;property&gt;</span><br><span class="line">      &lt;name&gt;javax.jdo.option.ConnectionURL&lt;/name&gt;</span><br><span class="line">      &lt;value&gt;jdbc:mysql://localhost:3306/metastore&lt;/value&gt;</span><br><span class="line">      &lt;description&gt;JDBC connect string for a JDBC metastore&lt;/description&gt;</span><br><span class="line">   &lt;/property&gt;</span><br><span class="line">   &lt;property&gt;</span><br><span class="line">      &lt;name&gt;javax.jdo.option.ConnectionDriverName&lt;/name&gt;</span><br><span class="line">      &lt;value&gt;com.mysql.jdbc.Driver&lt;/value&gt;</span><br><span class="line">      &lt;description&gt;Driver class name for a JDBC metastore&lt;/description&gt;</span><br><span class="line">   &lt;/property&gt;</span><br><span class="line">   &lt;property&gt;</span><br><span class="line">      &lt;name&gt;javax.jdo.option.ConnectionUserName&lt;/name&gt;</span><br><span class="line">      &lt;value&gt;metauser&lt;/value&gt;</span><br><span class="line">   &lt;/property&gt;</span><br><span class="line">   &lt;property&gt;</span><br><span class="line">      &lt;name&gt;javax.jdo.option.ConnectionPassword&lt;/name&gt;</span><br><span class="line">      &lt;value&gt;metauser&lt;/value&gt;</span><br><span class="line">   &lt;/property&gt;</span><br><span class="line">   &lt;property&gt;</span><br><span class="line">      &lt;name&gt;datanucleus.autoCreateSchema&lt;/name&gt;</span><br><span class="line">      &lt;value&gt;true&lt;/value&gt;</span><br><span class="line">      &lt;description&gt;creates necessary schema on a startup if one doesn't exist. set this to false, after creating it once&lt;/description&gt;</span><br><span class="line">   &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="配置-Spark-元数据库"><a href="#配置-Spark-元数据库" class="headerlink" title="配置 Spark 元数据库"></a>配置 Spark 元数据库</h4><p>1）使用 Linux 命令进入 MySQL Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/sequoiasql/mysql/bin/mysql -h 127.0.0.1 -P 3306 -u root</span><br></pre></td></tr></table></figure></div>
+
+<p>2）创建 metauser 用户；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> <span class="string">'metauser'</span>@<span class="string">'%'</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">BY</span> <span class="string">'metauser'</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/dadb2110e578da42604ef2c2fe755b0a-0" alt="1542-610-3"></p>
+<p>3）给 metauser 用户授权；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GRANT</span> <span class="keyword">ALL</span> <span class="keyword">ON</span> *.* <span class="keyword">TO</span> <span class="string">'metauser'</span>@<span class="string">'%'</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/be92979fc0c48b4df2524cb0567173f5-0" alt="1542-610-4"></p>
+<p>4）创建 Spark 元数据库；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> metastore <span class="built_in">CHARACTER</span> <span class="keyword">SET</span> <span class="string">'latin1'</span> <span class="keyword">COLLATE</span> <span class="string">'latin1_bin'</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/402f6dd5278c7c5bed9bffc9f2a7169b-0" alt="1542-610-5"></p>
+<p>5）刷新权限；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FLUSH</span> <span class="keyword">PRIVILEGES</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/a9d2c03cfd24eccc58195dae6d62afed-0" alt="1542-610-6"></p>
+<p>6） 退出 MySQL Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="启动-Spark-服务"><a href="#启动-Spark-服务" class="headerlink" title="启动 Spark 服务"></a>启动 Spark 服务</h3><p>本课程演示如何使用 Spark Thrift Server 服务连接 Spark 进行数据操作，所以需要启动 Spark 和 Spark Thrift Server 服务。</p>
+<p>1） 启动 Spark；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/spark-2.4.4-bin-hadoop2.7/sbin/start-all.sh</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/31c9e3da7b150cd27fc3604ea891ba31-0" alt="1542-610-7"></p>
+<p>2）启动 thriftserver 服务；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/spark-2.4.4-bin-hadoop2.7/sbin/start-thriftserver.sh</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1543/1207281/4575f232fdabedfc6054e9c59a30cb8d-0" alt="1542-610-8"></p>
+<p>3） 检查进程启动状态；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jps</span><br></pre></td></tr></table></figure></div>
+
+<p>4） 检查端口监听状态；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -anp | grep 10000</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/c59b79202d81658745530ab4abf754ee-0" alt="1542-610-9"></p>
+<blockquote>
+<p>Note:</p>
+<p>本实验环境性能较低，启动 Spark 的耗时较长，请耐心等待 10000 端口的监听状态；如截图所示，此时 10000 端口监听成功即可继续执行后续操作。</p>
+</blockquote>
+<h3 id="在-SequoiaDB-建立集合空间和集合"><a href="#在-SequoiaDB-建立集合空间和集合" class="headerlink" title="在 SequoiaDB 建立集合空间和集合"></a>在 SequoiaDB 建立集合空间和集合</h3><p>进入 SequoiaDB Shell，在 SequoiaDB 巨杉数据库引擎中创建 company 集合空间和 employee 集合。</p>
+<p>1）使用 Linux 命令进入 SequoiaDB Shell 命令行；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<p>2）使用 JavaScript 语法，连接协调节点，获取数据库连接；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>2）创建 company_domain 逻辑域；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.createDomain(<span class="string">"company_domain"</span>, [ <span class="string">"group1"</span>, <span class="string">"group2"</span>, <span class="string">"group3"</span> ], &#123; <span class="attr">AutoSplit</span>: <span class="literal">true</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>3）创建 company 集合空间；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.createCS(<span class="string">"company"</span>, &#123; <span class="attr">Domain</span>: <span class="string">"company_domain"</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>4）创建 employee 集合；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.company.createCL(<span class="string">"employee"</span>, &#123; <span class="string">"ShardingKey"</span>: &#123; <span class="string">"_id"</span>: <span class="number">1</span> &#125;, <span class="string">"ShardingType"</span>: <span class="string">"hash"</span>, <span class="string">"ReplSize"</span>: <span class="number">-1</span>, <span class="string">"Compressed"</span>: <span class="literal">true</span>, <span class="string">"CompressionType"</span>: <span class="string">"lzw"</span>, <span class="string">"AutoSplit"</span>: <span class="literal">true</span>, <span class="string">"EnsureShardingIndex"</span>: <span class="literal">false</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>5）退出 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1542/1207281/8a986975b479eecf299fb94eeaeb682f-0" alt="1542-610-10"></p>
+<h3 id="在-SparkSQL-关联集合空间和集合"><a href="#在-SparkSQL-关联集合空间和集合" class="headerlink" title="在 SparkSQL 关联集合空间和集合"></a>在 SparkSQL 关联集合空间和集合</h3><p>SparkSQL 通过 Spark-SequoiaDB 连接组件关联 SequoiaDB 的集合空间和集合，将 SequoiaDB 巨杉数据库引擎作为 SparkSQL 的数据源进行相应的数据计算。</p>
+<h4 id="SparkSQL-与-SequoiaDB-的集合空间和集合关联"><a href="#SparkSQL-与-SequoiaDB-的集合空间和集合关联" class="headerlink" title="SparkSQL 与 SequoiaDB 的集合空间和集合关联"></a>SparkSQL 与 SequoiaDB 的集合空间和集合关联</h4><p>1）使用 Beeline 客户端工具连接至 thriftserver 服务；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/spark-2.4.4-bin-hadoop2.7/bin/beeline -u 'jdbc:hive2://localhost:10000'</span><br></pre></td></tr></table></figure></div>
+
+<p>2）创建并切换至 company 数据库；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> company;</span><br><span class="line"><span class="keyword">USE</span> company;</span><br></pre></td></tr></table></figure></div>
+
+<p>3）创建 employee 表；</p>
+<p>创建 employee 表，并且与 SequoiaDB 中的集合 employee 进行关联：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> employee </span><br><span class="line">(</span><br><span class="line">empno  <span class="built_in">INT</span>,</span><br><span class="line">ename  <span class="keyword">STRING</span>,</span><br><span class="line">age    <span class="built_in">INT</span></span><br><span class="line">) </span><br><span class="line"><span class="keyword">USING</span> com.sequoiadb.spark OPTIONS </span><br><span class="line">( </span><br><span class="line">host <span class="string">'localhost:11810'</span>, </span><br><span class="line">collectionspace <span class="string">'company'</span>, </span><br><span class="line">collection <span class="string">'employee'</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>当前环境未开启鉴权，因此忽略了 username 和 password 参数。</p>
+</blockquote>
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1542/1207281/5fa19ce996c1be2ecacd887f720171cc-0" alt="1542-610-11"></p>
+<h4 id="SequoiaDB-SparkSQL-建表语法说明"><a href="#SequoiaDB-SparkSQL-建表语法说明" class="headerlink" title="SequoiaDB-SparkSQL 建表语法说明"></a>SequoiaDB-SparkSQL 建表语法说明</h4><p>在 SparkSQL 中关联 SequoiaDB 集合空间和集合的 SQL 语法如下；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> &lt;[<span class="keyword">TEMPORARY</span>] <span class="keyword">TABLE</span> | <span class="keyword">TEMPORARY</span> <span class="keyword">VIEW</span>&gt; &lt;tableName&gt; [(<span class="keyword">SCHEMA</span>)]</span><br><span class="line"><span class="keyword">USING</span> com.sequoiadb.spark OPTIONS (&lt;<span class="keyword">option</span>&gt;, &lt;<span class="keyword">option</span>&gt;, ...);</span><br></pre></td></tr></table></figure></div>
+
+<p>语法说明：</p>
+<ul>
+<li>TEMPORARY 表示为临时表或视图，只在创建表或视图的会话中有效，会话退出后自动删除。</li>
+<li>表名后紧跟的 SCHEMA 可不填，连接器会自动生成。自动生成的 SCHEMA 字段顺序与集合中记录的顺序不一致，因此如果对 SCHEMA 的字段顺序有要求，应该显式定义 SCHEMA。</li>
+<li>OPTIONS 为参数列表，参数是键和值都为字符串类型的键值对，其中值的前后需要有单引号，多个参数之间用逗号分隔。</li>
+</ul>
+<h4 id="SequoiaDB-SparkSQL-建表参数说明"><a href="#SequoiaDB-SparkSQL-建表参数说明" class="headerlink" title="SequoiaDB-SparkSQL 建表参数说明"></a>SequoiaDB-SparkSQL 建表参数说明</h4><p>下面是部分常用的 SequoiaDB-SparkSQL 建表参数说明，完整的建表参数请参考 <a href="http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1432190712-edition_id-304" target="_blank" rel="noopener">SequoiaDB-SparkSQL 参数说明</a>。</p>
+<ul>
+<li>host ：SequoiaDB 协调节点/独立节点地址，多个地址以 “,” 分隔。例如：“server1:11810, server2:11810”。</li>
+<li>collectionspace ：集合空间名称。</li>
+<li>collection ：集合名称（不包含集合空间名称）。</li>
+<li>username ：数据库用户名。</li>
+<li>passwordtype : 密码类型，取值为“cleartext”或“file”，分别表示明文密码和文件密钥。</li>
+<li>password ：数据库用户名对应的用户密码。</li>
+<li>preferredinstance ：指定分区优先选择的节点实例。</li>
+</ul>
+<h3 id="在-Beeline-中进行数据操作"><a href="#在-Beeline-中进行数据操作" class="headerlink" title="在 Beeline 中进行数据操作"></a>在 Beeline 中进行数据操作</h3><p>在 Beeline 客户端中对 SequoiaDB 巨杉数据库的集合进行数据写入、查询操作。</p>
+<p>1）写入数据；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> employee <span class="keyword">VALUES</span> ( <span class="number">10001</span>, <span class="string">'Georgi'</span>, <span class="number">48</span> );</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> employee <span class="keyword">VALUES</span> ( <span class="number">10002</span>, <span class="string">'Bezalel'</span>, <span class="number">21</span> );</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> employee <span class="keyword">VALUES</span> ( <span class="number">10003</span>, <span class="string">'Parto'</span>, <span class="number">33</span> );</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> employee <span class="keyword">VALUES</span> ( <span class="number">10004</span>, <span class="string">'Chirstian'</span>, <span class="number">40</span> );</span><br></pre></td></tr></table></figure></div>
+
+<p><img src="https://doc.shiyanlou.com/courses/1543/1207281/6d7c7a5d31b09c8bce451aa1c5a32a4d-0" alt="1542-610-12"></p>
+<p>2）进行数据查询；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employee;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1543/1207281/41138f5eb03e5749b14c242e89cae8df-0" alt="1542-610-13"></p>
+<h3 id="通过连接器自动生成-Schema-创建表"><a href="#通过连接器自动生成-Schema-创建表" class="headerlink" title="通过连接器自动生成 Schema 创建表"></a>通过连接器自动生成 Schema 创建表</h3><p>SequoiaDB-SparkSQL 支持通过连接器自动生成 SCHEMA 来创建关联表，这样可以在建表时不指定 SCHEMA 信息。</p>
+<p>1）通过连接器自动生成 SCHEMA 来创建 employee_auto_schema 表；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> employee_auto_schema <span class="keyword">USING</span> com.sequoiadb.spark OPTIONS </span><br><span class="line">(</span><br><span class="line">host <span class="string">'localhost:11810'</span>,</span><br><span class="line">collectionspace <span class="string">'company'</span>,</span><br><span class="line">collection <span class="string">'employee'</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>通过连接器自动生成 SCHEMA，要求在建表时 SequoiaDB 的关联集合中就已经存在数据记录。</p>
+</blockquote>
+<p>2）查看表 employee_auto_schema 的结构信息；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DESC employee_auto_schema;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1542/1207281/f5d0ae41a071828789c2dcd7cfbb5896-0" alt="1542-610-14"></p>
+<p>3）查询 employee_auto_schema 的数据记录；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employee_auto_schema;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>SparkSQL 表 employee 和 employee_auto_schema 关联的都是 SequoiaDB 中的集合 company.employee，所以这两张 SparkSQL 表的对应数据是完全一致的。</p>
+</blockquote>
+<h3 id="通过-SQL-结果集创建表"><a href="#通过-SQL-结果集创建表" class="headerlink" title="通过 SQL 结果集创建表"></a>通过 SQL 结果集创建表</h3><p>SequoiaDB-SparkSQL 支持 <code>CREATE TABLE ... AS SELECT ...</code> 语法，通过 SQL 结果集创建新表。</p>
+<h4 id="通过-SQL-结果集创建表-1"><a href="#通过-SQL-结果集创建表-1" class="headerlink" title="通过 SQL 结果集创建表"></a>通过 SQL 结果集创建表</h4><p>1）通过已有表 employee 创建表 employee_bak，并将表中的数据存放到指定域和集合空间中；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> employee_bak <span class="keyword">USING</span> com.sequoiadb.spark OPTIONS </span><br><span class="line">(</span><br><span class="line">host <span class="string">'localhost:11810'</span>,</span><br><span class="line"><span class="keyword">domain</span> <span class="string">'company_domain'</span>,</span><br><span class="line">collectionspace <span class="string">'company'</span>,</span><br><span class="line">collection <span class="string">'employee_bak'</span>,</span><br><span class="line">autosplit <span class="literal">true</span>,</span><br><span class="line">shardingkey <span class="string">'&#123;_id:1&#125;'</span>,</span><br><span class="line">shardingtype <span class="string">'hash'</span>,</span><br><span class="line">compressiontype <span class="string">'lzw'</span></span><br><span class="line">) <span class="keyword">AS</span> <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employee;</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1542/1207281/07b1ab4881eb54b734d27ff6105940f3-0" alt="图片描述"></p>
+<p>2）查看 employee_bak 表中的数据；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SQL"><figure class="iseeu highlight /sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employee_bak;</span><br></pre></td></tr></table></figure></div>
+
+<p>3）退出 Beeline Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">!quit</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="使用-CREATE-TABLE-AS-SELECT-语法建表参数说明"><a href="#使用-CREATE-TABLE-AS-SELECT-语法建表参数说明" class="headerlink" title="使用 CREATE TABLE ... AS SELECT ... 语法建表参数说明"></a>使用 <code>CREATE TABLE ... AS SELECT ...</code> 语法建表参数说明</h4><p>下面是部分 SequoiaDB-SparkSQL 使用 <code>CREATE TABLE ... AS SELECT ...</code> 语法建表的参数说明，完整的建表参数请参考 <a href="http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1432190712-edition_id-304" target="_blank" rel="noopener">SequoiaDB-SparkSQL 参数说明</a>。</p>
+<ul>
+<li>host ：SequoiaDB 协调节点/独立节点地址，多个地址以 “,” 分隔。例如：“server1:11810, server2:11810”。</li>
+<li>domain ：创建集合空间时指定所属域。如果集合空间已存在，则忽略该参数。</li>
+<li>collectionspace ：集合空间名称。</li>
+<li>collection ：集合名称（不包含集合空间名称）。</li>
+<li>autosplit ：创建集合时指定是否自动切分。必须配合散列分区和域使用。</li>
+<li>shardingkey ：创建集合时指定的分区键。</li>
+<li>shardingtype ：创建集合时指定的分区类型，取值可以是“hash”和“range”，分别表示散列分区和范围分区。</li>
+<li>compressiontype ：创建集合时指定的压缩类型，取值可以是“none”、“lzw”和“snappy”，“none”表示不进行压缩。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/12/04/SequoiaDB-Spark%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BA%E4%B8%8E%E4%BD%BF%E7%94%A8/" title="SequoiaDB-Spark实例创建与使用">https://muchlab.github.io/2020/12/04/SequoiaDB-Spark实例创建与使用/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/SequoiaDB-Spark/" rel="tag"><i class="fa fa-tag"></i> -SequoiaDB -Spark</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/03/SequoiaDB-PostgreSql%E5%85%83%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" rel="prev" title="SequoiaDB-PostgreSql元数据同步">
+      <i class="fa fa-chevron-left"></i> SequoiaDB-PostgreSql元数据同步
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SequoiaDB-Spark实例创建与使用"><span class="nav-text">SequoiaDB-Spark实例创建与使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-Spark-实例"><span class="nav-text">安装 Spark 实例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解压-Spark-安装包"><span class="nav-text">解压 Spark 安装包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加驱动包"><span class="nav-text">添加驱动包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置免密"><span class="nav-text">设置免密</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置-Spark"><span class="nav-text">配置 Spark</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置-Spark-元数据库"><span class="nav-text">配置 Spark 元数据库</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动-Spark-服务"><span class="nav-text">启动 Spark 服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在-SequoiaDB-建立集合空间和集合"><span class="nav-text">在 SequoiaDB 建立集合空间和集合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在-SparkSQL-关联集合空间和集合"><span class="nav-text">在 SparkSQL 关联集合空间和集合</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SparkSQL-与-SequoiaDB-的集合空间和集合关联"><span class="nav-text">SparkSQL 与 SequoiaDB 的集合空间和集合关联</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SequoiaDB-SparkSQL-建表语法说明"><span class="nav-text">SequoiaDB-SparkSQL 建表语法说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SequoiaDB-SparkSQL-建表参数说明"><span class="nav-text">SequoiaDB-SparkSQL 建表参数说明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在-Beeline-中进行数据操作"><span class="nav-text">在 Beeline 中进行数据操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过连接器自动生成-Schema-创建表"><span class="nav-text">通过连接器自动生成 Schema 创建表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过-SQL-结果集创建表"><span class="nav-text">通过 SQL 结果集创建表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#通过-SQL-结果集创建表-1"><span class="nav-text">通过 SQL 结果集创建表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-CREATE-TABLE-AS-SELECT-语法建表参数说明"><span class="nav-text">使用 CREATE TABLE ... AS SELECT ... 语法建表参数说明</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">101</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AspNetCore-C/" rel="tag">-AspNetCore -C#</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WebSocket/" rel="tag">-C# -WebSocket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag">-JVM——类加载器子系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">-MySql</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql-SequoiaDB/" rel="tag">-MySql -SequoiaDB</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth2-0/" rel="tag">-OAuth2.0</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB/" rel="tag">-SequoiaDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-MySql/" rel="tag">-SequoiaDB -MySql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-PostgreSql/" rel="tag">-SequoiaDB -PostgreSql</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-Spark/" rel="tag">-SequoiaDB -Spark</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">436k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:37</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
