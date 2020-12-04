@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="SequoiaDB-S3对象存储部署与应用开发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SequoiaDB-S3对象存储部署与应用开发">
+<meta property="og:url" content="https://muchlab.github.io/2020/12/04/SequoiaDB-S3%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="SequoiaDB-S3对象存储部署与应用开发">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/31431b6f49340653d09fc4e3bb519651-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/b89682796a34237a95815548ff26a638-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/78de27f5dddc4e8f77a6e47b894cae0a-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/8a4801991c4f5799d08d0ac27e434354-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/64eadd46276ef314129528df3fdcaa93-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/a5d29a21424f40238447e1e844dd1827-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/55aa35d007ebe9b8efcd830c9a594c86-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/5cba4a862e1740474f4a769890014fc7-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1538/1207281/64eadd46276ef314129528df3fdcaa93-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/1d8217811ea029b8b7833bc8ce441e05-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/2344f68c5f160315919c996195a239fb">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/f37ae04baeb95945f3f5a8c23dc874e4-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1543/1207281/55c381bdc9032f06bed1ae4b9fe20852-0">
+<meta property="article:published_time" content="2020-12-04T07:44:18.000Z">
+<meta property="article:modified_time" content="2020-12-04T07:48:14.506Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="-SequoiaDB -S3">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://doc.shiyanlou.com/courses/1543/1207281/31431b6f49340653d09fc4e3bb519651-0">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/12/04/SequoiaDB-S3%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SequoiaDB-S3对象存储部署与应用开发 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/12/04/SequoiaDB-S3%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SequoiaDB-S3对象存储部署与应用开发
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-12-04 15:44:18 / 修改时间：15:48:14" itemprop="dateCreated datePublished" datetime="2020-12-04T15:44:18+08:00">2020-12-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SequoiaDB-S3/" itemprop="url" rel="index"><span itemprop="name">-SequoiaDB-S3</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/12/04/SequoiaDB-S3%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/12/04/SequoiaDB-S3%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>10 分钟</span>
+            </span>
+            <div class="post-description">SequoiaDB-S3对象存储部署与应用开发</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="配置-SequoiaDB-巨杉数据库存储引擎"><a href="#配置-SequoiaDB-巨杉数据库存储引擎" class="headerlink" title="配置 SequoiaDB 巨杉数据库存储引擎"></a>配置 SequoiaDB 巨杉数据库存储引擎</h3><p>在 SequoiaDB 巨杉数据库存储引擎中开启 RC 级别事务，并且配置为等锁模式，同时为 SequoiaS3 的存储创建专属的域。</p>
+<p>1）通过 Linux 命令行进入 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<p>2）通过 javascript 语言连接协调节点，获取数据库连接；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>3）开启 RC 级别事务，且配置为等锁模式；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.updateConf( &#123; <span class="attr">transactionon</span>: <span class="literal">true</span>, <span class="attr">transisolation</span>: <span class="number">1</span>, <span class="attr">translockwait</span>: <span class="literal">true</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>4）创建存储元数据的集合空间所在的域；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.createDomain(<span class="string">"metaDomain"</span>, [ <span class="string">"group1"</span>, <span class="string">"group2"</span>, <span class="string">"group3"</span> ], &#123; <span class="attr">AutoSplit</span>: <span class="literal">true</span>&#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>5）创建存储对象数据的集合空间所在的域；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.createDomain(<span class="string">"dataDomain"</span>, [ <span class="string">"group1"</span>, <span class="string">"group2"</span>, <span class="string">"group3"</span> ], &#123; <span class="attr">AutoSplit</span>: <span class="literal">true</span>&#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>6）退出 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="配置-SequoiaS3-系统"><a href="#配置-SequoiaS3-系统" class="headerlink" title="配置 SequoiaS3 系统"></a>配置 SequoiaS3 系统</h3><p>为 SequoiaS3 系统设置监听端口、数据存储域、存储引擎的协调节点等启动的基础配置。</p>
+<p>1）进入 SequoiaS3 包目录；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /opt/sequoiadb/tools/sequoias3</span><br></pre></td></tr></table></figure></div>
+
+<p>2）配置 SequoiaS3，配置对外监听端口；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 'server.port=8002' &gt;&gt; config/application.properties</span><br></pre></td></tr></table></figure></div>
+
+<p>3）配置 coord 节点的 IP 和端口，可以配置多组并使用逗号分隔</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 'sdbs3.sequoiadb.url=sequoiadb://localhost:11810' &gt;&gt; config/application.properties</span><br></pre></td></tr></table></figure></div>
+
+<p>4）配置 SequoiaS3 的存储创建了专属的域</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo 'sdbs3.sequoiadb.meta.domain=metaDomain' &gt;&gt; config/application.properties</span><br><span class="line">echo 'sdbs3.sequoiadb.data.domain=dataDomain' &gt;&gt; config/application.properties</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<ul>
+<li>详细配置说明： <a href="http://doc.sequoiadb.com/cn/sequoiadb-cat_id-1573442163-edition_id-304" target="_blank" rel="noopener">SequoiaS3 实例参数配置</a></li>
+</ul>
+</blockquote>
+<h3 id="启动-SequoiaS3-系统"><a href="#启动-SequoiaS3-系统" class="headerlink" title="启动 SequoiaS3 系统"></a>启动 SequoiaS3 系统</h3><p>1）配置修改完成后，通过 ./sequoias3.sh 可执行脚本启动 SequoiaS3；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/sequoiadb/tools/sequoias3/sequoias3.sh start</span><br></pre></td></tr></table></figure></div>
+
+<p>2）进入 SequoiaDB Shell，查看 SequoiaS3 元数据表,SequoiaS3 实例在启动的时候如果这些元数据表不存在会自动创建；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<p>3）使用javascript语法连接协调节点，获取 db 数据库连接；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>4）查看集合列表；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.list(SDB_SNAP_COLLECTIONS);</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图： <img src="https://doc.shiyanlou.com/courses/1543/1207281/31431b6f49340653d09fc4e3bb519651-0" alt="图片描述"></p>
+<p>5）退出 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<p>系统启动时需确保数据库已经正常运行，系统启动后会创建默认管理员用户，您可以使用该默认管理员用户创建新的用户，然后使用新用户角色进行桶操作，对象操作。</p>
+<ul>
+<li>默认管理员账户名：<code>administrator</code></li>
+<li>默认管理员AccessKeyID：<code>ABCDEFGHIJKLMNOPQRST</code></li>
+<li>默认管理员用户SecreatKeyID：<code>abcdefghijklmnopqrstuvwxyz0123456789ABCD</code></li>
+</ul>
+</blockquote>
+<h3 id="用户接口相关操作"><a href="#用户接口相关操作" class="headerlink" title="用户接口相关操作"></a>用户接口相关操作</h3><p>在本例中将使用 curl restful 方式来测试 SequoiaS3 用户接口，主要包括用户创建、密钥获取、用户删除等相关操作。后续操作需要启动 SequoiaS3 进程，如有关闭需要打开。</p>
+<h4 id="创建用户"><a href="#创建用户" class="headerlink" title="创建用户"></a>创建用户</h4><p>使用 curl 创建用户 s3user（其中 ABCDEFGHIJKLMNOPQRST 为默认管理员 AccessKeyID ，为 abcdefghijklmnopqrstuvwxyz0123456789ABCD 默认管理员用户 SecreatKeyID ）：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X POST "http://localhost:8002/users/?Action=CreateUser&amp;UserName=s3user&amp;role=admin" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/b89682796a34237a95815548ff26a638-0" alt="图片描述"></p>
+<h4 id="获取用户的访问秘钥"><a href="#获取用户的访问秘钥" class="headerlink" title="获取用户的访问秘钥"></a>获取用户的访问秘钥</h4><p>使用 curl 获取 s3user 用户访问秘钥（需管理员用户权限）：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X POST "http://localhost:8002/users/?Action=GetAccessKey&amp;UserName=s3user" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/78de27f5dddc4e8f77a6e47b894cae0a-0" alt="图片描述"></p>
+<h4 id="删除用户"><a href="#删除用户" class="headerlink" title="删除用户"></a>删除用户</h4><p>使用 curl 删除用户 s3user（需管理员用户权限）：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X POST "http://localhost:8002/users/?Action=DeleteUser&amp;UserName=s3user" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/8a4801991c4f5799d08d0ac27e434354-0" alt="图片描述"></p>
+<h3 id><a href="#" class="headerlink" title></a><img src="https://doc.shiyanlou.com/courses/1538/1207281/64eadd46276ef314129528df3fdcaa93-0" alt="图片描述"></h3><h3 id="桶增删查接口相关操作"><a href="#桶增删查接口相关操作" class="headerlink" title="桶增删查接口相关操作"></a>桶增删查接口相关操作</h3><p>在本例中将使用 curl restful 方式来测试 SequoiaS3 桶接口，主要包括桶创建、桶获取、桶删除等相关操作。</p>
+<h4 id="创建桶"><a href="#创建桶" class="headerlink" title="创建桶"></a>创建桶</h4><p>使用 curl 创建桶 sdbbucket：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X PUT "http://localhost:8002/sdbbucket" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/a5d29a21424f40238447e1e844dd1827-0" alt="图片描述"></p>
+<h4 id="获取桶信息"><a href="#获取桶信息" class="headerlink" title="获取桶信息"></a>获取桶信息</h4><p>使用 curl 获取所有桶信息：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X GET "http://localhost:8002" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/55aa35d007ebe9b8efcd830c9a594c86-0" alt="图片描述"></p>
+<h4 id="删除桶"><a href="#删除桶" class="headerlink" title="删除桶"></a>删除桶</h4><p>1）使用 curl 删除桶 sdbbucket；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X DELETE "http://localhost:8002/sdbbucket" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/5cba4a862e1740474f4a769890014fc7-0" alt="图片描述"></p>
+<p>2）检查桶是否存在，确认结果中是否存在桶 sdbbucket；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v GET "http://localhost:8002" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1538/1207281/64eadd46276ef314129528df3fdcaa93-0" alt="图片描述"></p>
+<h3 id="文件上传和下载相关操作"><a href="#文件上传和下载相关操作" class="headerlink" title="文件上传和下载相关操作"></a>文件上传和下载相关操作</h3><p>在本例中将使用 curl restful 方式来测试 SequoiaS3 文件对象接口，主要包括文件对象上传、下载、删除相关操作。<br>如果已经删除桶则需要重新创建，需要先确保 sdbbucket 桶已创好。<br>使用 curl 创建桶 sdbbucket ：</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X PUT "http://localhost:8002/sdbbucket" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="文件对象上传"><a href="#文件对象上传" class="headerlink" title="文件对象上传"></a>文件对象上传</h4><p>1）检查 /opt/sequoiadb/tools/sequoias3/ 目录下是否存在 sequoia-s3-3.4.jar 这个文件，后面向 sdbbucket 桶上传此文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls /opt/sequoiadb/tools/sequoias3/sequoia-s3-3.4.jar</span><br></pre></td></tr></table></figure></div>
+
+<p>2）使用 curl 向 sdbbucket 中写入文件 “sequoia-s3-3.4.jar” ，在S3中的名称是 “sdbs3.jar”；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X PUT -T "/opt/sequoiadb/tools/sequoias3/sequoia-s3-3.4.jar" "http://localhost:8002/sdbbucket/sdbs3.jar" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"  -H "Content-Type: text/plain"</span><br></pre></td></tr></table></figure></div>
+
+<p>3）进入 SequoiaDB Shell，查看对象是否上传成功；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<p>4）使用javascript语法连接协调节点，获取 db 数据库连接；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>5）在元数据集合中查找文件名，确定是否上传成功；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.S3_SYS_Meta.S3_ObjectMeta.find( &#123; <span class="string">"Key"</span>: <span class="string">"sdbs3.jar"</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>6）退出 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>Note:</p>
+<ul>
+<li>上传前去确保桶 sdbbucket 存在，如不存在，使用之前命令创建 sdbbucket 桶对象。</li>
+<li>第一次上传对象时，会创建 S3_ObjectData* 的集合，该集合用于保存对象文件。</li>
+</ul>
+</blockquote>
+<h4 id="文件对象下载"><a href="#文件对象下载" class="headerlink" title="文件对象下载"></a>文件对象下载</h4><p>1）从桶 sdbbucket 中读取文件对象 “sdbs3.jar”，并存放到本地目录 sdbs3.jar 文件中；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -o sdbs3.jar -X GET "http://localhost:8002/sdbbucket/sdbs3.jar" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"  -H "Content-Type: text/plain"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1543/1207281/1d8217811ea029b8b7833bc8ce441e05-0" alt="图片描述"></p>
+<p>2）查看下载的文件 sdbs3.jar，观察该文件与 sequoia-s3-3.4.jar 大小是否一致；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -trl</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1543/1207281/2344f68c5f160315919c996195a239fb" alt="图片描述"></p>
+<h4 id="文件对象删除"><a href="#文件对象删除" class="headerlink" title="文件对象删除"></a>文件对象删除</h4><p>1）从桶 sdbbucket 中删除文件对象 “sdbs3.jar”；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X DELETE "http://localhost:8002/sdbbucket/sdbs3.jar" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>2）进入 SequoiaDB Shell，查看对象是否删除成功；</p>
+<p>使用 linux 命令进入 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdb</span><br></pre></td></tr></table></figure></div>
+
+<p>使用javascript语法连接协调节点，获取 db 数据库连接；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> db = <span class="keyword">new</span> Sdb(<span class="string">"localhost"</span>, <span class="number">11810</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>在元数据集合中查找文件名，如果返回值为空，则对象删除成功；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.S3_SYS_Meta.S3_ObjectMeta.find( &#123; <span class="string">"Key"</span>: <span class="string">"sdbs3.jar"</span> &#125; );</span><br></pre></td></tr></table></figure></div>
+
+<p>退出 SequoiaDB Shell；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVASCRIPT"><figure class="iseeu highlight /javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">quit;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="创建-JAVA-工程项目"><a href="#创建-JAVA-工程项目" class="headerlink" title="创建 JAVA 工程项目"></a>创建 JAVA 工程项目</h3><p>本小节介绍使用 Java S3 的使用样例，实现基本读写操作。</p>
+<p>1）创建 JAVA 工程目录；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /home/sdbadmin/s3/lib</span><br></pre></td></tr></table></figure></div>
+
+<p>2）进入工程目录；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /home/sdbadmin/s3</span><br></pre></td></tr></table></figure></div>
+
+<p>3）拷贝 S3 接口需要的 jar 包；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /home/sdbadmin/package/s3/* ./lib</span><br></pre></td></tr></table></figure></div>
+
+<p>4）复制以下代码到实验环境终端执行，生成创建桶和上传文件的 Init.java 文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /home/sdbadmin/s3/Init.java &lt;&lt; EOF</span><br><span class="line">package com.sequoiadb.samples;</span><br><span class="line"></span><br><span class="line">import com.amazonaws.auth.AWSCredentials;</span><br><span class="line">import com.amazonaws.auth.AWSStaticCredentialsProvider;</span><br><span class="line">import com.amazonaws.auth.BasicAWSCredentials;</span><br><span class="line">import com.amazonaws.client.builder.AwsClientBuilder;</span><br><span class="line">import com.amazonaws.services.s3.AmazonS3;</span><br><span class="line">import com.amazonaws.services.s3.AmazonS3ClientBuilder;</span><br><span class="line">import com.amazonaws.services.s3.model.PutObjectRequest;</span><br><span class="line">import java.io.File;</span><br><span class="line">import java.io.IOException;</span><br><span class="line"></span><br><span class="line">public class Init &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws IOException &#123;</span><br><span class="line"></span><br><span class="line">        //初始化客户端, 生成一个与SequoiaS3的连接, 此处需要修改endPoint的地址和端口, 使之指向SequoiaS3的地址和端口.</span><br><span class="line">        AWSCredentials credentials = new BasicAWSCredentials("ABCDEFGHIJKLMNOPQRST", "abcdefghijklmnopqrstuvwxyz0123456789ABCD");</span><br><span class="line">        String endPoint = "http://127.0.0.1:8002";</span><br><span class="line">        AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(endPoint, null);</span><br><span class="line">        AmazonS3 s3 = AmazonS3ClientBuilder.standard()</span><br><span class="line">                .withEndpointConfiguration(endpointConfiguration)</span><br><span class="line">                .withCredentials(new AWSStaticCredentialsProvider(credentials))</span><br><span class="line">                .build();</span><br><span class="line">        //创建一个名为"javabucket"的桶</span><br><span class="line">        s3.createBucket("javabucket");</span><br><span class="line">        //从本地上传文件 sequoia-s3-3.4.jar 到"javabucket"的存储桶中，并命名为"objectname"</span><br><span class="line">        PutObjectRequest request = new PutObjectRequest("javabucket", "objectname", new File("/opt/sequoiadb/tools/sequoias3/sequoia-s3-3.4.jar"));</span><br><span class="line">        s3.putObject(request);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></div>
+
+<p>5）复制以下代码到实验环境终端执行，生成查询桶内对象列表和下载对象的 GetObject.java 文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /home/sdbadmin/s3/GetObject.java &lt;&lt; EOF</span><br><span class="line">package com.sequoiadb.samples;</span><br><span class="line"></span><br><span class="line">import com.amazonaws.auth.AWSCredentials;</span><br><span class="line">import com.amazonaws.auth.AWSStaticCredentialsProvider;</span><br><span class="line">import com.amazonaws.auth.BasicAWSCredentials;</span><br><span class="line">import com.amazonaws.client.builder.AwsClientBuilder;</span><br><span class="line">import com.amazonaws.services.s3.AmazonS3;</span><br><span class="line">import com.amazonaws.services.s3.AmazonS3ClientBuilder;</span><br><span class="line">import com.amazonaws.services.s3.model.GetObjectRequest;</span><br><span class="line">import com.amazonaws.services.s3.model.PutObjectRequest;</span><br><span class="line">import com.amazonaws.services.s3.model.S3Object;</span><br><span class="line">import com.amazonaws.services.s3.model.S3ObjectInputStream;</span><br><span class="line">import com.amazonaws.services.s3.model.ListObjectsV2Result;</span><br><span class="line">import java.io.File;</span><br><span class="line">import java.io.FileOutputStream;</span><br><span class="line">import java.io.IOException;</span><br><span class="line"></span><br><span class="line">public class GetObject &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws IOException &#123;</span><br><span class="line"></span><br><span class="line">        AWSCredentials credentials = new BasicAWSCredentials("ABCDEFGHIJKLMNOPQRST", "abcdefghijklmnopqrstuvwxyz0123456789ABCD");</span><br><span class="line">        String endPoint = "http://127.0.0.1:8002";</span><br><span class="line">        AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(endPoint, null);</span><br><span class="line">        AmazonS3 s3 = AmazonS3ClientBuilder.standard()</span><br><span class="line">                .withEndpointConfiguration(endpointConfiguration)</span><br><span class="line">                .withCredentials(new AWSStaticCredentialsProvider(credentials))</span><br><span class="line">                .build();</span><br><span class="line">       //查询名为"bucketname"的桶中所有对象名称</span><br><span class="line">       ListObjectsV2Result listObj = s3.listObjectsV2("javabucket");</span><br><span class="line">        System.out.println("ListObjectsV2Result: "+listObj);</span><br><span class="line">        //从"javabucket"获得"objectname"对象, 并将对象内容存储在本地文件中</span><br><span class="line">        GetObjectRequest request = new GetObjectRequest("javabucket", "objectname");</span><br><span class="line">        S3Object result = s3.getObject(request);</span><br><span class="line">        S3ObjectInputStream s3is = result.getObjectContent();</span><br><span class="line">        FileOutputStream fos = new FileOutputStream(new File("/home/sdbadmin/s3/java_test_s3.jar"));</span><br><span class="line">        byte[] read_buf = new byte[1024];</span><br><span class="line">        int read_len = 0;</span><br><span class="line">        while ((read_len = s3is.read(read_buf)) &gt; 0) &#123;</span><br><span class="line">            fos.write(read_buf, 0, read_len);</span><br><span class="line">        &#125;</span><br><span class="line">        s3is.close();</span><br><span class="line">        fos.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></div>
+
+<p>6）复制以下代码到实验环境终端执行，生成删除对象和桶的 DeleteBucket.java 文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /home/sdbadmin/s3/DeleteBucket.java &lt;&lt; EOF</span><br><span class="line">package com.sequoiadb.samples;</span><br><span class="line"></span><br><span class="line">import com.amazonaws.auth.AWSCredentials;</span><br><span class="line">import com.amazonaws.auth.AWSStaticCredentialsProvider;</span><br><span class="line">import com.amazonaws.auth.BasicAWSCredentials;</span><br><span class="line">import com.amazonaws.client.builder.AwsClientBuilder;</span><br><span class="line">import com.amazonaws.services.s3.AmazonS3;</span><br><span class="line">import com.amazonaws.services.s3.AmazonS3ClientBuilder;</span><br><span class="line">import com.amazonaws.services.s3.model.PutObjectRequest;</span><br><span class="line">import java.io.IOException;</span><br><span class="line"></span><br><span class="line">public class DeleteBucket &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws IOException &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        AWSCredentials credentials = new BasicAWSCredentials("ABCDEFGHIJKLMNOPQRST", "abcdefghijklmnopqrstuvwxyz0123456789ABCD");</span><br><span class="line">        String endPoint = "http://127.0.0.1:8002";</span><br><span class="line">        AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(endPoint, null);</span><br><span class="line">        AmazonS3 s3 = AmazonS3ClientBuilder.standard()</span><br><span class="line">                .withEndpointConfiguration(endpointConfiguration)</span><br><span class="line">                .withCredentials(new AWSStaticCredentialsProvider(credentials))</span><br><span class="line">                .build();</span><br><span class="line">        //删除"javabucket"桶中名为"objectname"的对象</span><br><span class="line">        s3.deleteObject("javabucket", "objectname");</span><br><span class="line">        //删除名为"javabucket"的存储桶</span><br><span class="line">        s3.deleteBucket("javabucket");</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></div>
+
+<p>7）查询是否已经生成以上 JAVA 文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ls -trl /home/sdbadmin/s3/Init.java</span><br><span class="line">ls -trl /home/sdbadmin/s3/GetObject.java</span><br><span class="line">ls -trl /home/sdbadmin/s3/DeleteBucket.java</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="编译运行代码"><a href="#编译运行代码" class="headerlink" title="编译运行代码"></a>编译运行代码</h3><p>上一小节已经创建了 JAVA 工程和代码并且拷贝了 JAVA 驱动，接下来我们对代码进行编译运行。</p>
+<p>1）编译 Init.java 文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac -cp .:./lib/* -d . Init.java</span><br></pre></td></tr></table></figure></div>
+
+<p>2）运行 Init 类代码，创建”javabucket”桶和上传文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -cp .:./lib/* com.sequoiadb.samples.Init</span><br></pre></td></tr></table></figure></div>
+
+<p>3）编译 GetObject.java 文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac -cp .:./lib/* -d . GetObject.java</span><br></pre></td></tr></table></figure></div>
+
+<p>4）运行 GetObject 类代码，查询桶内对象列表和获取对象；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -cp .:./lib/* com.sequoiadb.samples.GetObject</span><br></pre></td></tr></table></figure></div>
+
+<p>5）查看对象是否下载成功；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -trl</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1543/1207281/f37ae04baeb95945f3f5a8c23dc874e4-0" alt="图片描述"></p>
+<p>6）编译 DeleteBucket.java 文件；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac -cp .:./lib/* -d . DeleteBucket.java</span><br></pre></td></tr></table></figure></div>
+
+<p>7）运行 DeleteBucket 类代码，查询桶内对象列表和获取对象；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -cp .:./lib/* com.sequoiadb.samples.DeleteBucket</span><br></pre></td></tr></table></figure></div>
+
+<p>8）检查桶是否存在，确认结果中是否存在桶 javabucket；</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v GET "http://localhost:8002" -H "Host: localhost:8002" -H "Authorization: AWS ABCDEFGHIJKLMNOPQRST:abcdefghijklmnopqrstuvwxyz0123456789ABCD"</span><br></pre></td></tr></table></figure></div>
+
+<p>操作截图：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1543/1207281/55c381bdc9032f06bed1ae4b9fe20852-0" alt="图片描述"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/12/04/SequoiaDB-S3%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" title="SequoiaDB-S3对象存储部署与应用开发">https://muchlab.github.io/2020/12/04/SequoiaDB-S3对象存储部署与应用开发/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/SequoiaDB-S3/" rel="tag"><i class="fa fa-tag"></i> -SequoiaDB -S3</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/04/SequoiaDB-Spark%E5%AE%9E%E7%8E%B0%E5%9C%A8%E7%BA%BF%E8%81%94%E6%9C%BA%E4%B8%9A%E5%8A%A1%E4%B8%8E%E5%90%8E%E5%8F%B0%E7%BB%9F%E8%AE%A1%E5%88%86%E6%9E%90%E4%B8%9A%E5%8A%A1%E7%9A%84%E7%9B%B8%E4%BA%92%E9%9A%94%E7%A6%BB/" rel="prev" title="SequoiaDB-Spark实现在线联机业务与后台统计分析业务的相互隔离">
+      <i class="fa fa-chevron-left"></i> SequoiaDB-Spark实现在线联机业务与后台统计分析业务的相互隔离
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/04/SequoiaDB%E4%B9%8BNFS%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" rel="next" title="SequoiaDB之NFS文件系统部署与应用开发">
+      SequoiaDB之NFS文件系统部署与应用开发 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置-SequoiaDB-巨杉数据库存储引擎"><span class="nav-text">配置 SequoiaDB 巨杉数据库存储引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置-SequoiaS3-系统"><span class="nav-text">配置 SequoiaS3 系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动-SequoiaS3-系统"><span class="nav-text">启动 SequoiaS3 系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户接口相关操作"><span class="nav-text">用户接口相关操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建用户"><span class="nav-text">创建用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取用户的访问秘钥"><span class="nav-text">获取用户的访问秘钥</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除用户"><span class="nav-text">删除用户</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#桶增删查接口相关操作"><span class="nav-text">桶增删查接口相关操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建桶"><span class="nav-text">创建桶</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取桶信息"><span class="nav-text">获取桶信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除桶"><span class="nav-text">删除桶</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件上传和下载相关操作"><span class="nav-text">文件上传和下载相关操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#文件对象上传"><span class="nav-text">文件对象上传</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件对象下载"><span class="nav-text">文件对象下载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件对象删除"><span class="nav-text">文件对象删除</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-JAVA-工程项目"><span class="nav-text">创建 JAVA 工程项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编译运行代码"><span class="nav-text">编译运行代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">104</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AspNetCore-C/" rel="tag">-AspNetCore -C#</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WebSocket/" rel="tag">-C# -WebSocket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag">-JVM——类加载器子系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">-MySql</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql-SequoiaDB/" rel="tag">-MySql -SequoiaDB</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth2-0/" rel="tag">-OAuth2.0</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB/" rel="tag">-SequoiaDB</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-MySql/" rel="tag">-SequoiaDB -MySql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-PostgreSql/" rel="tag">-SequoiaDB -PostgreSql</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-S3/" rel="tag">-SequoiaDB -S3</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-Spark/" rel="tag">-SequoiaDB -Spark</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">455k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:54</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
