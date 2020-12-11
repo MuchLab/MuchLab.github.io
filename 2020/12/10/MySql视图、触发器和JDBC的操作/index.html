@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MySql视图、触发器和JDBC的操作创建、删除、查看视图视图是虚拟的表。与包含数据的表不一样，视图只包含使用时动态检索数据的查询。 创建视图  CREATE [OR REPLACE] VIEW 视图名(列1，列2…) AS SELECT (列1，列2…) FROM …; [WITH [CASCADED|LOCAL] CHECK OPTION]  删除视图  DROP VIEW viewname;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql视图、触发器和JDBC的操作">
+<meta property="og:url" content="https://muchlab.github.io/2020/12/10/MySql%E8%A7%86%E5%9B%BE%E3%80%81%E8%A7%A6%E5%8F%91%E5%99%A8%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="MySql视图、触发器和JDBC的操作创建、删除、查看视图视图是虚拟的表。与包含数据的表不一样，视图只包含使用时动态检索数据的查询。 创建视图  CREATE [OR REPLACE] VIEW 视图名(列1，列2…) AS SELECT (列1，列2…) FROM …; [WITH [CASCADED|LOCAL] CHECK OPTION]  删除视图  DROP VIEW viewname;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/b2e72d87abdb252b814bf56653ddd0be-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/e754c986b24a1a46583fbc0ec27282da-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/2a5d5a970667e6693347bc2305de8992-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/baf508eaa3ac7e61fcc4e9c5b351ff2f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/abc5cfc2a9ad62d57f0db12b5e01f62e-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/41c0284c4ec56e6386c5e2db89542b53-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/a05678809168f5b4c4ad483937e53a58-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c6bbc26e52555cf679b7cc1405daaacd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/f33f7e29dd42537568d48db1ac71b8a8-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/892ce7e35bd95236ecd162159c869095-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/72f40d624b910cc0e54d947aae480384-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/821d2efae85536f4dc7c9b17533e1225-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/774292259e96ded26fa86d3c9c09c2e9-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/438385c634e826765798399efb966308-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/cd5b33d064849437af6811c7ec189ffc-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/578eee4a8e8321454cf772aa09aa5252-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/6fcb2de990c0159d71e64ae43d8ab4fd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/f0aa4f8948478601346e7735211da631-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/9349f21352f09ccaae47983a260d3bf5-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/3b19a8782cd7e3545e522325b05dce72-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/fbc245dd4585f04abea60126c18617c2-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c1d74b509c5104d3b95176b6e5cbf292-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1c3f2f1208c62436e49b71bce9f0f5e3-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1ab8d5840e550aceb738cde47438ea72-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c7c76254ea1df9415783e8a29b3b3070-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c7acb13d13aee28fe8a483553b09cb86-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/8217570569c41d031e836f16a0427eac-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/05071d575ca8e25550026b0e5330afd5-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/82bb3e26044f79fc15393cbafe1b51a0-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/325dac19ed09bf18030b2a1b4d1a4744-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/6ff7e35c68c2c314478f0fc0be0ab5dc-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/0c1a4f8c64cb6990e99f6fd84da9ef4b-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/48175a08a1b4b70c353d439db0a59284-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/6431b9f798858281e1cea380c12aee9f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/2be6e8752cfc1d55f3081d651331e215-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/caae3ab717a8df48c74f3d07a1adac4f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/a5afc4ec6d14960efe6c1a373c67d5f5-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/3404751912d0c025e63ae3c09b7650d7-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/001d8e2410c095ab704c9b2ddc5eb519-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c26178c922a3b6940f871b014c1c049f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d884dd7e937b46498192a2ece4c33aaa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/072043efa16b34a97c138a1d49676754-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/f180283f3d22a1a0eeb5df691be76e85-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/a02fdd84dc9897139a4c0a9579b82d18-0">
+<meta property="article:published_time" content="2020-12-10T06:52:59.294Z">
+<meta property="article:modified_time" content="2020-12-10T08:06:47.408Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="Linux，Java，Python...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/12/10/MySql%E8%A7%86%E5%9B%BE%E3%80%81%E8%A7%A6%E5%8F%91%E5%99%A8%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySql视图、触发器和JDBC的操作 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/12/10/MySql%E8%A7%86%E5%9B%BE%E3%80%81%E8%A7%A6%E5%8F%91%E5%99%A8%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySql视图、触发器和JDBC的操作
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-12-10 14:52:59 / 修改时间：16:06:47" itemprop="dateCreated datePublished" datetime="2020-12-10T14:52:59+08:00">2020-12-10</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/12/10/MySql%E8%A7%86%E5%9B%BE%E3%80%81%E8%A7%A6%E5%8F%91%E5%99%A8%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/12/10/MySql%E8%A7%86%E5%9B%BE%E3%80%81%E8%A7%A6%E5%8F%91%E5%99%A8%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>8.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="MySql视图、触发器和JDBC的操作"><a href="#MySql视图、触发器和JDBC的操作" class="headerlink" title="MySql视图、触发器和JDBC的操作"></a>MySql视图、触发器和JDBC的操作</h2><h3 id="创建、删除、查看视图"><a href="#创建、删除、查看视图" class="headerlink" title="创建、删除、查看视图"></a>创建、删除、查看视图</h3><p>视图是虚拟的表。与包含数据的表不一样，视图只包含使用时动态检索数据的查询。</p>
+<p>创建视图</p>
+<blockquote>
+<p>CREATE [OR REPLACE] VIEW 视图名(列1，列2…)</p>
+<p>AS SELECT (列1，列2…)</p>
+<p>FROM …;</p>
+<p>[WITH [CASCADED|LOCAL] CHECK OPTION]</p>
+</blockquote>
+<p>删除视图</p>
+<blockquote>
+<p>DROP VIEW viewname;</p>
+</blockquote>
+<p>查看视图</p>
+<blockquote>
+<p>DESC viewname;</p>
+</blockquote>
+<h4 id="创建视图"><a href="#创建视图" class="headerlink" title="创建视图"></a>创建视图</h4><p>基于数据库表 employee，创建视图 employee_view，使用 CREATE VIEW 命令</p>
+<p>1）打开 ViewTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0" alt="1735-180-100.png"></p>
+<p>2）在 createView 方法中找到行 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/b2e72d87abdb252b814bf56653ddd0be-0" alt="1735-180-101.png"></p>
+<p>3）将下方代码粘贴到 TODO code 1 区域内，创建视图 employee_view ，视图数据来源于 employee表</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"CREATE OR REPLACE VIEW employee_view AS SELECT * FROM employee;"</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/e754c986b24a1a46583fbc0ec27282da-0" alt="1735-180-1000.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>4）修改参数为 createView</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/2a5d5a970667e6693347bc2305de8992-0" alt="1735-180-102.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/baf508eaa3ac7e61fcc4e9c5b351ff2f-0" alt="1735-180-103.png"></p>
+<h4 id="查看视图数据"><a href="#查看视图数据" class="headerlink" title="查看视图数据"></a>查看视图数据</h4><p>查看视图 employee_view 的数据</p>
+<p>1）打开 ViewTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0" alt="1735-180-100.png"></p>
+<p>2）在 queryView 方法中找到 TODO code 2</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/abc5cfc2a9ad62d57f0db12b5e01f62e-0" alt="1735-180-104.png"></p>
+<p>3）将下方代码粘贴到 TODO code 2 区域内，查看视图 employee_view 数据</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"SELECT * FROM employee_view"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/41c0284c4ec56e6386c5e2db89542b53-0" alt="1735-180-1001.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 queryView</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/a05678809168f5b4c4ad483937e53a58-0" alt="1735-180-105.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c6bbc26e52555cf679b7cc1405daaacd-0" alt="1735-180-106.png"></p>
+<h4 id="删除视图"><a href="#删除视图" class="headerlink" title="删除视图"></a>删除视图</h4><p>删除视图 employee_view</p>
+<p>1）打开 ViewTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0" alt="1735-180-100.png"></p>
+<p>2）在 queryView 方法中找到 TODO code 3</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/f33f7e29dd42537568d48db1ac71b8a8-0" alt="1735-180-107.png"></p>
+<p>3）将下方代码粘贴到 TODO code 3，删除视图 employee_view</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Execute</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"DROP VIEW employee_view;"</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/892ce7e35bd95236ecd162159c869095-0" alt="1735-180-1002.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 dropView</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/72f40d624b910cc0e54d947aae480384-0" alt="1735-180-108.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/821d2efae85536f4dc7c9b17533e1225-0" alt="1735-180-109.png"></p>
+<h3 id="更新、修改视图"><a href="#更新、修改视图" class="headerlink" title="更新、修改视图"></a>更新、修改视图</h3><p>本节讲述视图的更新和修改。</p>
+<h4 id="更新视图"><a href="#更新视图" class="headerlink" title="更新视图"></a>更新视图</h4><p>更新修改视图里的记录，利用 update 命令</p>
+<p>1）打开 ViewTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0" alt="1735-180-100.png"></p>
+<p>2）在 updateView 方法中找到 TODO code 4</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/774292259e96ded26fa86d3c9c09c2e9-0" alt="1735-180-110.png"></p>
+<p>3）将下方代码粘贴到 TODO code 4，更新修改视图里的记录</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"UPDATE employee_view SET age = 38 WHERE ENAME = 'Georgi';"</span>);</span><br><span class="line">String sql = <span class="string">"SELECT * FROM employee_view where ename = 'Georgi'"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/438385c634e826765798399efb966308-0" alt="1735-180-1003.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 updateView</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/cd5b33d064849437af6811c7ec189ffc-0" alt="1735-180-111.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/578eee4a8e8321454cf772aa09aa5252-0" alt="1735-180-112.png"></p>
+<h4 id="修改视图"><a href="#修改视图" class="headerlink" title="修改视图"></a>修改视图</h4><p>使用 ALTER 语句修改视图，让视图只存储 employee 表的 ename 和 age 字段</p>
+<p>1）打开 ViewTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0" alt="1735-180-100.png"></p>
+<p>2）在 alterView 方法中找到 TODO code 5</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/6fcb2de990c0159d71e64ae43d8ab4fd-0" alt="1735-180-113.png"></p>
+<p>3）将下方代码粘贴到 TODO code 5 区域内，使用 ALTER 语句修改视图，让视图只存储 employee 表的 ename 和 age 字段</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write modify view of sql</span></span><br><span class="line">String sql1 =<span class="string">"ALTER VIEW employee_view AS SELECT ename,age FROM employee;"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql1);</span><br><span class="line"><span class="comment">// Write query view of sql</span></span><br><span class="line">String sql2 = <span class="string">"SELECT * FROM employee_view"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql2);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/f0aa4f8948478601346e7735211da631-0" alt="1735-180-1004.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 alterView</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/9349f21352f09ccaae47983a260d3bf5-0" alt="1735-180-114.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/3b19a8782cd7e3545e522325b05dce72-0" alt="1735-180-115.png"></p>
+<h3 id="查询所有视图"><a href="#查询所有视图" class="headerlink" title="查询所有视图"></a>查询所有视图</h3><p>本节讲解查看 MySQL 的所有视图。</p>
+<p>1）打开 ViewTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/62f1644e89e7e2963e3dba655849867f-0" alt="1735-180-100.png"></p>
+<p>2）在 showView 方法中找到 TODO code 6</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/fbc245dd4585f04abea60126c18617c2-0" alt="1735-180-116.png"></p>
+<p>3）将下方代码粘贴到 TODO code 6 区域内，查看所有视图</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql to check all views</span></span><br><span class="line">String sql = <span class="string">"SHOW TABLE STATUS WHERE COMMENT='view';"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c1d74b509c5104d3b95176b6e5cbf292-0" alt="1735-180-1005.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 showView</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1c3f2f1208c62436e49b71bce9f0f5e3-0" alt="1735-180-117.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1ab8d5840e550aceb738cde47438ea72-0" alt="1735-180-118.png"></p>
+<h3 id="创建-INSERT-触发器"><a href="#创建-INSERT-触发器" class="headerlink" title="创建 INSERT 触发器"></a>创建 INSERT 触发器</h3><p>INSERT 触发器在 INSERT 语句执行之前或之后执行。需要知道以下几点：</p>
+<ul>
+<li>在 INSERT 触发器代码内，可引用一个名为 NEW 的虚拟表，访问被插入的行；</li>
+<li>在 BEFORE INSERT 触发器中, NEW 中的值也可以被更新（允许更改被插入的值）；</li>
+<li>对于 AUTO_INCREMENT 列，NEW 在 INSERT 执行之前包含0，在 INSERT 执行之后包含新的自动生成值。</li>
+</ul>
+<p>创建一个 INSERT 触发器</p>
+<p>1）打开 TriggerTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0" alt="1735-180-119.png"></p>
+<p>2）在 createInsertTrigger 方法中找到 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c7c76254ea1df9415783e8a29b3b3070-0" alt="1735-180-120.png"></p>
+<p>3）将下方代码粘贴到 TODO code 1 区域内，创建一个 INSERT 触发器，当 employee 进行 INSERT 时，添加 ‘Employee added’ 到 @result</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Execute sql to create insert trigger</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"CREATE TRIGGER newemployee AFTER INSERT ON employee FOR EACH ROW SELECT 'Employee added' INTO @result;"</span>);</span><br><span class="line"><span class="comment">// Execute SQL to insert data</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"INSERT INTO employee VALUES(10007,'Bob',22);"</span>);</span><br><span class="line"><span class="comment">// Write sql to check whether the trigger takes effect</span></span><br><span class="line">String sql = <span class="string">"SELECT @result;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c7acb13d13aee28fe8a483553b09cb86-0" alt="1735-180-1006.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 createInsertTrigger</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/8217570569c41d031e836f16a0427eac-0" alt="1735-180-121.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/05071d575ca8e25550026b0e5330afd5-0" alt="1735-180-122.png"></p>
+<h3 id="创建-UPDATE-触发器"><a href="#创建-UPDATE-触发器" class="headerlink" title="创建 UPDATE 触发器"></a>创建 UPDATE 触发器</h3><p>创建一个 update 触发器，当 employee 表 UPDATE 时，将 ‘Employee updated’ 添加到 @result 中。</p>
+<p>1）打开 TriggerTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0" alt="1735-180-119.png"></p>
+<p>2）在 createUpdateTrigger 方法中找到 TODO code 2</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/82bb3e26044f79fc15393cbafe1b51a0-0" alt="1735-180-123.png"></p>
+<p>3）将下方代码粘贴到 TODO code 2 区域内，创建一个 UPDATE 触发器，当 employee 进行 UPDATE 时，添加 ‘Employee updated’ 到 @result</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Execute sql to create update trigger</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"CREATE TRIGGER updateemployee BEFORE UPDATE ON employee FOR EACH ROW SELECT 'Employee updated' INTO @result;"</span>);</span><br><span class="line"><span class="comment">// Execute sql to update data</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"UPDATE employee SET ename = 'Chiruis' WHERE empno = 10004;"</span>);</span><br><span class="line"><span class="comment">// Write sql to check whether the trigger takes effect</span></span><br><span class="line">String sql = <span class="string">"SELECT @result;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/325dac19ed09bf18030b2a1b4d1a4744-0" alt="1735-180-1007.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 createUpdateTrigger</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/6ff7e35c68c2c314478f0fc0be0ab5dc-0" alt="1735-180-124.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/0c1a4f8c64cb6990e99f6fd84da9ef4b-0" alt="1735-180-125.png"></p>
+<h3 id="创建-DELETE-触发器"><a href="#创建-DELETE-触发器" class="headerlink" title="创建 DELETE 触发器"></a>创建 DELETE 触发器</h3><p>创建一个 DELETE 触发器，当 employee 表 DELETE 时，将 ‘Employee deleted’ 添加到 @result 中。</p>
+<p>1）打开 TriggerTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0" alt="1735-180-119.png"></p>
+<p>2）在 createDeleteTrigger 方法中找到 TODO code 3</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/48175a08a1b4b70c353d439db0a59284-0" alt="1735-180-126.png"></p>
+<p>3）将下方代码粘贴到 TODO code 3 区域内，创建一个 DELETE 触发器，当 employee 进行 DELETE 时，添加 ‘Employee deleted’ 到 @result</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql to create delete trigger</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"CREATE TRIGGER deleteemployee BEFORE DELETE ON employee FOR EACH ROW SELECT 'Employee deleted' INTO @result;"</span>);</span><br><span class="line">stmt.executeUpdate(<span class="string">"DELETE FROM employee WHERE empno = 10002;"</span>);</span><br><span class="line">String sql = <span class="string">"SELECT @result;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/6431b9f798858281e1cea380c12aee9f-0" alt="1735-180-1008.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 createDeleteTrigger</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/2be6e8752cfc1d55f3081d651331e215-0" alt="1735-180-127.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/caae3ab717a8df48c74f3d07a1adac4f-0" alt="1735-180-128.png"></p>
+<h3 id="触发器查询、删除"><a href="#触发器查询、删除" class="headerlink" title="触发器查询、删除"></a>触发器查询、删除</h3><p>本节讲述触发器的查询和删除。</p>
+<h4 id="触发器查询"><a href="#触发器查询" class="headerlink" title="触发器查询"></a>触发器查询</h4><p>查看 MySQL 中全部的触发器</p>
+<p>1）打开 TriggerTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0" alt="1735-180-119.png"></p>
+<p>2）在 showTrigger 方法中找到 TODO code 4</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/a5afc4ec6d14960efe6c1a373c67d5f5-0" alt="1735-180-129.png"></p>
+<p>3）将下方代码粘贴到 TODO code 4 区域内，查看触发器</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"show triggers;"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/3404751912d0c025e63ae3c09b7650d7-0" alt="1735-180-1009.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 showTrigger</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/001d8e2410c095ab704c9b2ddc5eb519-0" alt="1735-180-130.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c26178c922a3b6940f871b014c1c049f-0" alt="1735-180-131.png"></p>
+<h4 id="触发器删除"><a href="#触发器删除" class="headerlink" title="触发器删除"></a>触发器删除</h4><p>删除触发器 updateemployee</p>
+<p>1）打开 TriggerTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/faa8f0582f57b85896eb28c5e4d4b404-0" alt="1735-180-119.png"></p>
+<p>2）在 deleteTrigger 方法中找到 TODO code 5</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d884dd7e937b46498192a2ece4c33aaa-0" alt="1735-180-132.png"></p>
+<p>3）将下方代码粘贴到 TODO code 5 区域内，删除触发器 updateemployee</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Execute the delete trigger of sql</span></span><br><span class="line">stmt.executeUpdate(<span class="string">"DROP TRIGGER updateemployee;"</span>);</span><br><span class="line"><span class="comment">// Write the view trigger of sql</span></span><br><span class="line">String sql = <span class="string">"SHOW triggers;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/072043efa16b34a97c138a1d49676754-0" alt="1735-180-1010.png"></p>
+<p>4）修改参数，右键 ViewAndTriggerMainTest.java，选择 Edit ‘ViewAndTrigger…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d50167043468ba66d39041a20a9bfec1-0" alt="1735-180-136.png"></p>
+<p>5）修改参数为 deleteTrigger</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/f180283f3d22a1a0eeb5df691be76e85-0" alt="1735-180-133.png"></p>
+<p>6）执行代码，右键 ViewAndTriggerMainTest.java，选择 Run ‘ViewAndTrigger.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1d4cb109595a212145beb510014401bb-0" alt="1735-180-135.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/a02fdd84dc9897139a4c0a9579b82d18-0" alt="1735-180-134.png"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/12/10/MySql%E8%A7%86%E5%9B%BE%E3%80%81%E8%A7%A6%E5%8F%91%E5%99%A8%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" title="MySql视图、触发器和JDBC的操作">https://muchlab.github.io/2020/12/10/MySql视图、触发器和JDBC的操作/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/10/MySql%E5%B8%B8%E7%94%A8%E5%87%BD%E6%95%B0%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" rel="prev" title="MySql常用函数和JDBC的操作">
+      <i class="fa fa-chevron-left"></i> MySql常用函数和JDBC的操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/10/MySql%E5%AD%98%E5%82%A8%E8%BF%87%E7%A8%8B%E3%80%81%E5%87%BD%E6%95%B0%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" rel="next" title="MySql存储过程、函数和JDBC的操作">
+      MySql存储过程、函数和JDBC的操作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MySql视图、触发器和JDBC的操作"><span class="nav-text">MySql视图、触发器和JDBC的操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建、删除、查看视图"><span class="nav-text">创建、删除、查看视图</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建视图"><span class="nav-text">创建视图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#查看视图数据"><span class="nav-text">查看视图数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除视图"><span class="nav-text">删除视图</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新、修改视图"><span class="nav-text">更新、修改视图</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#更新视图"><span class="nav-text">更新视图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改视图"><span class="nav-text">修改视图</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查询所有视图"><span class="nav-text">查询所有视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-INSERT-触发器"><span class="nav-text">创建 INSERT 触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-UPDATE-触发器"><span class="nav-text">创建 UPDATE 触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-DELETE-触发器"><span class="nav-text">创建 DELETE 触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#触发器查询、删除"><span class="nav-text">触发器查询、删除</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#触发器查询"><span class="nav-text">触发器查询</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#触发器删除"><span class="nav-text">触发器删除</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">40</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AspNetCore-C/" rel="tag">-AspNetCore -C#</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WebSocket/" rel="tag">-C# -WebSocket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag">-JVM——类加载器子系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">-MySql</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql-SequoiaDB/" rel="tag">-MySql -SequoiaDB</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth2-0/" rel="tag">-OAuth2.0</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB/" rel="tag">-SequoiaDB</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-MySql/" rel="tag">-SequoiaDB -MySql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-PostgreSql/" rel="tag">-SequoiaDB -PostgreSql</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-S3/" rel="tag">-SequoiaDB -S3</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-Spark/" rel="tag">-SequoiaDB -Spark</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/" rel="tag">-Spark</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">533k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">8:05</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MySql数据操作和JDBC的操作INSERTINSET 是用来插入（或添加）行到数据库表的。 1）打开 UpdateTest.java  2）在 insert 方法中找到 TODO code 1  3）将下方代码粘贴到 TODO code 1 区域内，向表 emplyee 中插入数据 12345678910111213141516&#x2F;&#x2F; Create a Statement object to s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql数据操作和JDBC的操作">
+<meta property="og:url" content="https://muchlab.github.io/2020/12/10/MySql%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="MySql数据操作和JDBC的操作INSERTINSET 是用来插入（或添加）行到数据库表的。 1）打开 UpdateTest.java  2）在 insert 方法中找到 TODO code 1  3）将下方代码粘贴到 TODO code 1 区域内，向表 emplyee 中插入数据 12345678910111213141516&#x2F;&#x2F; Create a Statement object to s">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/e0c2d084a869d8dc292b6e022c962daf-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/f82c901b03c14defc46303b803a8a7bb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/bca2e641f9a1e567423bdefa31e8b2c1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/bed7c0994e4096eee0927eb62dbf6625-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/b7dd6379604b5a8bc95af72f04dab437-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/8cf7f8e44d59c261afe071324e8a99e4-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/6f91145b349b0284e7c4f1260fa51a71-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/411dd2192266342dc2325153b5141da5-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c27847476c0bc0a4de78a6fff408f600-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/8cdd02dcc77829e85afab60261ac0cee-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4938d0a1a51d4d1e3cc8d0209da3c675-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/966dac69c4b148299fa2e0935e7a32ff-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/558398041276a326ec075dc38d9810f9-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/2e02d581c6fc35cf31aca6cc1e2899d6-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/e1d6d47726c792c179c2745905cbbc36-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/de06e3017ebe8bebb309acdf095708e1-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/728d3de5785cd58abc1f1e5470ae4d5d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/fff35b118e966f2dd43bb71e4927be59-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/47bcda7c59a3f71321a51b45f7a82783-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c7bd7d809a02424d65f1de75328f720b-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/489e23e8b0c4c6c79ee86a9d8094569a-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/f9dbcc2e99b4082334bbac79fc60842d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/99330e9fa1fac4232df7ec83ebef9a5d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/beab78f4362d401c84b093066cfbcaac-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/737b179acd423fe5c49e5fd2157cd3fe-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/a76b83ededb5cfa9c1449b0509c37af3-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/db3d76cb85d0d3bc48072422d4d5d8dd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/90873974a956dc0ba69b017fd7d46cba-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/e036fff92bb854d80994e53ddb500540-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/2fd7fb8a7779ae09c2b7399595949895-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/311b79b20ca39d27a17041547aab54d8-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1c26d7b538d41f8c7223775de2318145-0">
+<meta property="article:published_time" content="2020-12-10T03:07:58.553Z">
+<meta property="article:modified_time" content="2020-12-10T03:07:58.555Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="Linux，Java，Python...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/12/10/MySql%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySql数据操作和JDBC的操作 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/12/10/MySql%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySql数据操作和JDBC的操作
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-10 11:07:58" itemprop="dateCreated datePublished" datetime="2020-12-10T11:07:58+08:00">2020-12-10</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/12/10/MySql%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/12/10/MySql%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="MySql数据操作和JDBC的操作"><a href="#MySql数据操作和JDBC的操作" class="headerlink" title="MySql数据操作和JDBC的操作"></a>MySql数据操作和JDBC的操作</h2><h3 id="INSERT"><a href="#INSERT" class="headerlink" title="INSERT"></a>INSERT</h3><p>INSET 是用来插入（或添加）行到数据库表的。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 insert 方法中找到 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/e0c2d084a869d8dc292b6e022c962daf-0" alt="1735-150-101.png"></p>
+<p>3）将下方代码粘贴到 TODO code 1 区域内，向表 emplyee 中插入数据</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql2 = <span class="string">"INSERT INTO employee VALUES (10007, 'Bob', 48),(10008, 'Rose', 21)"</span>;</span><br><span class="line"><span class="comment">// Execute sql to insert data into employee</span></span><br><span class="line">stmt.executeUpdate(sql2); </span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql3 = <span class="string">"SELECT * FROM employee;"</span>;</span><br><span class="line"><span class="comment">// Query employee to get the result set</span></span><br><span class="line">rs = stmt.executeQuery(sql3);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/f82c901b03c14defc46303b803a8a7bb-0" alt="1735-150-1000.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 insert</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/bca2e641f9a1e567423bdefa31e8b2c1-0" alt="1735-150-103.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/bed7c0994e4096eee0927eb62dbf6625-0" alt="1735-150-105.png"></p>
+<h3 id="INSERT-SELECT、CREATE-table-AS-SELECT"><a href="#INSERT-SELECT、CREATE-table-AS-SELECT" class="headerlink" title="INSERT SELECT、CREATE table AS SELECT"></a>INSERT SELECT、CREATE table AS SELECT</h3><p>本节介绍 MySQL 的 INSERT SELECT和 CREATE table AS SELECT的使用。</p>
+<h4 id="INSERT-SELECT"><a href="#INSERT-SELECT" class="headerlink" title="INSERT SELECT"></a>INSERT SELECT</h4><p>INSERT SELECT 语句从一个表复制数据，然后把数据插入到一个已存在的表中。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 insertSelect 方法中找到 TODO code 2</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/b7dd6379604b5a8bc95af72f04dab437-0" alt="1735-150-106.png"></p>
+<p>3）将下方代码粘贴到 TODO code 2 区域内，从 employee 表复制数据，然后把数据插入到 employeeBak 表中</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql to create table</span></span><br><span class="line">String sql = <span class="string">"CREATE TABLE employeeBak "</span> +</span><br><span class="line">    <span class="string">"("</span> +</span><br><span class="line">    <span class="string">"empno INT AUTO_INCREMENT PRIMARY KEY, "</span> +</span><br><span class="line">    <span class="string">"ename VARCHAR(128), "</span> +</span><br><span class="line">    <span class="string">"age INT"</span> +</span><br><span class="line">    <span class="string">")"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql);</span><br><span class="line"><span class="comment">// Write sql to insert data</span></span><br><span class="line">String sql2 = <span class="string">"INSERT INTO employeeBak SELECT * FROM employee"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql2);</span><br><span class="line"><span class="comment">// Write sql query table employeeBak</span></span><br><span class="line">String sql3 = <span class="string">"SELECT * FROM employeeBak;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql3);</span><br><span class="line"><span class="comment">// Traverse the query results</span></span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/8cf7f8e44d59c261afe071324e8a99e4-0" alt="1735-150-1001.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 insertSelect</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/6f91145b349b0284e7c4f1260fa51a71-0" alt="1735-150-107.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/411dd2192266342dc2325153b5141da5-0" alt="1735-150-108.png"></p>
+<h4 id="CREATE-table-AS-SELECT"><a href="#CREATE-table-AS-SELECT" class="headerlink" title="CREATE table AS SELECT"></a>CREATE table AS SELECT</h4><p>创建 oldEmployee 表，并复制 employee 中 age 大于20的内容。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 createAsSelect 方法中找到 TODO code 3</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c27847476c0bc0a4de78a6fff408f600-0" alt="1735-150-109.png"></p>
+<p>3）将下方代码粘贴到 TODO code 3 区域内，创建 oldEmployee 表，并复制 employee 中 age 大于20的内容</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Create sql</span></span><br><span class="line">String sql = <span class="string">"create table oldEmployee select * from employee where age &gt; 20"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql);</span><br><span class="line"><span class="comment">// Write sql query table: oldEmployee</span></span><br><span class="line">String sql3 = <span class="string">"select * from oldEmployee;"</span>;</span><br><span class="line"><span class="comment">// Return the result set</span></span><br><span class="line">rs = stmt.executeQuery(sql3);</span><br><span class="line"><span class="comment">// Traverse the query results</span></span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/8cdd02dcc77829e85afab60261ac0cee-0" alt="1735-150-1002.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 createAsSelect</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4938d0a1a51d4d1e3cc8d0209da3c675-0" alt="1735-150-110.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/966dac69c4b148299fa2e0935e7a32ff-0" alt="1735-150-111.png"></p>
+<h3 id="DELETE"><a href="#DELETE" class="headerlink" title="DELETE"></a>DELETE</h3><p>删除表 oldEmployee 表中 name 等于 Chirs 的行。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 delete 方法中找到 TODO code 4</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/558398041276a326ec075dc38d9810f9-0" alt="1735-150-112.png"></p>
+<p>3）将下方代码粘贴到 TODO code 4 区域内，删除表 oldEmployee 表中 name 等于 Chirs 的行</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"DELETE FROM employee WHERE ename = 'Chirs'"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql);</span><br><span class="line"><span class="comment">// Write sql to query table employee</span></span><br><span class="line">String sql3 = <span class="string">"SELECT * FROM employee;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql3);</span><br><span class="line"><span class="comment">// Traverse the query results</span></span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/2e02d581c6fc35cf31aca6cc1e2899d6-0" alt="1735-150-1003.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 delete</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/e1d6d47726c792c179c2745905cbbc36-0" alt="1735-150-113.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/de06e3017ebe8bebb309acdf095708e1-0" alt="1735-150-114.png"></p>
+<h3 id="全表删除（-DELETE、TRUNCATE、DROP）"><a href="#全表删除（-DELETE、TRUNCATE、DROP）" class="headerlink" title="全表删除（ DELETE、TRUNCATE、DROP）"></a>全表删除（ DELETE、TRUNCATE、DROP）</h3><p>本节主要讲MySQ中三种删除表的操作，delete语句、truncate 语句以及drop 语句的区别。</p>
+<p><strong>概述</strong></p>
+<ul>
+<li>DELETE 命令删除的数据可以恢复。</li>
+<li>TRUNCATE 命令删除的数据是不可以恢复的。</li>
+<li>DROP 命令删除的数据不可恢复，连表结构都删除。</li>
+</ul>
+<p><strong>相同点</strong></p>
+<p>TRUNCATE 和不带 WHERE 子句的 DELETE, 以及 DROP 都会删除表内的数据。</p>
+<p><strong>不同点</strong></p>
+<ul>
+<li><p>TRUNCATE 和 DELETE 只删除数据不删除表的结构，DROP 语句将删除表的结构被依赖的约束( CONSTRAIN ), 触发器( TRIGGER ), 索引( INDEX ); 依赖于该表的存储过程/函数将保留, 但是变为 invalid 状态。</p>
+</li>
+<li><p>DELETE 语句是 DML, 这个操作会放到 Rollback Segment 中, 事务提交之后才生效; 如果有相应的 TRIGGER, 执行的时候将被触发。 TRUNCATE, DROP 是 DDL, 操作立即生效, 原数据不放到 Rollback Segment 中, 不能回滚。 操作不触发 TRIGGER。</p>
+</li>
+<li><p>速度：一般来说: DROP &gt; TRUNCATE &gt; DELETE。</p>
+</li>
+<li><p>安全性: 谨慎使用 DROP 和 TRUNCATE，尤其没有备份的时候。</p>
+</li>
+</ul>
+<h4 id="TRUNCATE"><a href="#TRUNCATE" class="headerlink" title="TRUNCATE"></a>TRUNCATE</h4><p>使用 TRUNCATE 清除表 oldEmployee 表内的数据，保存表结构。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 truncate 方法中找到 TODO code 5，使用 truncate 清除表 oldEmployee 表内的数据，保存表结构</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/728d3de5785cd58abc1f1e5470ae4d5d-0" alt="1735-150-115.png"></p>
+<p>3）将下方代码粘贴到 TODO code 5 区域内</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql1 = <span class="string">"TRUNCATE TABLE employee"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql1);</span><br><span class="line"><span class="comment">// View the existence of table structure</span></span><br><span class="line">String sql2 = <span class="string">"DESC employee;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql2);</span><br><span class="line">System.out.println(<span class="string">"表结构为："</span>);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Write sql to see whether the table data exists</span></span><br><span class="line">String sql3 = <span class="string">"SELECT * FROM employee"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql3);</span><br><span class="line">System.out.println(<span class="string">"表数据为："</span>);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/fff35b118e966f2dd43bb71e4927be59-0" alt="1735-150-1004.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 truncate</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/47bcda7c59a3f71321a51b45f7a82783-0" alt="1735-150-116.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c7bd7d809a02424d65f1de75328f720b-0" alt="1735-150-117.png"></p>
+<h4 id="DROP"><a href="#DROP" class="headerlink" title="DROP"></a>DROP</h4><p>使用 DROP 删除表 employee。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 drop 方法中找到 TODO code 6</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/489e23e8b0c4c6c79ee86a9d8094569a-0" alt="1735-150-118.png"></p>
+<p>3）将下方代码粘贴到 TODO code 6 区域内，使用 drop 删除表 employee</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"DROP TABLE employee"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql);</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/f9dbcc2e99b4082334bbac79fc60842d-0" alt="1735-150-1005.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 drop</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/99330e9fa1fac4232df7ec83ebef9a5d-0" alt="1735-150-119.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/beab78f4362d401c84b093066cfbcaac-0" alt="1735-150-120.png"></p>
+<h3 id="UPDATE"><a href="#UPDATE" class="headerlink" title="UPDATE"></a>UPDATE</h3><p>将表 employee 中 name 为 Parto 的 age 修改为23。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 update 方法中找到 TODO code 7</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/737b179acd423fe5c49e5fd2157cd3fe-0" alt="1735-150-121.png"></p>
+<p>3）将下方代码粘贴到 TODO code 7 区域内，将表 employee 中 name 为 Parto 的 age 修改为23</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"UPDATE employee SET age = 23 WHERE ename = 'Parto'"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql);</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql3 = <span class="string">"SELECT * FROM employee WHERE ename ='Parto'"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">rs = stmt.executeQuery(sql3);</span><br><span class="line"><span class="comment">// Traverse the query results</span></span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/a76b83ededb5cfa9c1449b0509c37af3-0" alt="1735-150-1006.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 update</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/db3d76cb85d0d3bc48072422d4d5d8dd-0" alt="1735-150-122.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>6）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/90873974a956dc0ba69b017fd7d46cba-0" alt="1735-150-123.png"></p>
+<h3 id="REPLACE"><a href="#REPLACE" class="headerlink" title="REPLACE"></a>REPLACE</h3><p>MySQL 中 REPLACE 函数是直接替换 MySQL 数据库中某字段中的特定字符串，不再需要自己写函数去替换，用起来非常方便。</p>
+<p>使用 REPLACE 将表 employee 中 Kyoichi 替换为 Kyoic 。</p>
+<p>1）打开 UpdateTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/ccdb91d68aa0d21425a5e8c9b6e7ecfa-0" alt="1735-150-100.png"></p>
+<p>2）在 replace 方法中找到 TODO code 8</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/e036fff92bb854d80994e53ddb500540-0" alt="1735-150-124.png"></p>
+<p>3）将下方代码粘贴到 TODO code 8 区域内，使用 REPLACE 将表 employee 中 Kyoichi 替换为 Kyoic</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"UPDATE employee SET ename = REPLACE(ename,'Kyoichi','Kyoic')"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">stmt.executeUpdate(sql);</span><br><span class="line"><span class="comment">// Write sql query table: employee</span></span><br><span class="line">String sql3 = <span class="string">"SELECT * FROM employee WHERE ename ='Kyoic'"</span>;</span><br><span class="line"><span class="comment">// Execute sql</span></span><br><span class="line">rs = stmt.executeQuery(sql3);</span><br><span class="line"><span class="comment">// Traverse the query results</span></span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/2fd7fb8a7779ae09c2b7399595949895-0" alt="1735-150-1007.png"></p>
+<p>4）修改参数，右键 CRUDMainTest.java，选择 Edit ‘CRUDMainTest.main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4eb9e070cae9fa57220230f9623c59cb-0" alt="1735-150-102.png"></p>
+<p>5）修改参数为 replace</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/311b79b20ca39d27a17041547aab54d8-0" alt="1735-150-125.png"></p>
+<p>6）执行代码，右键 CRUDMainTest.java，选择 Run ‘CRUDMainTest.main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c73a21895b2ad898d2d7b266c017e6cd-0" alt="1735-150-104.png"></p>
+<p>6）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1c26d7b538d41f8c7223775de2318145-0" alt="1735-150-126.png"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/12/10/MySql%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" title="MySql数据操作和JDBC的操作">https://muchlab.github.io/2020/12/10/MySql数据操作和JDBC的操作/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/10/MySQL%E7%9A%84%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" rel="prev" title="MySQL的查询语句和JDBC的操作">
+      <i class="fa fa-chevron-left"></i> MySQL的查询语句和JDBC的操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/10/MySql%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E3%80%81case%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" rel="next" title="MySql执行计划、case表达式和JDBC的操作">
+      MySql执行计划、case表达式和JDBC的操作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MySql数据操作和JDBC的操作"><span class="nav-text">MySql数据操作和JDBC的操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#INSERT"><span class="nav-text">INSERT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#INSERT-SELECT、CREATE-table-AS-SELECT"><span class="nav-text">INSERT SELECT、CREATE table AS SELECT</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#INSERT-SELECT"><span class="nav-text">INSERT SELECT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CREATE-table-AS-SELECT"><span class="nav-text">CREATE table AS SELECT</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DELETE"><span class="nav-text">DELETE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#全表删除（-DELETE、TRUNCATE、DROP）"><span class="nav-text">全表删除（ DELETE、TRUNCATE、DROP）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TRUNCATE"><span class="nav-text">TRUNCATE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DROP"><span class="nav-text">DROP</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UPDATE"><span class="nav-text">UPDATE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REPLACE"><span class="nav-text">REPLACE</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">40</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AspNetCore-C/" rel="tag">-AspNetCore -C#</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WebSocket/" rel="tag">-C# -WebSocket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag">-JVM——类加载器子系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">-MySql</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql-SequoiaDB/" rel="tag">-MySql -SequoiaDB</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth2-0/" rel="tag">-OAuth2.0</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB/" rel="tag">-SequoiaDB</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-MySql/" rel="tag">-SequoiaDB -MySql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-PostgreSql/" rel="tag">-SequoiaDB -PostgreSql</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-S3/" rel="tag">-SequoiaDB -S3</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-Spark/" rel="tag">-SequoiaDB -Spark</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/" rel="tag">-Spark</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">533k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">8:05</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

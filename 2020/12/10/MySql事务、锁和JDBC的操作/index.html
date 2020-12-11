@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/eprofile-data-128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/eprofile-data-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/eprofile-data-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MySql事务、锁和JDBC的操作事务控制MySQL 事务主要用于处理操作量大，复杂度高的数据。比如说，在人员管理系统中，删除一个人员，既需要删除人员的基本资料，也要删除和该人员相关的信息，如信箱，文章等等，这样，这些数据库操作语句就构成一个事务。 使用 Connection 对象来管理事务。java.sql.Connection 接口是一个数据库连接对象。  开启事务 setAutoCommit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql事务、锁和JDBC的操作">
+<meta property="og:url" content="https://muchlab.github.io/2020/12/10/MySql%E4%BA%8B%E5%8A%A1%E3%80%81%E9%94%81%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="凯子の博客">
+<meta property="og:description" content="MySql事务、锁和JDBC的操作事务控制MySQL 事务主要用于处理操作量大，复杂度高的数据。比如说，在人员管理系统中，删除一个人员，既需要删除人员的基本资料，也要删除和该人员相关的信息，如信箱，文章等等，这样，这些数据库操作语句就构成一个事务。 使用 Connection 对象来管理事务。java.sql.Connection 接口是一个数据库连接对象。  开启事务 setAutoCommit">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/e6f9a154127eebfdd0ff2e7143090a5a-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/9cf44dcc4a2f2dae27081b44be73dc1a-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/5e8d252fb8f78ae400641b4851ddc2b6-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/c3d19443925de01850421687c611e57f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/547266bba559dbeaf374cbb1fa36bb80-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/b461300863ab5734664090fbdb64217e-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/2a695ad8391374824cb8db3112c7b576-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/d1f46c8845f78477973aebf81e1cf31f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/842c354693577a16fa4a8cd0fe0df7f8-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4dd693d87035998cd209c96b9fdf5d0f-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/b9bd7696411a0059c3616ede388d5fd6-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/5e8b11dd99477cb4656e8d950b31bad6-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/25929d8f2c9f5fdc29d63b818f789cff-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/58ce5bf6852b00ba6c6e31657afeb399-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/a41bc22475fc23a28f942694b3708761-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/26b9a838bc0b350be2653f1d9386f961-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4ef65a8d6960bc75e3d834677ec66992-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4cafd37719d9404e1602e150e1a28de2-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/9545203dd5a1b575b09a7d58f5a3180d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/973778a21520ac2816a0e589f331399a-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/71cf6f2debdb276fbeea9938d1eada3b-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/1c519f6db533dfd0dcff6437a7eedea5-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/48f38d4bbef5556cc1066f2968bfe07b-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/6bca8df69e9c8822f1f7f6cadbabade7-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/a6c3dfb2ee228e0457f0ac506126f1ee-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/614017e58288421b47ad599561d2273e-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0">
+<meta property="og:image" content="https://doc.shiyanlou.com/courses/1735/1207281/abdbf0de2e3a9e6a5d36066403a383f4-0">
+<meta property="article:published_time" content="2020-12-10T07:41:25.395Z">
+<meta property="article:modified_time" content="2020-12-10T07:41:25.395Z">
+<meta property="article:author" content="ZhekaiChen">
+<meta property="article:tag" content="Linux，Java，Python...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://doc.shiyanlou.com/courses/1735/1207281/e6f9a154127eebfdd0ff2e7143090a5a-0">
+
+<link rel="canonical" href="https://muchlab.github.io/2020/12/10/MySql%E4%BA%8B%E5%8A%A1%E3%80%81%E9%94%81%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySql事务、锁和JDBC的操作 | 凯子の博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凯子の博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">代码的成神之路</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archives fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Muchlab" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/12/10/MySql%E4%BA%8B%E5%8A%A1%E3%80%81%E9%94%81%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/leimu.jpg">
+      <meta itemprop="name" content="ZhekaiChen">
+      <meta itemprop="description" content="Know wrong，know right">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凯子の博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySql事务、锁和JDBC的操作
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-10 15:41:25" itemprop="dateCreated datePublished" datetime="2020-12-10T15:41:25+08:00">2020-12-10</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/12/10/MySql%E4%BA%8B%E5%8A%A1%E3%80%81%E9%94%81%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/12/10/MySql%E4%BA%8B%E5%8A%A1%E3%80%81%E9%94%81%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+              <span>6.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="MySql事务、锁和JDBC的操作"><a href="#MySql事务、锁和JDBC的操作" class="headerlink" title="MySql事务、锁和JDBC的操作"></a>MySql事务、锁和JDBC的操作</h2><h3 id="事务控制"><a href="#事务控制" class="headerlink" title="事务控制"></a>事务控制</h3><p>MySQL 事务主要用于处理操作量大，复杂度高的数据。比如说，在人员管理系统中，删除一个人员，既需要删除人员的基本资料，也要删除和该人员相关的信息，如信箱，文章等等，这样，这些数据库操作语句就构成一个事务。</p>
+<p>使用 Connection 对象来管理事务。java.sql.Connection 接口是一个数据库连接对象。</p>
+<ul>
+<li><p>开启事务</p>
+<p>setAutoCommit(boolean autoCommit) 调用该方法设置参数为false，即开启事务</p>
+</li>
+<li><p>提交事务</p>
+<p>commit() 当所有sql斗执行完提交事务</p>
+</li>
+<li><p>回滚事务</p>
+<p>rollback() 在catch中回滚事务</p>
+</li>
+</ul>
+<p>1）打开 TransactionTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/e6f9a154127eebfdd0ff2e7143090a5a-0" alt="1735-1100-100.png"></p>
+<p>2）在 run 方法中找到 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/9cf44dcc4a2f2dae27081b44be73dc1a-0" alt="1735-1100-101.png"></p>
+<p>3）将下方代码粘贴到 TODO code 1 区域内，把 id =1 对应的余额减少 500 ，id=2 对应的余额增加500</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//0.Start transaction</span></span><br><span class="line">conn.setAutoCommit(<span class="keyword">false</span>);</span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">//1.Select original data</span></span><br><span class="line">String sql = <span class="string">"select * from account"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line">System.out.println(<span class="string">"original data:"</span>);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//2.Simulate the transfer: the user balance with id 1 decreases by 500 and the user balance with id 2 increases by 500</span></span><br><span class="line">String sql1 = <span class="string">"UPDATE account SET balance = balance - 500 WHERE id = 1"</span>;</span><br><span class="line">String sql2 = <span class="string">"UPDATE account SET balance = balance + 500 WHERE id = 2"</span>;</span><br><span class="line">stmt.executeUpdate(sql1);</span><br><span class="line">stmt.executeUpdate(sql2);</span><br><span class="line"><span class="comment">//3.Commit transaction</span></span><br><span class="line">conn.commit();</span><br><span class="line"><span class="comment">//4.View transfer results</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line">System.out.println(<span class="string">"final data:"</span>);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/5e8d252fb8f78ae400641b4851ddc2b6-0" alt="1735-1100-121.png"></p>
+<p>4）修改参数，右键 TransLockMainTest.java，选择 Edit ‘TransLockMainT…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0" alt="1735-1100-126.png"></p>
+<p>5）修改参数为 transaction</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/c3d19443925de01850421687c611e57f-0" alt="1735-1100-102.png"></p>
+<p>6）执行代码，右键 TransLockMainTest.java，选择 Run ‘TransLockMainT…main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0" alt="1735-1100-125.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/547266bba559dbeaf374cbb1fa36bb80-0" alt="1735-1100-122.png"></p>
+<h3 id="事务原子性"><a href="#事务原子性" class="headerlink" title="事务原子性"></a>事务原子性</h3><p>事务内的每个内容不可分割，是一个统一的整体，或同时进行或同时消亡。</p>
+<p>验证步骤：写入两条记录分别存放在不同物理服务器，执行更新操作并 rollback ，确保数据恢复原始状态</p>
+<blockquote>
+<p>环境中已经创建了 employee 表，表中记录分别存放在不同物理服务器</p>
+</blockquote>
+<p>1）打开 AtomicityTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/b461300863ab5734664090fbdb64217e-0" alt="1735-1100-103.png"></p>
+<p>2）在 query 方法中找到 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/2a695ad8391374824cb8db3112c7b576-0" alt="1735-1100-104.png"></p>
+<p>3）将下方代码粘贴到 TODO code 1 区域内，查看初始数据</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"SELECT * FROM employee;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/d1f46c8845f78477973aebf81e1cf31f-0" alt="1735-1100-1001.png"></p>
+<p>4）在 update 方法中找到 TODO code 2</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/842c354693577a16fa4a8cd0fe0df7f8-0" alt="1735-1100-105.png"></p>
+<p>5）将下方代码粘贴到 TODO code 2 区域内，开启事务执行更新操作，并 rollback</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Turn off the automatic submission</span></span><br><span class="line">conn.setAutoCommit(<span class="keyword">false</span>);</span><br><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line">String sql1 = <span class="string">"UPDATE employee SET age = 28 WHERE empno = 10001"</span>;</span><br><span class="line">String sql2 = <span class="string">"UPDATE employee SET age = 20 WHERE empno = 10004"</span>;</span><br><span class="line">stmt.executeUpdate(sql1);</span><br><span class="line">stmt.executeUpdate(sql2);</span><br><span class="line">conn.rollback();</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4dd693d87035998cd209c96b9fdf5d0f-0" alt="1735-1100-1002.png"></p>
+<p>6）修改参数，右键 TransLockMainTest.java，选择 Edit ‘TransLockMainT…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0" alt="1735-1100-126.png"></p>
+<p>7）修改参数为 atomicity</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/b9bd7696411a0059c3616ede388d5fd6-0" alt="1735-1100-106.png"></p>
+<p>8）执行代码，右键 TransLockMainTest.java，选择 Run ‘TransLockMainT…main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0" alt="1735-1100-125.png"></p>
+<p>9）查看结果，发现前后数据一致</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/5e8b11dd99477cb4656e8d950b31bad6-0" alt="1735-1100-107.png"></p>
+<h3 id="事务隔离性"><a href="#事务隔离性" class="headerlink" title="事务隔离性"></a>事务隔离性</h3><p>事务的隔离性指的是几个事务同时执行，事务 a 不应该干扰到事务 b 内的操作（在并发过程中很有可能会发生事务间的影响，例如脏读、不可重复读等。需要在编程的时候选择适当的方式进行选择）</p>
+<p>验证步骤：</p>
+<p>1.开启事务 A</p>
+<p>2.开始事务 B</p>
+<p>3.在事务 B 中修改一条记录，不提交</p>
+<p>4.在事务 A 中查看该条数据是否变化</p>
+<p>5.提交事务 B</p>
+<p>6.在事务 A 中查看该条数据是否变化</p>
+<p>1）打开 IsolationTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/25929d8f2c9f5fdc29d63b818f789cff-0" alt="1735-1100-108.png"></p>
+<p>2）在 query 方法中找到 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/58ce5bf6852b00ba6c6e31657afeb399-0" alt="1735-1100-109.png"></p>
+<p>3）将下方代码粘贴到 TODO code 1 中，查看数据</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql = <span class="string">"SELECT * FROM employee;"</span>;</span><br><span class="line">rs = stmt.executeQuery(sql);</span><br><span class="line"><span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= rs.getMetaData().getColumnCount() ; i++) &#123;</span><br><span class="line">        System.out.print(rs.getString(i)+<span class="string">"\t"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/a41bc22475fc23a28f942694b3708761-0" alt="1735-1100-1003.png"></p>
+<p>4）在 update 方法中找到 TODO code 2</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/26b9a838bc0b350be2653f1d9386f961-0" alt="1735-1100-110.png"></p>
+<p>5）将下方代码粘贴到 TODO code 2 区域内，模拟事务B中修改一条记录</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create a Statement object to send SQL statements to the database</span></span><br><span class="line">stmt = conn.createStatement();</span><br><span class="line"><span class="comment">// Write sql</span></span><br><span class="line">String sql1 = <span class="string">"UPDATE employee SET age = 28 WHERE empno = 10001"</span>;</span><br><span class="line">stmt.executeUpdate(sql1);</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4ef65a8d6960bc75e3d834677ec66992-0" alt="1735-1100-1004.png"></p>
+<p>6）打开 TransLockMainTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4cafd37719d9404e1602e150e1a28de2-0" alt="1735-1100-111.png"></p>
+<p>7）在 isolationTest 方法中找到 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/9545203dd5a1b575b09a7d58f5a3180d-0" alt="1735-1100-112.png"></p>
+<p>8）将下方代码粘贴到 TODO code 1 区域内，测试事务隔离性</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">"Initial data for employee in transaction a: "</span>);</span><br><span class="line"><span class="comment">// Query the initial data</span></span><br><span class="line">IsolationTest.query(conn, stmt, rs);</span><br><span class="line"><span class="comment">// Start transaction A and transaction B</span></span><br><span class="line">conn.setAutoCommit(<span class="keyword">false</span>);</span><br><span class="line">conn2.setAutoCommit(<span class="keyword">false</span>);</span><br><span class="line"><span class="comment">// Update a piece of data in transaction B</span></span><br><span class="line">IsolationTest.update(conn2,stmt,rs);</span><br><span class="line">System.out.println(<span class="string">"When the transaction b is not comitted, the employee data in the transaction a are"</span>);</span><br><span class="line">IsolationTest.query(conn, stmt, rs);</span><br><span class="line"><span class="comment">// Commit transaction B</span></span><br><span class="line">conn2.commit();</span><br><span class="line">System.out.println(<span class="string">"When the transaction b is submitted, the employee data in the transaction a are"</span>);</span><br><span class="line">IsolationTest.query(conn, stmt, rs);</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/973778a21520ac2816a0e589f331399a-0" alt="1735-1100-124.png"></p>
+<p>9）修改参数，右键 TransLockMainTest.java，选择 Edit ‘TransLockMainT…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0" alt="1735-1100-126.png"></p>
+<p>10）修改参数为 isolation</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/71cf6f2debdb276fbeea9938d1eada3b-0" alt="1735-1100-113.png"></p>
+<p>11）执行代码，右键 TransLockMainTest.java，选择 Run ‘TransLockMainT…main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0" alt="1735-1100-125.png"></p>
+<p>12）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/1c519f6db533dfd0dcff6437a7eedea5-0" alt="1735-1100-123.png"></p>
+<h3 id="悲观锁"><a href="#悲观锁" class="headerlink" title="悲观锁"></a>悲观锁</h3><p>悲观锁，正如其名，它指的是对数据被外界（包括本系统当前的其他事务，以及来自外部系统的事务处理）修改持保守态度，因此，在整个数据处理过程中，将数据处于锁定状态。悲观锁的实现，往往依靠数据库提供的锁机制（也只有数据库层提供的锁机制才能真正保证数据访问的排他性，否则，即使在本系统中实现了加锁机制，也无法保证外部系统不会修改数据）。</p>
+<h4 id="使用场景举例"><a href="#使用场景举例" class="headerlink" title="使用场景举例"></a>使用场景举例</h4><p>商品 goods 表中有一个字段 status， status 为1代表商品未被下单，status 为2代表商品已经被下单，那么我们对某个商品下单时必须确保该商品 status 为1。假设商品的 id 为1。</p>
+<h4 id="1-如果不采用锁，那么操作方法如下"><a href="#1-如果不采用锁，那么操作方法如下" class="headerlink" title="1.如果不采用锁，那么操作方法如下"></a>1.如果不采用锁，那么操作方法如下</h4><ol>
+<li>查询出商品信息 SELECT status FROM t_goods WHERE id = 1;</li>
+<li>根据商品信息生成订单 INSERT INTO t_orders (id,goods_id) VALUES (null,1);</li>
+<li>修改商品 status 为2 UPDATE t_goods SET status = 2 WHERE id = 1;</li>
+</ol>
+<p>上面这种场景在高并发访问的情况下很可能会出现问题。</p>
+<p>前面已经提到，只有当 goods status 为1时才能对该商品下单，上面第一步操作中，查询出来的商品 status 为1。但是当我们执行第三步 Update 操作的时候，有可能出现其他人先一步对商品下单把 goods status 修改为2了，但是我们并不知道数据已经被修改了，这样就可能造成同一个商品被下单2次，使得数据不一致。所以说这种方式是不安全的。</p>
+<h4 id="2-使用悲观锁来实现"><a href="#2-使用悲观锁来实现" class="headerlink" title="2.使用悲观锁来实现"></a>2.使用悲观锁来实现</h4><p>在上面的场景中，商品信息从查询出来到修改，中间有一个处理订单的过程，使用悲观锁的原理就是，当我们在查询出 goods 信息后就把当前的数据锁定，直到我们修改完毕后再解锁。那么在这个过程中，因为 goods 被锁了，就不会出现有第三者来对其进行修改了。</p>
+<p>注：要使用悲观锁，必须关闭 mysql 数据库的自动提交属性，因为 MySQL 默认使用 autocommit 模式，也就是说，当执行一个更新操作后，MySQL 会立刻将结果进行提交。</p>
+<p>我们可以使用命令设置 MySQL 为非 autocommit 模式：</p>
+<p>SET AUTOCOMMIT=0;</p>
+<p>设置完 autocommit 后，我们就可以执行我们的正常业务了。具体如下：</p>
+<ol>
+<li>开始事务 BEGIN;</li>
+<li>查询出商品信息 SELECT status FROM t_goods WHERE id = 1 FOR UPDATE;</li>
+<li>根据商品信息生成订单 INSERT INTO t_orders (id,goods_id) VALUES (null,1);</li>
+<li>修改商品 status 为2 UPDATE t_goods SET status = 2 WHERE id = 1;</li>
+<li>提交事务 COMMIT;</li>
+</ol>
+<p>注：上面的 BEGIN/COMMIT 为事务的开始和结束，因为在前一步我们关闭了 mysql 的 autocommit，所以需要手动控制事务的提交，在这里就不细表了。</p>
+<p>上面的第一步我们执行了一次查询操作：SELECT status FROM t_goods WHERE id=1 FOR UPDATE;</p>
+<p>与普通查询不一样的是，我们使用了 SELECT…FOR UPDATE 的方式，这样就通过数据库实现了悲观锁。此时在 t_goods表中， id 为1的 那条数据就被我们锁定了，其它的事务必须等本次事务提交之后才能执行。这样我们可以保证当前的数据不会被其它事务修改。</p>
+<h4 id="使用-Java-代码模拟悲观锁"><a href="#使用-Java-代码模拟悲观锁" class="headerlink" title="使用 Java 代码模拟悲观锁"></a>使用 Java 代码模拟悲观锁</h4><p>1）打开 PessimisticLockTest.java</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/48f38d4bbef5556cc1066f2968bfe07b-0" alt="1735-1100-115.png"></p>
+<p>2）在 run 方法中找到 TODO code 1</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/6bca8df69e9c8822f1f7f6cadbabade7-0" alt="1735-1100-116.png"></p>
+<p>3）将下方代码粘贴到 TODO code 1，代码思路见前面的描述</p>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">Connection conn = UtilsC3P0.getConnection();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    Statement stmt = conn.createStatement();</span><br><span class="line">    Statement stmt2 = conn.createStatement();</span><br><span class="line">    Statement stmt3 = conn.createStatement();</span><br><span class="line">    String sql1 = <span class="string">"SELECT * FROM t_goods WHERE id = 1 FOR UPDATE;"</span>;</span><br><span class="line"></span><br><span class="line">    conn.setAutoCommit(<span class="keyword">false</span>);</span><br><span class="line">    ResultSet rs = stmt2.executeQuery(sql1);</span><br><span class="line">    <span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">        String goods_id = rs.getString(<span class="string">"goods_id"</span>);</span><br><span class="line">        <span class="keyword">int</span> status = rs.getInt(<span class="string">"status"</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">1</span> == status)&#123;</span><br><span class="line">            System.out.println(<span class="string">"enough,place an order"</span>);</span><br><span class="line">            String sql2 = <span class="string">"INSERT INTO t_orders (id,goods_id) VALUES (null,"</span>+ goods_id+<span class="string">");"</span>;</span><br><span class="line">            <span class="keyword">int</span> rs2 = stmt.executeUpdate(sql2);</span><br><span class="line">            <span class="keyword">if</span> (rs2 != <span class="number">0</span>)&#123;</span><br><span class="line">                System.out.println(<span class="string">"success"</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            String sql3 = <span class="string">"UPDATE t_goods SET status = 2 WHERE id = 1;"</span>;</span><br><span class="line">            <span class="keyword">int</span> rs3 = stmt3.executeUpdate(sql3);</span><br><span class="line">            <span class="keyword">if</span> (rs3 != <span class="number">0</span>)&#123;</span><br><span class="line">                System.out.println(<span class="string">"update status to 2"</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">"Shortage,can't place an order"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    conn.commit();</span><br><span class="line"></span><br><span class="line">&#125; <span class="keyword">catch</span> (SQLException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>代码粘贴结果如图所示：</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/a6c3dfb2ee228e0457f0ac506126f1ee-0" alt="1735-1100-117.png"></p>
+<p>4）修改参数，右键 TransLockMainTest.java，选择 Edit ‘TransLockMainT…main()’</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/abd1dd3b0cc90cc487dfef198e0f66ef-0" alt="1735-1100-126.png"></p>
+<p>5）修改参数为 pessimisticLock</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/614017e58288421b47ad599561d2273e-0" alt="1735-1100-118.png"></p>
+<p>6）执行代码，右键 TransLockMainTest.java，选择 Run ‘TransLockMainT…main()’，运行代码</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/4ce3d09a8d8101211c38db775d6eb29d-0" alt="1735-1100-125.png"></p>
+<p>7）查看结果</p>
+<p><img src="https://doc.shiyanlou.com/courses/1735/1207281/abdbf0de2e3a9e6a5d36066403a383f4-0" alt="1735-1100-119.png"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZhekaiChen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://muchlab.github.io/2020/12/10/MySql%E4%BA%8B%E5%8A%A1%E3%80%81%E9%94%81%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" title="MySql事务、锁和JDBC的操作">https://muchlab.github.io/2020/12/10/MySql事务、锁和JDBC的操作/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+        
+          <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+      </div>
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/10/MySql%E5%AD%98%E5%82%A8%E8%BF%87%E7%A8%8B%E3%80%81%E5%87%BD%E6%95%B0%E5%92%8CJDBC%E7%9A%84%E6%93%8D%E4%BD%9C/" rel="prev" title="MySql存储过程、函数和JDBC的操作">
+      <i class="fa fa-chevron-left"></i> MySql存储过程、函数和JDBC的操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/10/Centos7%E5%AE%89%E8%A3%85Spark2.x/" rel="next" title="Centos7安装Spark2.x">
+      Centos7安装Spark2.x <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MySql事务、锁和JDBC的操作"><span class="nav-text">MySql事务、锁和JDBC的操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#事务控制"><span class="nav-text">事务控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事务原子性"><span class="nav-text">事务原子性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事务隔离性"><span class="nav-text">事务隔离性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#悲观锁"><span class="nav-text">悲观锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用场景举例"><span class="nav-text">使用场景举例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-如果不采用锁，那么操作方法如下"><span class="nav-text">1.如果不采用锁，那么操作方法如下</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-使用悲观锁来实现"><span class="nav-text">2.使用悲观锁来实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-Java-代码模拟悲观锁"><span class="nav-text">使用 Java 代码模拟悲观锁</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhekaiChen"
+      src="/images/leimu.jpg">
+  <p class="site-author-name" itemprop="name">ZhekaiChen</p>
+  <div class="site-description" itemprop="description">Know wrong，know right</div>
+</div>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=86 src="//music.163.com/outchain/player?type=2&id=444323712&auto=0&height=66"></iframe>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">40</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Muchlab" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Muchlab" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+      
+      <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+      <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+      <div class="widget-wrap">
+          <div id="myCanvasContainer" class="widget tagcloud">
+          <canvas width="220" height="250" id="resCanvas" style="width=100%">
+              <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AspNetCore-C/" rel="tag">-AspNetCore -C#</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">-C#</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-AspNetCore/" rel="tag">-C# -AspNetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-NetCore/" rel="tag">-C# -NetCore</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF/" rel="tag">-C# -WPF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WPF-SqlServer/" rel="tag">-C# -WPF -SqlServer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-WebSocket/" rel="tag">-C# -WebSocket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Redis/" rel="tag">-Docker -Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EFCore-C/" rel="tag">-EFCore -C#</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM%E2%80%94%E2%80%94%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag">-JVM——类加载器子系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">-Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java-MyBatis/" rel="tag">-Java -MyBatis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">-Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDb/" rel="tag">-MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">-MySql</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql-SequoiaDB/" rel="tag">-MySql -SequoiaDB</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth2-0/" rel="tag">-OAuth2.0</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript/" rel="tag">-React -JavaScript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-JavaScript-AntDesign/" rel="tag">-React -JavaScript -AntDesign</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React-Redux-JavaScript/" rel="tag">-React -Redux -JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">-Redis</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RestfulApi/" rel="tag">-RestfulApi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB/" rel="tag">-SequoiaDB</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-MySql/" rel="tag">-SequoiaDB -MySql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-PostgreSql/" rel="tag">-SequoiaDB -PostgreSql</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-S3/" rel="tag">-SequoiaDB -S3</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SequoiaDB-Spark/" rel="tag">-SequoiaDB -Spark</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shiro-Java/" rel="tag">-Shiro -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/" rel="tag">-Spark</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">-SpringBoot</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Java/" rel="tag">-SpringBoot -Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-Jpa/" rel="tag">-SpringBoot -Jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MongoDb/" rel="tag">-SpringBoot -MongoDb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot-MyBatis/" rel="tag">-SpringBoot -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringMVC-MyBatis/" rel="tag">-SpringMVC -MyBatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SqlServer-Qt/" rel="tag">-SqlServer -Qt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WPF-C/" rel="tag">-WPF -C#</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">-docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li></ul>
+          </canvas>
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<div class="BbeiAn-info" style="color:#000000">
+  鄂ICP备 -
+  <a target="_blank" href="http://www.miitbeian.gov.cn/" style="color:#000000;"  rel="nofollow">18025394</a> <!--a标签中增加nofollow属性，避免爬虫出站。-->| 
+  <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42090202000295" style="text-decoration:none;color:#000000;padding-left:30px;background:url(https://s1.ax1x.com/2018/09/29/ilmwIH.png) no-repeat left center" rel="nofollow">鄂公网安备 42090202000295</a>    <!--这里将图标作为了背景，以使得能和后面的文字在同一行-->
+</div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">凯子</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">533k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">8:05</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='300' src="[object Object]"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false false,
+      appId      : 'aXqCPg3Vj3keRGjCujKSAcLI-9Nh9j0Va',
+      appKey     : 'pxD5UIU0pXOw5Hz2TXAq1KwB',
+      placeholder: "ヾﾉ≧∀≦)o来啊，快活啊!",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
