@@ -12490,4 +12490,128 @@ e，set：哈希表，整数数组</code></pre></li>
 
 ]]></content>
   </entry>
+  <entry>
+    <title>Spark2.x之RDD编程（python版）</title>
+    <url>/2020/12/15/Spark2-x%E4%B9%8BRDD%E7%BC%96%E7%A8%8B%EF%BC%88python%E7%89%88%EF%BC%89/</url>
+    <content><![CDATA[<h3 id="RDD编程前的准备工作"><a href="#RDD编程前的准备工作" class="headerlink" title="RDD编程前的准备工作"></a>RDD编程前的准备工作</h3><ul>
+<li>在<code>/usr/local/spark/mycode/rdd</code>目录下新建一个word.txt文件，文件里面随便输入几行英文语句，用于测试。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">mkdir -p usr/local/spark/mycode/rdd</span><br><span class="line">vim word.txt</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>按照下面的命令启动Hadoop中的HDFS组件：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd  /usr/local/hadoop</span><br><span class="line">./sbin/start-dfs.sh</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>按照下面命令启动pyspark：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd /usr/local/spark</span><br><span class="line">./bin/pyspark</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="从文件系统中加载数据创建RDD"><a href="#从文件系统中加载数据创建RDD" class="headerlink" title="从文件系统中加载数据创建RDD"></a>从文件系统中加载数据创建RDD</h3><ul>
+<li><p>Spark可以使用<code>textFile()</code>方法来从文件系统中加载数据创建RDD，该方法把文件的URI作为参数，这个URI可以是本地文件系统的地址，或者是分布式文件系统HDFS的地址，或者是Amazon S3的地址等等。</p>
+</li>
+<li><p>从本地文件加载数据：</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"file:///usr/local/spark/mycode/rdd/word.txt"</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>把刚才在本地文件系统中的“/usr/local/spark/mycode/rdd/word.txt”上传到HDFS文件系统的hadoop用户目录下。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="code"><pre><span class="line">cd /usr/local/hadoop</span><br><span class="line">bin/hdfs dfs -put /usr/local/spark/mycode/wordcount/word.txt /user/hadoop</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>进入pyspark的shell界面，从HDFS文件系统加载数据：下面三句语句效果相同</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"hdfs://localhost:9000/user/hadoop/word.txt"</span>)</span><br><span class="line">lines = sc.textFile(<span class="string">"/user/hadoop/word.txt"</span>)</span><br><span class="line">lines = sc.textFile(<span class="string">"word.txt"</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>注意，在使用Spark读取文件时，需要说明以下几点：<ol>
+<li>如果使用了本地文件系统的路径，那么，必须要保证在所有的worker节点上，也都能够采用相同的路径访问到该文件，比如，可以把该文件拷贝到每个worker节点上，或者也可以使用网络挂载共享文件系统。</li>
+<li>textFile()方法的输入参数，可以是文件名，也可以是目录，也可以是压缩文件等。比如，textFile(“/my/directory”), textFile(“/my/directory/<em>.txt”), and textFile(“/my/directory/</em>.gz”).</li>
+<li>textFile()方法也可以接受第2个输入参数（可选），用来指定分区的数目。默认情况下，Spark会为HDFS的每个block创建一个分区（HDFS中每个block默认是128MB）。你也可以提供一个比block数量更大的值作为分区数目，但是，你不能提供一个小于block数量的值作为分区数目。</li>
+</ol>
+</li>
+</ul>
+<h3 id="通过并行集合创建RDD"><a href="#通过并行集合创建RDD" class="headerlink" title="通过并行集合创建RDD"></a>通过并行集合创建RDD</h3><ul>
+<li>可以调用SparkContext的parallelize方法，在Driver中一个已经存在的集合（数组）上创建。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">nums = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">rdd = sc.parallelize(nums)</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="RDD操作"><a href="#RDD操作" class="headerlink" title="RDD操作"></a>RDD操作</h3><h4 id="转换操作"><a href="#转换操作" class="headerlink" title="转换操作"></a>转换操作</h4><ul>
+<li>对于RDD而言，每一次转换操作都会产生不同的RDD，供给下一个“转换”使用。转换得到的RDD是惰性求值的，也就是说，整个转换过程只是记录了转换的轨迹，并不会发生真正的计算，只有遇到行动操作时，才会发生真正的计算，开始从血缘关系源头开始，进行物理的转换操作。</li>
+<li>下面列出一些常见的转换操作（Transformation API）：<ol>
+<li>filter(func)：筛选出满足函数func的元素，并返回一个新的数据集。</li>
+<li>map(func)：将每个元素传递到函数func中，并将结果返回为一个新的数据集。</li>
+<li>flatMap(func)：与map()相似，但每个输入元素都可以映射到0或多个输出结果。</li>
+<li>groupByKey()：应用于(K,V)键值对的数据集时，返回一个新的(K, Iterable)形式的数据集。</li>
+<li>reduceByKey(func)：应用于(K,V)键值对的数据集时，返回一个新的(K, V)形式的数据集，其中的每个值是将每个key传递到函数func中进行聚合。</li>
+</ol>
+</li>
+</ul>
+<h4 id="行动操作"><a href="#行动操作" class="headerlink" title="行动操作"></a>行动操作</h4><ul>
+<li>行动操作是真正触发计算的地方。Spark程序执行到行动操作时，才会执行真正的计算，从文件中加载数据，完成一次又一次转换操作，最终，完成行动操作得到结果。</li>
+<li>下面列出一些常见的行动操作（Action API）：<ol>
+<li>count() 返回数据集中的元素个数。</li>
+<li>collect() 以数组的形式返回数据集中的所有元素。</li>
+<li>first() 返回数据集中的第一个元素。</li>
+<li>take(n) 以数组的形式返回数据集中的前n个元素。</li>
+<li>reduce(func) 通过函数func（输入两个参数并返回一个值）聚合数据集中的元素。</li>
+<li>foreach(func) 将数据集中的每个元素传递到函数func中运行。</li>
+</ol>
+</li>
+</ul>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ul>
+<li>filter([func])：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"file:///usr/local/spark/mycode/rdd/word.txt"</span>)</span><br><span class="line">lines.filter(<span class="keyword">lambda</span> line : <span class="string">"Spark"</span> <span class="keyword">in</span> line).count()</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>map([func]).reduce([func])：map进行结果集塑形，而reduce进行结果集函数应用：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"file:///usr/local/spark/mycode/rdd/word.txt"</span>)</span><br><span class="line">lines.map(<span class="keyword">lambda</span> line : len(line.split(<span class="string">" "</span>))).reduce(<span class="keyword">lambda</span> a,b : (a &gt; b <span class="keyword">and</span> a <span class="keyword">or</span> b))</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>lines.map(lambda line : len(line.split(” “)))会把每行文本都传递给匿名函数，也就是传递给Lamda表达式line : len(line.split(” “))中的line，然后执行处理逻辑len(line.split(” “))。reduce()操作每次接收两个参数，取出较大者留下，然后再继续比较。</li>
+</ul>
+<h3 id="缓存机制"><a href="#缓存机制" class="headerlink" title="缓存机制"></a>缓存机制</h3><ul>
+<li><p>在Spark中，RDD采用惰性求值的机制，每次遇到行动操作，都会从头开始执行计算。如果整个Spark程序中只有一次行动操作，这当然不会有什么问题。但是，在一些情形下，我们需要多次调用不同的行动操作，这就意味着，每次调用行动操作，都会触发一次从头开始的计算。这对于迭代计算而言，代价是很大的，迭代计算经常需要多次重复使用同一组数据。</p>
+</li>
+<li><p>下面是一个多次计算同一个RDD的例子：上面代码执行过程中，前后共触发了两次从头到尾的计算。</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">list = [<span class="string">"Hadoop"</span>,<span class="string">"Spark"</span>,<span class="string">"Hive"</span>]</span><br><span class="line">rdd = sc.parallelize(list)</span><br><span class="line">print(rdd.count()) //行动操作，触发一次真正从头到尾的计算</span><br><span class="line">print(<span class="string">','</span>.join(rdd.collect())) //行动操作，触发一次真正从头到尾的计算</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这时，可以是用cache方法缓存第一次RDD操作的结果，防止重复执行相同的RDD操作</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">list = [<span class="string">"Hadoop"</span>,<span class="string">"Spark"</span>,<span class="string">"Hive"</span>]</span><br><span class="line">rdd = sc.parallelize(list)</span><br><span class="line">rdd.cache()  //会调用persist(MEMORY_ONLY)，但是，语句执行到这里，并不会缓存rdd，这是rdd还没有被计算生成</span><br><span class="line">print(rdd.count()) //第一次行动操作，触发一次真正从头到尾的计算，这时才会执行上面的rdd.cache()，把这个rdd放到缓存中</span><br><span class="line">print(<span class="string">','</span>.join(rdd.collect())) //第二次行动操作，不需要触发从头到尾的计算，只需要重复使用上面缓存中的rdd</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><ul>
+<li><p>RDD是弹性分布式数据集，通常RDD很大，会被分成很多个分区，分别保存在不同的节点上。RDD分区的一个分区原则是使得分区的个数尽量等于集群中的CPU核心（core）数目。</p>
+</li>
+<li><p>对于不同的Spark部署模式而言（本地模式、Standalone模式、YARN模式、Mesos模式），都可以通过设置spark.default.parallelism这个参数的值，来配置默认的分区数目，一般而言：</p>
+<ol>
+<li>本地模式：默认为本地机器的CPU数目，若设置了local[N],则默认为N；</li>
+<li>Apache Mesos：默认的分区数为8；</li>
+<li>Standalone或YARN：在“集群中所有CPU核心数目总和”和“2”二者中取较大值作为默认值；</li>
+</ol>
+<ul>
+<li>因此，对于parallelize而言，如果没有在方法中指定分区数，则默认为spark.default.parallelism</li>
+</ul>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line">array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">rdd = sc.parallelize(array,<span class="number">2</span>) <span class="comment">#设置两个分区</span></span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<p>转载于：<a href="http://dblab.xmu.edu.cn/blog/1700-2/" target="_blank" rel="noopener">子雨大数据</a></p>
+]]></content>
+      <categories>
+        <category>-Spark</category>
+      </categories>
+      <tags>
+        <tag>-Spark</tag>
+      </tags>
+  </entry>
 </search>

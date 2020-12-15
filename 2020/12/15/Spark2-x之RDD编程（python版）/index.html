@@ -21,22 +21,20 @@
     var CONFIG = {"hostname":"muchlab.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","b2t":true,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Java——容器1">
+  <meta name="description" content="Spark2.x之RDD编程（python版）">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java——容器1">
-<meta property="og:url" content="https://muchlab.github.io/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/index.html">
+<meta property="og:title" content="Spark2.x之RDD编程（python版）">
+<meta property="og:url" content="https://muchlab.github.io/2020/12/15/Spark2-x%E4%B9%8BRDD%E7%BC%96%E7%A8%8B%EF%BC%88python%E7%89%88%EF%BC%89/index.html">
 <meta property="og:site_name" content="凯子の博客">
-<meta property="og:description" content="Java——容器1">
+<meta property="og:description" content="Spark2.x之RDD编程（python版）">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://muchlab.github.io/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/Java%E5%AE%B9%E5%99%A81%5CSnipaste_2020-08-20_16-02-44.png">
-<meta property="article:published_time" content="2020-08-28T11:19:18.000Z">
-<meta property="article:modified_time" content="2020-09-26T01:17:41.597Z">
+<meta property="article:published_time" content="2020-12-15T07:17:20.000Z">
+<meta property="article:modified_time" content="2020-12-15T07:18:20.908Z">
 <meta property="article:author" content="ZhekaiChen">
-<meta property="article:tag" content="-Java">
+<meta property="article:tag" content="-Spark">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://muchlab.github.io/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/Java%E5%AE%B9%E5%99%A81%5CSnipaste_2020-08-20_16-02-44.png">
 
-<link rel="canonical" href="https://muchlab.github.io/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/">
+<link rel="canonical" href="https://muchlab.github.io/2020/12/15/Spark2-x%E4%B9%8BRDD%E7%BC%96%E7%A8%8B%EF%BC%88python%E7%89%88%EF%BC%89/">
 
 
 <script id="page-configurations">
@@ -49,7 +47,7 @@
   };
 </script>
 
-  <title>Java——容器1 | 凯子の博客</title>
+  <title>Spark2.x之RDD编程（python版） | 凯子の博客</title>
   
 
 
@@ -204,7 +202,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/">
+    <link itemprop="mainEntityOfPage" href="https://muchlab.github.io/2020/12/15/Spark2-x%E4%B9%8BRDD%E7%BC%96%E7%A8%8B%EF%BC%88python%E7%89%88%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/leimu.jpg">
@@ -217,7 +215,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Java——容器1
+          Spark2.x之RDD编程（python版）
         </h1>
 
         <div class="post-meta">
@@ -226,23 +224,17 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2020-08-28 19:19:18" itemprop="dateCreated datePublished" datetime="2020-08-28T19:19:18+08:00">2020-08-28</time>
+              <time title="创建时间：2020-12-15 15:17:20 / 修改时间：15:18:20" itemprop="dateCreated datePublished" datetime="2020-12-15T15:17:20+08:00">2020-12-15</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-26 09:17:41" itemprop="dateModified" datetime="2020-09-26T09:17:41+08:00">2020-09-26</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">-Java</span></a>
+                  <a href="/categories/Spark/" itemprop="url" rel="index"><span itemprop="name">-Spark</span></a>
                 </span>
             </span>
 
@@ -255,8 +247,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/" itemprop="commentCount"></span>
+    <a title="valine" href="/2020/12/15/Spark2-x%E4%B9%8BRDD%E7%BC%96%E7%A8%8B%EF%BC%88python%E7%89%88%EF%BC%89/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/12/15/Spark2-x%E4%B9%8BRDD%E7%BC%96%E7%A8%8B%EF%BC%88python%E7%89%88%EF%BC%89/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -265,15 +257,15 @@
               <span class="post-meta-item-icon">
                 <i class="far fa-file-word"></i>
               </span>
-              <span>4.2k</span>
+              <span>3.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
-              <span>4 分钟</span>
+              <span>3 分钟</span>
             </span>
-            <div class="post-description">Java——容器1</div>
+            <div class="post-description">Spark2.x之RDD编程（python版）</div>
 
         </div>
       </header>
@@ -284,84 +276,119 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="常用的容器"><a href="#常用的容器" class="headerlink" title="常用的容器"></a>常用的容器</h3><ul>
-<li><p>Set: HashSet，<strong><em>LinkedHashSet，TreeSet，EnumSet</em></strong>（后三个有序）</p>
-</li>
-<li><p>List: ArrayList，LinkedList，Stack，Vector（全部有序）</p>
-</li>
-<li><p>Queue：LinkedBlockingQueue，ArraysBlockingQueue（全部有序）</p>
-</li>
-<li><p>Map: <strong><em>HashMap，TreeMap，LinkedHashMap</em></strong>，EnumMap，ConcurrentHashMap，IdentityHashMap（前三有序）</p>
-</li>
-<li><p>容器的继承关系</p>
-</li>
+        <h3 id="RDD编程前的准备工作"><a href="#RDD编程前的准备工作" class="headerlink" title="RDD编程前的准备工作"></a>RDD编程前的准备工作</h3><ul>
+<li>在<code>/usr/local/spark/mycode/rdd</code>目录下新建一个word.txt文件，文件里面随便输入几行英文语句，用于测试。</li>
 </ul>
-<p><img src="/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/Java%E5%AE%B9%E5%99%A81%5CSnipaste_2020-08-20_16-02-44.png" alt="Snipaste_2020-08-20_16-02-44"></p>
-<h3 id="Iterable接口"><a href="#Iterable接口" class="headerlink" title="Iterable接口"></a>Iterable接口</h3><ul>
-<li>Iterable是一个超级接口，被Collection所继承。它只有一个方法： Iterator<T> iterator() //即返回一个迭代器</T></li>
-</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p usr/local/spark/mycode/rdd</span><br><span class="line">vim word.txt</span><br></pre></td></tr></table></figure></div>
+
 <ul>
-<li><p>迭代器是一种设计模式，它是一个对象，它可以遍历并选择序列中的对象，而开发人员不需要了解该序列的底层结构。迭代器通常被称为<strong>“轻量级”</strong>对象，因为创建它的代价小。</p>
-</li>
-<li><p>Java中的Iterator功能比较简单，并且只能<strong>单向移动</strong>：<br>(1) 使用方法iterator()要求容器返回一个Iterator。第一次调用Iterator的next()方法时，它返回序列的第一个元素。注意：iterator()方法是java.lang.Iterable接口,被Collection继承。<br>　　(2) 使用next()获得序列中的下一个元素。<br>　　(3) 使用hasNext()检查序列中是否还有元素。<br>　　(4) 使用remove()将迭代器新返回的元素删除。</p>
-</li>
-<li><p>下面有一个小例子：</p>
-</li>
+<li>按照下面的命令启动Hadoop中的HDFS组件：</li>
 </ul>
-<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实现Iterable接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IterableClass</span> <span class="keyword">implements</span> <span class="title">Iterable</span>&lt;<span class="title">String</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> String[] words = &#123;<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>, <span class="string">"D"</span>, <span class="string">"E"</span>&#125;;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Iterator&lt;String&gt; <span class="title">iterator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Iterator&lt;String&gt;() &#123;</span><br><span class="line">            <span class="keyword">private</span> <span class="keyword">int</span> index;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">return</span> index&lt;words.length;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> String <span class="title">next</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">return</span> words[index++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (String s : <span class="keyword">new</span> IterableClass()) &#123;</span><br><span class="line">            System.out.print(s+<span class="string">" "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd  /usr/local/hadoop</span><br><span class="line">./sbin/start-dfs.sh</span><br></pre></td></tr></table></figure></div>
 
-<h3 id="Collection接口"><a href="#Collection接口" class="headerlink" title="Collection接口"></a>Collection接口</h3><ul>
-<li>一个独立的元素序列，JDK 不提供此接口的任何直接 实现：它提供更具体的子接口（如 Set 和 List）实现。也就是一般不会直接使用Collection，而是会使用它的子类，如List或Set。</li>
-<li>Collection会针对不同的子类规定不同的规则。比如：List必须按插入顺序保存元素；Set不能有重复的元素等等。</li>
+<ul>
+<li>按照下面命令启动pyspark：</li>
 </ul>
-<h3 id="Map接口"><a href="#Map接口" class="headerlink" title="Map接口"></a>Map接口</h3><ul>
-<li>Map是与Collection同层次的接口，它可以用来规定子类储存一组成对的“键值对”对象，允许使用键来查找值，也可以将它当成映射表或字典。</li>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/spark</span><br><span class="line">./bin/pyspark</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="从文件系统中加载数据创建RDD"><a href="#从文件系统中加载数据创建RDD" class="headerlink" title="从文件系统中加载数据创建RDD"></a>从文件系统中加载数据创建RDD</h3><ul>
+<li><p>Spark可以使用<code>textFile()</code>方法来从文件系统中加载数据创建RDD，该方法把文件的URI作为参数，这个URI可以是本地文件系统的地址，或者是分布式文件系统HDFS的地址，或者是Amazon S3的地址等等。</p>
+</li>
+<li><p>从本地文件加载数据：</p>
+</li>
 </ul>
-<h3 id="List接口"><a href="#List接口" class="headerlink" title="List接口"></a>List接口</h3><ul>
-<li>L。list是<strong>有序</strong>的 collection（也称为序列）。此接口的用户可以对列表中每个元素的插入位置进行精确地控制。用户可以根据元素的整数索引（在列表中的位置）访问元素，并搜索列表中的元素。</li>
-<li>用户插入的顺序或者指定的位置就是元素插入的位置。它与Set不同，List<strong>允许插入重复的值</strong>。</li>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"file:///usr/local/spark/mycode/rdd/word.txt"</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>把刚才在本地文件系统中的“/usr/local/spark/mycode/rdd/word.txt”上传到HDFS文件系统的hadoop用户目录下。</li>
 </ul>
-<h3 id="两个实现List接口的基本类型"><a href="#两个实现List接口的基本类型" class="headerlink" title="两个实现List接口的基本类型"></a>两个实现List接口的基本类型</h3><ol>
-<li><code>ArrayList</code>：它长于随机访问元素，但是在List的中间插入与移除元素时较慢</li>
-<li><code>LinkedList</code>：它通过代价较低的在List中间进行的插入和删除操作，提供了优化的顺序访问。LinkedList在随机访问方面相对比较慢。</li>
-</ol>
-<h3 id="迭代器"><a href="#迭代器" class="headerlink" title="迭代器"></a>迭代器</h3><ul>
-<li>对于List，add()时插入元素的方法之一，而get()是取出元素的方法之一。但要使用容器，就必须对容器的确切类型进行编程，这会使代码不具备复用性。原本是对着List编码的，后面发现如果能够把相同的代码应用在Set，将会很方便，而<code>迭代器</code>就是来解决这个问题的。</li>
-<li>迭代器是一种设计模式，它的工作是遍历并选择序列中的对象，程序员不必知道改序列的底层结构。此外，迭代器通常被称为<code>轻量级对象</code>，即创建它的代价小</li>
-<li>Java的<code>Iterator</code>只能单向移动，使用迭代器的步骤如下：<ol>
-<li>使用集合的iterator()方法可以返回一个Iterator对象。</li>
-<li>使用Iterator对象的next()获取序列中的下一个元素</li>
-<li>使用Iterator对象的hasNext()检查序列中是否还有元素</li>
-<li>使用Iterator对象的remove()将迭代器新近返回的元素删除</li>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SHELL"><figure class="iseeu highlight /shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/hadoop</span><br><span class="line">bin/hdfs dfs -put /usr/local/spark/mycode/wordcount/word.txt /user/hadoop</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>进入pyspark的shell界面，从HDFS文件系统加载数据：下面三句语句效果相同</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"hdfs://localhost:9000/user/hadoop/word.txt"</span>)</span><br><span class="line">lines = sc.textFile(<span class="string">"/user/hadoop/word.txt"</span>)</span><br><span class="line">lines = sc.textFile(<span class="string">"word.txt"</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>注意，在使用Spark读取文件时，需要说明以下几点：<ol>
+<li>如果使用了本地文件系统的路径，那么，必须要保证在所有的worker节点上，也都能够采用相同的路径访问到该文件，比如，可以把该文件拷贝到每个worker节点上，或者也可以使用网络挂载共享文件系统。</li>
+<li>textFile()方法的输入参数，可以是文件名，也可以是目录，也可以是压缩文件等。比如，textFile(“/my/directory”), textFile(“/my/directory/<em>.txt”), and textFile(“/my/directory/</em>.gz”).</li>
+<li>textFile()方法也可以接受第2个输入参数（可选），用来指定分区的数目。默认情况下，Spark会为HDFS的每个block创建一个分区（HDFS中每个block默认是128MB）。你也可以提供一个比block数量更大的值作为分区数目，但是，你不能提供一个小于block数量的值作为分区数目。</li>
 </ol>
 </li>
-<li>下面有一个小例子：</li>
 </ul>
-<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="JAVA"><figure class="iseeu highlight /java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.muchlab.container;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.Collections;</span><br><span class="line"><span class="keyword">import</span> java.util.Iterator;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pet</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Pet</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleIteration</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//在这里需要注意的是：Arrays.asList()不可添加或删除元素，因为这个方法返回的是Arrays中继承AbstractList的内部类ArrayList，这个类并没有实现添加和删除操作。</span></span><br><span class="line">        ArrayList&lt;Pet&gt; pets = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        Collections.addAll(pets, <span class="keyword">new</span> Pet(<span class="string">"A"</span>), <span class="keyword">new</span> Pet(<span class="string">"B"</span>), <span class="keyword">new</span> Pet(<span class="string">"C"</span>), <span class="keyword">new</span> Pet(<span class="string">"D"</span>));</span><br><span class="line">        Iterator&lt;Pet&gt; iterator = pets.iterator();</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext())&#123;</span><br><span class="line">            Pet p = iterator.next();</span><br><span class="line">            System.out.print(<span class="string">"Pet:"</span>+p.getName()+<span class="string">" "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println();</span><br><span class="line">        <span class="keyword">for</span> (Pet pet : pets) &#123;</span><br><span class="line">            System.out.print(<span class="string">"Pet:"</span>+pet.getName()+<span class="string">" "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        iterator = pets.iterator();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">            iterator.next();</span><br><span class="line">            iterator.remove();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println();</span><br><span class="line">        <span class="keyword">for</span> (Pet pet : pets) &#123;</span><br><span class="line">            System.out.print(<span class="string">"Pet:"</span>+pet.getName()+<span class="string">" "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h3 id="通过并行集合创建RDD"><a href="#通过并行集合创建RDD" class="headerlink" title="通过并行集合创建RDD"></a>通过并行集合创建RDD</h3><ul>
+<li>可以调用SparkContext的parallelize方法，在Driver中一个已经存在的集合（数组）上创建。</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nums = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">rdd = sc.parallelize(nums)</span><br></pre></td></tr></table></figure></div>
 
-<h3 id="LinkedList"><a href="#LinkedList" class="headerlink" title="LinkedList"></a>LinkedList</h3><ul>
-<li><code>LinkedList</code>相比起<code>ArrayList</code>还添加了可以使用作栈<code>Stack</code>、队列<code>Queue</code>或双端队列的方法。</li>
-<li>获取元素：getFirst()、element()完全一样，都是返回列表的第一个元素，而不移除它，若List为空，则会抛出异常<code>NoSuchElementException</code>，peek()也是获取元素的方法，但它和前面两个方法的区别是它在List为空时会返回null。</li>
-<li>添加元素：addFirst()、add()、addLast()都相同，它们都将某个元素插入到列表的末尾。</li>
-<li>删除元素：removeFirst()和remove()完全一样，它们移除并返回列表的头，而removeLast()移除并返回列表的最后一个元素，但列表为空时，它们都会抛出异常<code>NoSuchElementException</code>。poll()则在列表为空时返回null。</li>
-</ul>
-<h3 id="Set接口"><a href="#Set接口" class="headerlink" title="Set接口"></a>Set接口</h3><ul>
-<li>Set不保存重复的元素，最常被使用的是测试归属性，你可以很容易地询问某个对象是否在某个Set中，正因如此，查找是Set最重要地操作。通常的做法是选择一个HashSet的实现，专门对查找进行优化。</li>
-</ul>
-<h3 id="Set三种常用的实现类型"><a href="#Set三种常用的实现类型" class="headerlink" title="Set三种常用的实现类型"></a>Set三种常用的实现类型</h3><ol>
-<li><code>HashSet</code>：出于速度原因的考虑，HashSet使用的是散列函数，所以输出的顺序没有任何规律。</li>
-<li><code>TreeSet</code>：TreeSet则将元素存储在红黑树数据结构中。</li>
-<li><code>LinkedHashSet</code>：LinkedHashSet对元素的存储是跟HashSet一样，但它跟LinkedList一样使用链表来维护插入和删除操作。</li>
+<h3 id="RDD操作"><a href="#RDD操作" class="headerlink" title="RDD操作"></a>RDD操作</h3><h4 id="转换操作"><a href="#转换操作" class="headerlink" title="转换操作"></a>转换操作</h4><ul>
+<li>对于RDD而言，每一次转换操作都会产生不同的RDD，供给下一个“转换”使用。转换得到的RDD是惰性求值的，也就是说，整个转换过程只是记录了转换的轨迹，并不会发生真正的计算，只有遇到行动操作时，才会发生真正的计算，开始从血缘关系源头开始，进行物理的转换操作。</li>
+<li>下面列出一些常见的转换操作（Transformation API）：<ol>
+<li>filter(func)：筛选出满足函数func的元素，并返回一个新的数据集。</li>
+<li>map(func)：将每个元素传递到函数func中，并将结果返回为一个新的数据集。</li>
+<li>flatMap(func)：与map()相似，但每个输入元素都可以映射到0或多个输出结果。</li>
+<li>groupByKey()：应用于(K,V)键值对的数据集时，返回一个新的(K, Iterable)形式的数据集。</li>
+<li>reduceByKey(func)：应用于(K,V)键值对的数据集时，返回一个新的(K, V)形式的数据集，其中的每个值是将每个key传递到函数func中进行聚合。</li>
 </ol>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
-<li>Collection保存单一类型的元素，而Map保存相关联的键值对，这两者都不能持有基本类型，但是Java的自动包装机制对仔细地执行基本类型和其对应的包装类之间的双向转换。</li>
-<li>List可以建立数字索引和对象的关联，能够自动扩充容量</li>
-<li>如果需要大量的随机访问，就使用ArrayList，如果需要使用大量的插入或删除元素，则使用LinkedList</li>
-<li>各种Queue和栈的行y为，由LinkedList提供支持</li>
-<li>Map是一种将对象与对象相关联的设计。HashMap设计用来快速访问；TreeMap保存键始终处于排序状态，所以没有HashMap快；LinkedHashMap保持元素插入的顺序，但是也通过散列提供了快速访问的能力。</li>
-<li>Set不接受重复元素。HashSet提供最快的查询速度；而TreeSet保持元素处于排序状态；LinkedHashSet以插入顺序保存元素</li>
-<li>建议不应该使用过时的Vector、Hashtable和Stack。</li>
+</li>
+</ul>
+<h4 id="行动操作"><a href="#行动操作" class="headerlink" title="行动操作"></a>行动操作</h4><ul>
+<li>行动操作是真正触发计算的地方。Spark程序执行到行动操作时，才会执行真正的计算，从文件中加载数据，完成一次又一次转换操作，最终，完成行动操作得到结果。</li>
+<li>下面列出一些常见的行动操作（Action API）：<ol>
+<li>count() 返回数据集中的元素个数。</li>
+<li>collect() 以数组的形式返回数据集中的所有元素。</li>
+<li>first() 返回数据集中的第一个元素。</li>
+<li>take(n) 以数组的形式返回数据集中的前n个元素。</li>
+<li>reduce(func) 通过函数func（输入两个参数并返回一个值）聚合数据集中的元素。</li>
+<li>foreach(func) 将数据集中的每个元素传递到函数func中运行。</li>
 </ol>
+</li>
+</ul>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ul>
+<li>filter([func])：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"file:///usr/local/spark/mycode/rdd/word.txt"</span>)</span><br><span class="line">lines.filter(<span class="keyword">lambda</span> line : <span class="string">"Spark"</span> <span class="keyword">in</span> line).count()</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>map([func]).reduce([func])：map进行结果集塑形，而reduce进行结果集函数应用：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lines = sc.textFile(<span class="string">"file:///usr/local/spark/mycode/rdd/word.txt"</span>)</span><br><span class="line">lines.map(<span class="keyword">lambda</span> line : len(line.split(<span class="string">" "</span>))).reduce(<span class="keyword">lambda</span> a,b : (a &gt; b <span class="keyword">and</span> a <span class="keyword">or</span> b))</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>lines.map(lambda line : len(line.split(” “)))会把每行文本都传递给匿名函数，也就是传递给Lamda表达式line : len(line.split(” “))中的line，然后执行处理逻辑len(line.split(” “))。reduce()操作每次接收两个参数，取出较大者留下，然后再继续比较。</li>
+</ul>
+<h3 id="缓存机制"><a href="#缓存机制" class="headerlink" title="缓存机制"></a>缓存机制</h3><ul>
+<li><p>在Spark中，RDD采用惰性求值的机制，每次遇到行动操作，都会从头开始执行计算。如果整个Spark程序中只有一次行动操作，这当然不会有什么问题。但是，在一些情形下，我们需要多次调用不同的行动操作，这就意味着，每次调用行动操作，都会触发一次从头开始的计算。这对于迭代计算而言，代价是很大的，迭代计算经常需要多次重复使用同一组数据。</p>
+</li>
+<li><p>下面是一个多次计算同一个RDD的例子：上面代码执行过程中，前后共触发了两次从头到尾的计算。</p>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">list = [<span class="string">"Hadoop"</span>,<span class="string">"Spark"</span>,<span class="string">"Hive"</span>]</span><br><span class="line">rdd = sc.parallelize(list)</span><br><span class="line">print(rdd.count()) //行动操作，触发一次真正从头到尾的计算</span><br><span class="line">print(<span class="string">','</span>.join(rdd.collect())) //行动操作，触发一次真正从头到尾的计算</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这时，可以是用cache方法缓存第一次RDD操作的结果，防止重复执行相同的RDD操作</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">list = [<span class="string">"Hadoop"</span>,<span class="string">"Spark"</span>,<span class="string">"Hive"</span>]</span><br><span class="line">rdd = sc.parallelize(list)</span><br><span class="line">rdd.cache()  //会调用persist(MEMORY_ONLY)，但是，语句执行到这里，并不会缓存rdd，这是rdd还没有被计算生成</span><br><span class="line">print(rdd.count()) //第一次行动操作，触发一次真正从头到尾的计算，这时才会执行上面的rdd.cache()，把这个rdd放到缓存中</span><br><span class="line">print(<span class="string">','</span>.join(rdd.collect())) //第二次行动操作，不需要触发从头到尾的计算，只需要重复使用上面缓存中的rdd</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><ul>
+<li><p>RDD是弹性分布式数据集，通常RDD很大，会被分成很多个分区，分别保存在不同的节点上。RDD分区的一个分区原则是使得分区的个数尽量等于集群中的CPU核心（core）数目。</p>
+</li>
+<li><p>对于不同的Spark部署模式而言（本地模式、Standalone模式、YARN模式、Mesos模式），都可以通过设置spark.default.parallelism这个参数的值，来配置默认的分区数目，一般而言：</p>
+<ol>
+<li>本地模式：默认为本地机器的CPU数目，若设置了local[N],则默认为N；</li>
+<li>Apache Mesos：默认的分区数为8；</li>
+<li>Standalone或YARN：在“集群中所有CPU核心数目总和”和“2”二者中取较大值作为默认值；</li>
+</ol>
+<ul>
+<li>因此，对于parallelize而言，如果没有在方法中指定分区数，则默认为spark.default.parallelism</li>
+</ul>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">rdd = sc.parallelize(array,<span class="number">2</span>) <span class="comment">#设置两个分区</span></span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<p>转载于：<a href="http://dblab.xmu.edu.cn/blog/1700-2/" target="_blank" rel="noopener">子雨大数据</a></p>
 
     </div>
 
@@ -377,7 +404,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://muchlab.github.io/2020/08/28/Java%E2%80%94%E2%80%94%E5%AE%B9%E5%99%A81/" title="Java——容器1">https://muchlab.github.io/2020/08/28/Java——容器1/</a>
+    <a href="https://muchlab.github.io/2020/12/15/Spark2-x%E4%B9%8BRDD%E7%BC%96%E7%A8%8B%EF%BC%88python%E7%89%88%EF%BC%89/" title="Spark2.x之RDD编程（python版）">https://muchlab.github.io/2020/12/15/Spark2-x之RDD编程（python版）/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -399,7 +426,7 @@
       <footer class="post-footer">
           
           <div class="post-tags">
-              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> -Java</a>
+              <a href="/tags/Spark/" rel="tag"><i class="fa fa-tag"></i> -Spark</a>
           </div>
 
         
@@ -408,13 +435,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/08/28/Spring5-x%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B09%E2%80%94%E2%80%94%E6%B3%A8%E8%A7%A3%E7%BC%96%E7%A8%8B/" rel="prev" title="Spring5.x学习笔记9——注解编程">
-      <i class="fa fa-chevron-left"></i> Spring5.x学习笔记9——注解编程
+    <a href="/2020/12/15/Centos7%E5%AE%89%E8%A3%85Spark2-x/" rel="prev" title="Centos7安装Spark2.x">
+      <i class="fa fa-chevron-left"></i> Centos7安装Spark2.x
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/09/05/Java%E2%80%94%E2%80%94%E5%B9%B6%E5%8F%911/" rel="next" title="Java——并发1">
-      Java——并发1 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -473,7 +497,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#常用的容器"><span class="nav-text">常用的容器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Iterable接口"><span class="nav-text">Iterable接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Collection接口"><span class="nav-text">Collection接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Map接口"><span class="nav-text">Map接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#List接口"><span class="nav-text">List接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两个实现List接口的基本类型"><span class="nav-text">两个实现List接口的基本类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#迭代器"><span class="nav-text">迭代器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LinkedList"><span class="nav-text">LinkedList</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Set接口"><span class="nav-text">Set接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Set三种常用的实现类型"><span class="nav-text">Set三种常用的实现类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDD编程前的准备工作"><span class="nav-text">RDD编程前的准备工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从文件系统中加载数据创建RDD"><span class="nav-text">从文件系统中加载数据创建RDD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过并行集合创建RDD"><span class="nav-text">通过并行集合创建RDD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDD操作"><span class="nav-text">RDD操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#转换操作"><span class="nav-text">转换操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#行动操作"><span class="nav-text">行动操作</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实例"><span class="nav-text">实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存机制"><span class="nav-text">缓存机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分区"><span class="nav-text">分区</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
