@@ -12546,7 +12546,7 @@ e，set：哈希表，整数数组</code></pre></li>
   <entry>
     <title>SparkSql与DataFrame</title>
     <url>/2020/12/22/SparkSql%E4%B8%8EDataFrame/</url>
-    <content><![CDATA[<h2 id="SparkSql与DataFrame"><a href="#SparkSql与DataFrame" class="headerlink" title="SparkSql与DataFrame"></a>SparkSql与DataFrame</h2><h3 id="从Shark说起"><a href="#从Shark说起" class="headerlink" title="从Shark说起"></a>从Shark说起</h3><ul>
+    <content><![CDATA[<h3 id="从Shark说起"><a href="#从Shark说起" class="headerlink" title="从Shark说起"></a>从Shark说起</h3><ul>
 <li>Shark即Hive on Spark，为了实现与Hive兼容，Shark在HiveQL方面重用了Hive中的HiveQL解析、逻辑执行计划翻译、执行计划优化等逻辑，可以近似认为仅将物理执行计划从MapReduce作业替换成了Spark作业，通过Hive的HiveQL解析，把HiveQL翻译成Spark上的RDD操作。</li>
 <li>Shark的设计导致了两个问题：一是执行计划优化完全依赖于Hive，不方便添加新的优化策略；二是因为Spark是线程级并行，而MapReduce是进程级并行，因此，Spark在兼容Hive的实现上存在线程安全问题，导致Shark不得不使用另外一套独立维护的打了补丁的Hive源码分支。</li>
 <li>Shark的实现继承了大量的Hive代码，因而给优化和维护带来了大量的麻烦，特别是基于MapReduce设计的部分，成为整个项目的瓶颈。因此，在2014年的时候，Shark项目中止，并转向Spark SQL的开发。</li>
