@@ -12662,4 +12662,171 @@ e，set：哈希表，整数数组</code></pre></li>
         <tag>-Spark</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Spark之流计算和SparkStreaming（Python版）</title>
+    <url>/2021/01/06/Spark%E4%B9%8B%E6%B5%81%E8%AE%A1%E7%AE%97%E5%92%8CSparkStreaming%EF%BC%88Python%E7%89%88%EF%BC%89/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Spark之流计算和SparkStreaming（Python版）</title>
+    <url>/2021/01/06/%C2%96Spark%E4%B9%8B%E6%B5%81%E8%AE%A1%E7%AE%97%E5%92%8CSparkStreaming%EF%BC%88Python%E7%89%88%EF%BC%89/</url>
+    <content><![CDATA[<h3 id="流计算简介"><a href="#流计算简介" class="headerlink" title="流计算简介"></a>流计算简介</h3><ul>
+<li><p>数据总体上可以分为静态数据和流数据。对静态数据和流数据的处理，对应着两种截然不同的计算模式：批量计算和实时计算。</p>
+</li>
+<li><p>批量计算以“静态数据”为对象，可以在很充裕的时间内对海量数据进行批量处理，计算得到有价值的信息。Hadoop就是典型的批处理模型，由HDFS和HBase存放大量的静态数据，由MapReduce负责对海量数据执行批量计算。</p>
+</li>
+<li><p>流数据必须采用实时计算，实时计算最重要的一个需求是能够实时得到计算结果，一般要求响应时间为秒级。当只需要处理少量数据时，实时计算并不是问题；但是，在大数据时代，不仅数据格式复杂、来源众多，而且数据量巨大，这就对实时计算提出了很大的挑战。因此，针对流数据的实时计算——流计算，应运而生。</p>
+</li>
+<li><p>总的来说，流计算秉承一个基本理念，即数据的价值随着时间的流逝而降低。因此，当事件出现时就应该立即进行处理，而不是缓存起来进行批量处理。为了及时处理流数据，就需要一个低延迟、可扩展、高可靠的处理引擎。对于一个流计算系统来说，它应达到如下需求。</p>
+</li>
+</ul>
+<h3 id="流计算的特点"><a href="#流计算的特点" class="headerlink" title="流计算的特点"></a>流计算的特点</h3><ul>
+<li>高性能。处理大数据的基本要求，如每秒处理几十万条数据。</li>
+<li>海量式。支持TB级甚至是PB级的数据规模。</li>
+<li>实时性。必须保证一个较低的延迟时间，达到秒级别，甚至是毫秒级别。</li>
+<li>分布式。支持大数据的基本架构，必须能够平滑扩展。</li>
+<li>易用性。能够快速进行开发和部署。</li>
+<li>可靠性。能可靠地处理流数据。</li>
+</ul>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-3-%E6%B5%81%E8%AE%A1%E7%AE%97%E7%A4%BA%E6%84%8F%E5%9B%BE.jpg" alt="流计算示意图"></p>
+<h3 id="流计算的实现"><a href="#流计算的实现" class="headerlink" title="流计算的实现"></a>流计算的实现</h3><ul>
+<li>目前，市场上有很多流计算框架，比如Twitter Storm和Yahoo! S4等。Twitter Storm是免费、开源的分布式实时计算系统，可简单、高效、可靠地处理大量的流数据；Yahoo! S4开源流计算平台，是通用的、分布式的、可扩展的、分区容错的、可插拔的流式系统。流计算处理过程包括数据实时采集、数据实时计算和实时查询服务。</li>
+<li>数据实时采集：数据实时采集阶段通常采集多个数据源的海量数据，需要保证实时性、低延迟与稳定可靠。以日志数据为例，由于分布式集群的广泛应用，数据分散存储在不同的机器上，因此需要实时汇总来自不同机器上的日志数据。目前有许多互联网公司发布的开源分布式日志采集系统均可满足每秒数百MB的数据采集和传输需求，如Facebook的Scribe、LinkedIn的Kafka、淘宝的TimeTunnel，以及基于Hadoop的Chukwa和Flume等。</li>
+</ul>
+<ul>
+<li>数据实时计算：流处理系统接收数据采集系统不断发来的实时数据，实时地进行分析计算，并反馈实时结果。</li>
+<li>实时查询服务：流计算的第三个阶段是实时查询服务，经由流计算框架得出的结果可供用户进行实时查询、展示或储存。</li>
+</ul>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-5-%E6%B5%81%E8%AE%A1%E7%AE%97%E7%9A%84%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.jpg" alt="img"></p>
+<h3 id="Spark-Streaming简介"><a href="#Spark-Streaming简介" class="headerlink" title="Spark Streaming简介"></a>Spark Streaming简介</h3><ul>
+<li><p>Spark Streaming是Spark的核心组件之一，为Spark提供了可拓展、高吞吐、容错的流计算能力。如下图所示，Spark Streaming可整合多种输入数据源，如Kafka、Flume、HDFS，甚至是普通的TCP套接字。经处理后的数据可存储至文件系统、数据库，或显示在仪表盘里。<br><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-19-Spark-Streaming%E6%94%AF%E6%8C%81%E7%9A%84%E8%BE%93%E5%85%A5%E3%80%81%E8%BE%93%E5%87%BA%E6%95%B0%E6%8D%AE%E6%BA%90.jpg" alt="Spark-Streaming支持的输入、输出数据源"></p>
+</li>
+<li><p>Spark Streaming的基本原理是将实时输入数据流以时间片（秒级）为单位进行拆分，然后经Spark引擎以类似批处理的方式处理每个时间片数据，执行流程如下图所示。</p>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-20-Spark-Streaming%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.jpg" alt="Spark Streaming执行流程"></p>
+</li>
+<li><p>Spark Streaming最主要的抽象是DStream（Discretized Stream，离散化数据流），表示连续不断的数据流。在内部实现上，Spark Streaming的输入数据按照时间片（如1秒）分成一段一段的DStream，每一段数据转换为Spark中的RDD，并且对DStream的操作都最终转变为对相应的RDD的操作。例如，下图展示了进行单词统计时，每个时间片的数据（存储句子的RDD）经flatMap操作，生成了存储单词的RDD。整个流式计算可根据业务的需求对这些中间的结果进一步处理，或者存储到外部设备中。</p>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-21-DStream%E6%93%8D%E4%BD%9C%E7%A4%BA%E6%84%8F%E5%9B%BE.jpg" alt="DStream操作示意图"></p>
+</li>
+</ul>
+<h3 id="Spark-Streaming与Storm的对比"><a href="#Spark-Streaming与Storm的对比" class="headerlink" title="Spark Streaming与Storm的对比"></a>Spark Streaming与Storm的对比</h3><ul>
+<li>Spark Streaming和Storm最大的区别在于，Spark Streaming无法实现毫秒级的流计算，而Storm可以实现毫秒级响应。</li>
+</ul>
+<h3 id="DStreamcaozuo"><a href="#DStreamcaozuo" class="headerlink" title="DStreamcaozuo"></a>DStreamcaozuo</h3><h4 id="创建StreamingContext对象"><a href="#创建StreamingContext对象" class="headerlink" title="创建StreamingContext对象"></a>创建StreamingContext对象</h4><ul>
+<li>如果要运行一个Spark Streaming程序，就需要首先生成一个StreamingContext对象，它是Spark Streaming程序的主入口。因此，在定义输入之前，我们首先介绍如何创建StreamingContext对象。我们可以从一个SparkConf对象创建一个StreamingContext对象。<ul>
+<li>请登录Linux系统，启动pyspark。进入pyspark以后，就已经获得了一个默认的SparkConext，也就是sc。因此，可以采用如下方式来创建StreamingContext对象：</li>
+</ul>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkContext&gt;&gt;&gt; <span class="keyword">from</span> pyspark.streaming <span class="keyword">import</span> StreamingContext&gt;&gt;&gt; ssc = StreamingContext(sc, <span class="number">1</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>1表示每隔1秒钟就自动执行一次流计算，这个秒数可以自由设定。<br>如果是编写一个独立的Spark Streaming程序，而不是在pyspark中运行，则需要通过如下方式创建StreamingContext对象：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkContext, SparkConffrom pyspark.streaming <span class="keyword">import</span> StreamingContextconf = SparkConf()conf.setAppName(<span class="string">'TestDStream'</span>)conf.setMaster(<span class="string">'local[2]'</span>)sc = SparkContext(conf = conf)ssc = StreamingContext(sc, <span class="number">1</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>setAppName(“TestDStream”)是用来设置应用程序名称，这里我们取名为“TestDStream”。setMaster(“local[2]”)括号里的参数”local[2]’字符串表示运行在本地模式下，并且启动2个工作线程。</li>
+</ul>
+<hr>
+<p>转载于：<a href="http://dblab.xmu.edu.cn/blog/1737-2/" target="_blank" rel="noopener">子雨大数据</a></p>
+]]></content>
+      <categories>
+        <category>-Spark</category>
+      </categories>
+      <tags>
+        <tag>-Spark</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Spark之Kafka作为DStream的数据源(Python版)</title>
+    <url>/2021/01/06/Spark%E4%B9%8BKafka%E4%BD%9C%E4%B8%BADStream%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90-Python%E7%89%88/</url>
+    <content><![CDATA[<h3 id="Kafka的安装和准备工作"><a href="#Kafka的安装和准备工作" class="headerlink" title="Kafka的安装和准备工作"></a>Kafka的安装和准备工作</h3><ul>
+<li>在安装的时候，要注意，到Kafka官网下载安装文件时，一定要选择和自己电脑上已经安装的scala版本号一致才可以，本教程安装的Spark版本号是2.1.0，scala版本号是2.11，所以，一定要选择Kafka版本号是2.11开头的。比如，到Kafka官网中，可以下载安装文件Kafka_2.11-0.10.2.0.tgz，前面的2.11就是支持的scala版本号，后面的0.10.2.0是Kafka自身的版本号。</li>
+<li>这里假设你已经根据这篇博客文章安装成功了Kafka。下面，我们启动Kafka。</li>
+<li>登录Linux系统（本教程统一使用hadoop用户登录），打开一个终端，输入下面命令启动Zookeeper服务：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/kafka./bin/zookeeper-server-start.sh config/zookeeper.properties</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>注意，执行上面命令以后，终端窗口会返回一堆信息，然后就停住不动了，没有回到shell命令提示符状态，这时，千万不要错误认为死机了，而是Zookeeper服务器启动了，正在处于服务状态。所以，千万不要关闭这个终端窗口，一旦关闭，zookeeper服务就停止了，所以，不能关闭这个终端窗口。</li>
+<li>另外打开第二个终端，然后输入下面命令启动Kafka服务：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/kafkabin/kafka-server-start.sh config/server.properties</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这样，Kafka就会在后台运行，即使你关闭了这个终端，Kafka也会一直在后台运行。不过，这样做，有时候我们往往就忘记了还有Kafa在后台运行，所以，建议暂时不要用&amp;。</li>
+<li>下面先测试一下Kafka是否可以正常使用。再另外打开第三个终端，然后输入下面命令创建一个自定义名称为“wordsendertest”的topic</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/kafka./bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic wordsendertest//这个topic叫wordsendertest，2181是zookeeper默认的端口号，partition是topic里面的分区数，replication-factor是备份的数量，在kafka集群中使用，这里单机版就不用备份了//可以用list列出所有创建的topics,来查看上面创建的topic是否存在./bin/kafka-topics.sh --list --zookeeper localhost:2181</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这个名称为“wordsendertest”的topic，就是专门负责采集发送一些单词的。<br>下面，我们需要用producer来产生一些数据，请在当前终端内继续输入下面命令：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line">./bin/kafka-console-producer.sh --broker-list localhost:9092 --topic wordsendertest</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>上面命令执行后，你就可以在当前终端内用键盘输入一些英文单词，比如我们可以输入：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line">hello hadoophello spark</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这些单词就是数据源，这些单词会被Kafka捕捉到以后发送给消费者。我们现在可以启动一个消费者，来查看刚才producer产生的数据。请另外打开第四个终端，输入下面命令：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/kafka./bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic wordsendertest --from-beginning</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>可以看到，屏幕上会显示出如下结果，也就是刚才你在另外一个终端里面输入的内容：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PROPERTIES"><figure class="iseeu highlight /properties"><table><tr><td class="code"><pre><span class="line"><span class="attr">hello</span> <span class="string">hadoop</span></span><br><span class="line"><span class="attr">hello</span> <span class="string">spark</span></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>到这里，与Kafka相关的准备工作就顺利结束了。注意，现在可以把第四个终端关闭掉，第一个终端（正在运行Zookeeper服务）、第二个终端（正在运行Kafka服务）和第三个终端不要关闭，继续留着后面使用。如果记不住是哪个终端，那么所有这些终端窗口都不要关闭，要继续留着后面使用。</li>
+</ul>
+<h3 id="Spark准备工作"><a href="#Spark准备工作" class="headerlink" title="Spark准备工作"></a>Spark准备工作</h3><ul>
+<li>Kafka和Flume等高级输入源，需要依赖独立的库（jar文件）。按照我们前面安装好的Spark版本，这些jar包都不在里面，为了证明这一点，我们现在可以测试一下。请打开一个新的终端，然后启动pyspark：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/spark./bin/pyspark</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>根据Spark官网的说明，对于Spark2.1.0版本，如果要使用Kafka，则需要下载spark-streaming-kafka-0-8_2.11相关jar包。</li>
+<li>在Linux系统中，打开一个火狐浏览器，请点击这里访问<a href="http://mvnrepository.com/artifact/org.apache.spark/spark-streaming-kafka-0-8_2.11/2.1.0" target="_blank" rel="noopener">Maven Repository</a>，里面有提供spark-streaming-kafka-0-8_2.11-2.1.0.jar文件的下载，其中，2.11表示scala的版本，2.1.0表示Spark版本号。下载后的文件会被默认保存在当前Linux登录用户的下载目录下，本教程统一使用hadoop用户名登录Linux系统，所以，文件下载后会被保存到“/home/hadoop/下载”目录下面。现在，我们就把这个文件复制到Spark目录的jars目录下。请新打开一个终端，输入下面命令：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/spark/jarsmkdir kafkacd ~<span class="built_in">cd</span> 下载cp ./spark-streaming-kafka-0-8_2.11-2.1.0.jar /usr/<span class="built_in">local</span>/spark/jars/kafka</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这样，我们就把spark-streaming-kafka-0-8_2.11-2.1.0.jar文件拷贝到了“/usr/local/spark/jars/kafka”目录下。<br>同时，我们还要修改spark目录下conf/spark-env.sh文件,修改该文件下面的SPARK_DIST_CLASSPATH变量</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="ELIXIR"><figure class="iseeu highlight /elixir"><table><tr><td class="code"><pre><span class="line">export SPARK_DIST_CLASSPATH=<span class="variable">$(</span>/usr/local/hadoop/bin/hadoop classpath)<span class="symbol">:</span><span class="variable">$(</span>/usr/local/hbase/bin/hbase classpath)<span class="symbol">:/usr/local/spark/examples/jars/*</span><span class="symbol">:/usr/local/spark/jars/kafka/*</span><span class="symbol">:/usr/local/kafka/libs/*`</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="编写Spark程序使用Kafka数据源"><a href="#编写Spark程序使用Kafka数据源" class="headerlink" title="编写Spark程序使用Kafka数据源"></a>编写Spark程序使用Kafka数据源</h3><ul>
+<li>下面，我们就可以进行程序编写了。请新打开一个终端，然后，执行命令创建代码目录：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/spark/mycodemkdir kafka &amp;&amp; <span class="built_in">cd</span> kafkavim KafkaWordCount.py</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>使用vim编辑器新建了KafkaWordCount.py，让它去进行词频统计。请在KafkaWordCount.py中输入以下代码：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> print_function </span><br><span class="line"><span class="keyword">import</span> sys </span><br><span class="line"><span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkContextfrom pyspark.streaming </span><br><span class="line"><span class="keyword">import</span> StreamingContext</span><br><span class="line"><span class="keyword">from</span> pyspark.streaming.kafka <span class="keyword">import</span> KafkaUtils </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:    </span><br><span class="line">    <span class="keyword">if</span> len(sys.argv) != <span class="number">3</span>:        </span><br><span class="line">        print(<span class="string">"Usage: kafka_wordcount.py &lt;zk&gt; &lt;topic&gt;"</span>, file=sys.stderr)        </span><br><span class="line">        exit(<span class="number">-1</span>)     </span><br><span class="line">        sc = SparkContext(appName=<span class="string">"PythonStreamingKafkaWordCount"</span>)    </span><br><span class="line">        ssc = StreamingContext(sc, <span class="number">1</span>)     </span><br><span class="line">        zkQuorum, topic = sys.argv[<span class="number">1</span>:]    </span><br><span class="line">        kvs = KafkaUtils.createStream(ssc, zkQuorum, <span class="string">"spark-streaming-consumer"</span>, &#123;topic: <span class="number">1</span>&#125;)    </span><br><span class="line">        lines = kvs.map(<span class="keyword">lambda</span> x: x[<span class="number">1</span>])    </span><br><span class="line">        counts = lines.flatMap(<span class="keyword">lambda</span> line: line.split(<span class="string">" "</span>)) \        </span><br><span class="line">        .map(<span class="keyword">lambda</span> word: (word, <span class="number">1</span>)) \        </span><br><span class="line">        .reduceByKey(<span class="keyword">lambda</span> a, b: a+b)    </span><br><span class="line">        counts.pprint()     </span><br><span class="line">        ssc.start()    </span><br><span class="line">        ssc.awaitTermination()</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>然后执行如下命令：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="BASH"><figure class="iseeu highlight /bash"><table><tr><td class="code"><pre><span class="line">python3 ./KafkaWordCount.py localhost:2181 wordsendertest</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>这里我们继续使用上面第三个终端的topic。请继续在第三个终端上输入信息，就能看到当前python执行终端下显示你刚才新输入的结果。</li>
+<li>运行上面命令以后，就启动了词频统计功能，屏幕上就会显示如下类似信息：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="SUBUNIT"><figure class="iseeu highlight /subunit"><table><tr><td class="code"><pre><span class="line">-------------------------------------------</span><br><span class="line"><span class="keyword">Time:</span> 2017<span class="string">-12</span><span class="string">-12</span> 10:57:46</span><br><span class="line">-------------------------------------------</span><br><span class="line">('ts', 1)</span><br><span class="line"></span><br><span class="line">-------------------------------------------</span><br><span class="line"><span class="keyword">Time:</span> 2017<span class="string">-12</span><span class="string">-12</span> 10:57:47</span><br><span class="line">-------------------------------------------</span><br></pre></td></tr></table></figure></div>
+
+<hr>
+<p>转载于:<a href="http://dblab.xmu.edu.cn/blog/1743-2/" target="_blank" rel="noopener">子雨大数据</a></p>
+]]></content>
+      <categories>
+        <category>-Spark</category>
+      </categories>
+      <tags>
+        <tag>-Spark</tag>
+      </tags>
+  </entry>
 </search>
