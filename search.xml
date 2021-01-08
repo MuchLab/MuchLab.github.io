@@ -12663,9 +12663,74 @@ e，set：哈希表，整数数组</code></pre></li>
       </tags>
   </entry>
   <entry>
-    <title>Spark之流计算和SparkStreaming（Python版）</title>
+    <title>Spark之流计算和SparkStreaming（Python版）</title>
     <url>/2021/01/06/Spark%E4%B9%8B%E6%B5%81%E8%AE%A1%E7%AE%97%E5%92%8CSparkStreaming%EF%BC%88Python%E7%89%88%EF%BC%89/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<h3 id="流计算简介"><a href="#流计算简介" class="headerlink" title="流计算简介"></a>流计算简介</h3><ul>
+<li><p>数据总体上可以分为静态数据和流数据。对静态数据和流数据的处理，对应着两种截然不同的计算模式：批量计算和实时计算。</p>
+</li>
+<li><p>批量计算以“静态数据”为对象，可以在很充裕的时间内对海量数据进行批量处理，计算得到有价值的信息。Hadoop就是典型的批处理模型，由HDFS和HBase存放大量的静态数据，由MapReduce负责对海量数据执行批量计算。</p>
+</li>
+<li><p>流数据必须采用实时计算，实时计算最重要的一个需求是能够实时得到计算结果，一般要求响应时间为秒级。当只需要处理少量数据时，实时计算并不是问题；但是，在大数据时代，不仅数据格式复杂、来源众多，而且数据量巨大，这就对实时计算提出了很大的挑战。因此，针对流数据的实时计算——流计算，应运而生。</p>
+</li>
+<li><p>总的来说，流计算秉承一个基本理念，即数据的价值随着时间的流逝而降低。因此，当事件出现时就应该立即进行处理，而不是缓存起来进行批量处理。为了及时处理流数据，就需要一个低延迟、可扩展、高可靠的处理引擎。对于一个流计算系统来说，它应达到如下需求。</p>
+</li>
+</ul>
+<h3 id="流计算的特点"><a href="#流计算的特点" class="headerlink" title="流计算的特点"></a>流计算的特点</h3><ul>
+<li>高性能。处理大数据的基本要求，如每秒处理几十万条数据。</li>
+<li>海量式。支持TB级甚至是PB级的数据规模。</li>
+<li>实时性。必须保证一个较低的延迟时间，达到秒级别，甚至是毫秒级别。</li>
+<li>分布式。支持大数据的基本架构，必须能够平滑扩展。</li>
+<li>易用性。能够快速进行开发和部署。</li>
+<li>可靠性。能可靠地处理流数据。</li>
+</ul>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-3-%E6%B5%81%E8%AE%A1%E7%AE%97%E7%A4%BA%E6%84%8F%E5%9B%BE.jpg" alt="流计算示意图"></p>
+<h3 id="流计算的实现"><a href="#流计算的实现" class="headerlink" title="流计算的实现"></a>流计算的实现</h3><ul>
+<li>目前，市场上有很多流计算框架，比如Twitter Storm和Yahoo! S4等。Twitter Storm是免费、开源的分布式实时计算系统，可简单、高效、可靠地处理大量的流数据；Yahoo! S4开源流计算平台，是通用的、分布式的、可扩展的、分区容错的、可插拔的流式系统。流计算处理过程包括数据实时采集、数据实时计算和实时查询服务。</li>
+<li>数据实时采集：数据实时采集阶段通常采集多个数据源的海量数据，需要保证实时性、低延迟与稳定可靠。以日志数据为例，由于分布式集群的广泛应用，数据分散存储在不同的机器上，因此需要实时汇总来自不同机器上的日志数据。目前有许多互联网公司发布的开源分布式日志采集系统均可满足每秒数百MB的数据采集和传输需求，如Facebook的Scribe、LinkedIn的Kafka、淘宝的TimeTunnel，以及基于Hadoop的Chukwa和Flume等。</li>
+</ul>
+<ul>
+<li>数据实时计算：流处理系统接收数据采集系统不断发来的实时数据，实时地进行分析计算，并反馈实时结果。</li>
+<li>实时查询服务：流计算的第三个阶段是实时查询服务，经由流计算框架得出的结果可供用户进行实时查询、展示或储存。</li>
+</ul>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-5-%E6%B5%81%E8%AE%A1%E7%AE%97%E7%9A%84%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.jpg" alt="img"></p>
+<h3 id="Spark-Streaming简介"><a href="#Spark-Streaming简介" class="headerlink" title="Spark Streaming简介"></a>Spark Streaming简介</h3><ul>
+<li><p>Spark Streaming是Spark的核心组件之一，为Spark提供了可拓展、高吞吐、容错的流计算能力。如下图所示，Spark Streaming可整合多种输入数据源，如Kafka、Flume、HDFS，甚至是普通的TCP套接字。经处理后的数据可存储至文件系统、数据库，或显示在仪表盘里。<br><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-19-Spark-Streaming%E6%94%AF%E6%8C%81%E7%9A%84%E8%BE%93%E5%85%A5%E3%80%81%E8%BE%93%E5%87%BA%E6%95%B0%E6%8D%AE%E6%BA%90.jpg" alt="Spark-Streaming支持的输入、输出数据源"></p>
+</li>
+<li><p>Spark Streaming的基本原理是将实时输入数据流以时间片（秒级）为单位进行拆分，然后经Spark引擎以类似批处理的方式处理每个时间片数据，执行流程如下图所示。</p>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-20-Spark-Streaming%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.jpg" alt="Spark Streaming执行流程"></p>
+</li>
+<li><p>Spark Streaming最主要的抽象是DStream（Discretized Stream，离散化数据流），表示连续不断的数据流。在内部实现上，Spark Streaming的输入数据按照时间片（如1秒）分成一段一段的DStream，每一段数据转换为Spark中的RDD，并且对DStream的操作都最终转变为对相应的RDD的操作。例如，下图展示了进行单词统计时，每个时间片的数据（存储句子的RDD）经flatMap操作，生成了存储单词的RDD。整个流式计算可根据业务的需求对这些中间的结果进一步处理，或者存储到外部设备中。</p>
+<p><img src="http://dblab.xmu.edu.cn/blog/wp-content/uploads/2016/11/%E5%9B%BE10-21-DStream%E6%93%8D%E4%BD%9C%E7%A4%BA%E6%84%8F%E5%9B%BE.jpg" alt="DStream操作示意图"></p>
+</li>
+</ul>
+<h3 id="Spark-Streaming与Storm的对比"><a href="#Spark-Streaming与Storm的对比" class="headerlink" title="Spark Streaming与Storm的对比"></a>Spark Streaming与Storm的对比</h3><ul>
+<li>Spark Streaming和Storm最大的区别在于，Spark Streaming无法实现毫秒级的流计算，而Storm可以实现毫秒级响应。</li>
+</ul>
+<h3 id="DStreamcaozuo"><a href="#DStreamcaozuo" class="headerlink" title="DStreamcaozuo"></a>DStreamcaozuo</h3><h4 id="创建StreamingContext对象"><a href="#创建StreamingContext对象" class="headerlink" title="创建StreamingContext对象"></a>创建StreamingContext对象</h4><ul>
+<li>如果要运行一个Spark Streaming程序，就需要首先生成一个StreamingContext对象，它是Spark Streaming程序的主入口。因此，在定义输入之前，我们首先介绍如何创建StreamingContext对象。我们可以从一个SparkConf对象创建一个StreamingContext对象。<ul>
+<li>请登录Linux系统，启动pyspark。进入pyspark以后，就已经获得了一个默认的SparkConext，也就是sc。因此，可以采用如下方式来创建StreamingContext对象：</li>
+</ul>
+</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkContext&gt;&gt;&gt; <span class="keyword">from</span> pyspark.streaming <span class="keyword">import</span> StreamingContext&gt;&gt;&gt; ssc = StreamingContext(sc, <span class="number">1</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>1表示每隔1秒钟就自动执行一次流计算，这个秒数可以自由设定。<br>如果是编写一个独立的Spark Streaming程序，而不是在pyspark中运行，则需要通过如下方式创建StreamingContext对象：</li>
+</ul>
+<div class="highlight-wrap"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" contenteditable="false"data-rel="PYTHON"><figure class="iseeu highlight /python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkContext, SparkConffrom pyspark.streaming <span class="keyword">import</span> StreamingContextconf = SparkConf()conf.setAppName(<span class="string">'TestDStream'</span>)conf.setMaster(<span class="string">'local[2]'</span>)sc = SparkContext(conf = conf)ssc = StreamingContext(sc, <span class="number">1</span>)</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>setAppName(“TestDStream”)是用来设置应用程序名称，这里我们取名为“TestDStream”。setMaster(“local[2]”)括号里的参数”local[2]’字符串表示运行在本地模式下，并且启动2个工作线程。</li>
+</ul>
+<hr>
+<p>转载于：<a href="http://dblab.xmu.edu.cn/blog/1737-2/" target="_blank" rel="noopener">子雨大数据</a></p>
+]]></content>
+      <categories>
+        <category>-Spark</category>
+      </categories>
+      <tags>
+        <tag>-Spark</tag>
+      </tags>
   </entry>
   <entry>
     <title>Spark之流计算和SparkStreaming（Python版）</title>
